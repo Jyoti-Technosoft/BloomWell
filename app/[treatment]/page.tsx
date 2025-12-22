@@ -2,6 +2,16 @@ import { notFound } from "next/navigation";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 
+interface MedicineOption {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  dosage: string;
+  features: string[];
+  inStock: boolean;
+}
+
 // Treatment data - move this to a separate file if it gets large
 const treatmentsData: Record<string, any> = {
   semaglutide: {
@@ -126,6 +136,96 @@ const treatmentsData: Record<string, any> = {
     ]
   }
 };
+
+const medicineOptions: Record<string, MedicineOption[]> = {
+  'semaglutide': [
+    {
+      id: 'semaglutide-1mg',
+      name: 'Semaglutide 1mg',
+      description: 'Weekly injection for weight management',
+      price: 299,
+      dosage: '4 x 1mg prefilled pens',
+      features: [
+        'FDA-approved for weight loss',
+        'Self-administered',
+        'Includes needles and alcohol swabs'
+      ],
+      inStock: true
+    },
+    {
+      id: 'semaglutide-2mg',
+      name: 'Semaglutide 2.4mg',
+      description: 'Maintenance dose for optimal results',
+      price: 399,
+      dosage: '4 x 2.4mg prefilled pens',
+      features: [
+        'Highest available dosage',
+        'For continued weight management',
+        'Includes needles and alcohol swabs'
+      ],
+      inStock: true
+    }
+  ],
+  'tirzepatide': [
+    {
+      id: 'tirzepatide-5mg',
+      name: 'Tirzepatide 5mg',
+      description: 'Dual-action weekly injection',
+      price: 349,
+      dosage: '4 x 5mg vials',
+      features: [
+        'For type 2 diabetes and weight loss',
+        'Includes supplies',
+        'Medical supervision included'
+      ],
+      inStock: true
+    }
+  ]
+  // Add more medicines for other treatments
+};
+
+function MedicineCard({ medicine }: { medicine: MedicineOption }) {
+  return (
+    <div className="flex flex-col rounded-lg border border-gray-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+      <div className="p-6 flex-1">
+        <div className="flex justify-between items-start">
+          <div>
+            <h3 className="text-lg font-medium text-gray-900">{medicine.name}</h3>
+            <p className="mt-1 text-sm text-gray-500">{medicine.description}</p>
+            <p className="mt-2 text-sm text-gray-600">{medicine.dosage}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-2xl font-bold text-gray-900">${medicine.price}</p>
+            {medicine.inStock ? (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                In Stock
+              </span>
+            ) : (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                Out of Stock
+              </span>
+            )}
+          </div>
+        </div>
+        
+        <ul className="mt-4 space-y-2">
+          {medicine.features.map((feature, index) => (
+            <li key={index} className="flex items-start">
+              <CheckCircleIcon className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+              <span className="ml-2 text-sm text-gray-600">{feature}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      
+      <div className="border-t border-gray-200 p-4 bg-gray-50">
+        <button className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          Add to Cart
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export async function generateStaticParams() {
   return Object.keys(treatmentsData).map((slug) => ({
@@ -262,6 +362,37 @@ export default async function TreatmentPage({
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">  
+        <div className="text-center">
+          <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+            Available Medications
+          </h2>
+          <p className="mt-4 text-xl text-gray-600">
+            Select your preferred medication and dosage
+          </p>
+        </div>
+        
+        <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {medicineOptions[treatment]?.length > 0 ? (
+            medicineOptions[treatment].map((medicine) => (
+              <MedicineCard key={medicine.id} medicine={medicine} />
+            ))
+          ) : (
+            <div className="col-span-3 text-center py-12">
+              <p className="text-gray-500">No medications currently available for this treatment.</p>
+              <div className="mt-6">
+                <a
+                  href="/contact"
+                  className="text-base font-medium text-indigo-600 hover:text-indigo-500"
+                >
+                  Contact us for availability
+                </a>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
