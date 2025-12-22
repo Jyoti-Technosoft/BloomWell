@@ -64,7 +64,7 @@ const treatments = [
   },
   {
     name: "Injectable Treatments",
-    href: "/injectable",
+    href: "/injectable-treatments",
     description:
       "Advanced injectable therapies for various health and wellness needs.",
     features: [

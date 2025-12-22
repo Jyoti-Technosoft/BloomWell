@@ -6,18 +6,15 @@ import Link from "next/link";
 const treatmentsData: Record<string, any> = {
   semaglutide: {
     name: "Semaglutide",
-    description:
-      "Advanced GLP-1 medication for sustainable weight management and blood sugar control.",
-    overview:
-      "Semaglutide is an FDA-approved medication that helps with weight management by regulating appetite and food intake.",
+    description: "Advanced GLP-1 medication for sustainable weight management and blood sugar control.",
+    overview: "Semaglutide is an FDA-approved medication that helps with weight management by regulating appetite and food intake.",
     benefits: [
       "Significant weight loss results",
       "Improved blood sugar control",
       "Reduced risk of weight-related health issues",
       "Once-weekly injection",
     ],
-    howItWorks:
-      "Semaglutide works by mimicking the GLP-1 hormone, which helps regulate blood sugar levels and slows down digestion.",
+    howItWorks: "Semaglutide works by mimicking the GLP-1 hormone, which helps regulate blood sugar levels and slows down digestion.",
     faqs: [
       {
         question: "How is Semaglutide administered?",
@@ -27,38 +24,31 @@ const treatmentsData: Record<string, any> = {
   },
   tirzepatide: {
     name: "Tirzepatide",
-    description:
-      "Dual GIP and GLP-1 receptor agonist for significant weight loss.",
-    overview:
-      "Tirzepatide is a novel medication that combines the benefits of GIP and GLP-1 receptor agonism.",
+    description: "Dual GIP and GLP-1 receptor agonist for significant weight loss.",
+    overview: "Tirzepatide is a novel medication that combines the benefits of GIP and GLP-1 receptor agonism.",
     benefits: [
       "Dual-action formula",
       "Significant weight loss",
       "Improved A1C levels",
     ],
-    howItWorks:
-      "Works by activating both GIP and GLP-1 receptors to regulate blood sugar and reduce appetite.",
+    howItWorks: "Works by activating both GIP and GLP-1 receptors to regulate blood sugar and reduce appetite.",
     faqs: [
       {
         question: "How does Tirzepatide work?",
-        answer:
-          "It activates both GIP and GLP-1 receptors for enhanced effects.",
+        answer: "It activates both GIP and GLP-1 receptors for enhanced effects.",
       },
     ],
   },
   "testosterone-therapy": {
     name: "Testosterone Therapy",
-    description:
-      "Hormone replacement therapy for men with low testosterone levels.",
-    overview:
-      "Testosterone therapy can help restore hormone levels in men with clinically low testosterone.",
+    description: "Hormone replacement therapy for men with low testosterone levels.",
+    overview: "Testosterone therapy can help restore hormone levels in men with clinically low testosterone.",
     benefits: [
       "Increased energy levels",
       "Improved muscle mass",
       "Enhanced mood and cognitive function",
     ],
-    howItWorks:
-      "Replenishes testosterone levels through various administration methods.",
+    howItWorks: "Replenishes testosterone levels through various administration methods.",
     faqs: [
       {
         question: "What are the administration methods?",
@@ -68,25 +58,73 @@ const treatmentsData: Record<string, any> = {
   },
   "erectile-dysfunction": {
     name: "Erectile Dysfunction",
-    description:
-      "Effective treatments for ED to improve sexual health and performance.",
-    overview:
-      "Comprehensive solutions for men experiencing erectile dysfunction.",
+    description: "Effective treatments for ED to improve sexual health and performance.",
+    overview: "Comprehensive solutions for men experiencing erectile dysfunction.",
     benefits: [
       "Improved sexual performance",
       "Increased confidence",
       "Various treatment options",
     ],
-    howItWorks:
-      "Treatments work by increasing blood flow to the penis or addressing underlying causes.",
+    howItWorks: "Treatments work by increasing blood flow to the penis or addressing underlying causes.",
     faqs: [
       {
         question: "What treatments are available?",
-        answer:
-          "Oral medications, injections, and lifestyle changes are common approaches.",
+        answer: "Oral medications, injections, and lifestyle changes are common approaches.",
       },
     ],
   },
+  "oral-ed-treatments": {
+    name: "Oral ED Treatments",
+    description: "Effective oral medications for erectile dysfunction management.",
+    overview: "Our clinic offers FDA-approved oral medications that help men achieve and maintain erections by increasing blood flow to the penis. These treatments are convenient, effective, and have helped thousands of men improve their sexual health.",
+    benefits: [
+      "Quick-acting formula (works in 30-60 minutes)",
+      "Discreet and easy to use",
+      "Proven effectiveness in clinical trials",
+      "Multiple dosage options available"
+    ],
+    howItWorks: "Oral ED medications work by relaxing the smooth muscles in the blood vessels of the penis, allowing for increased blood flow when sexually aroused. This results in firmer and longer-lasting erections. The effects typically last between 4-36 hours depending on the specific medication and dosage.",
+    faqs: [
+      {
+        question: "How quickly do oral ED medications work?",
+        answer: "Most oral ED medications take effect within 30-60 minutes after ingestion, though this can vary based on factors like food intake and individual metabolism."
+      },
+      {
+        question: "Are there any side effects?",
+        answer: "Common side effects may include headache, flushing, upset stomach, or nasal congestion. These are usually mild and temporary. Our healthcare providers will review your medical history to ensure the safest option for you."
+      },
+      {
+        question: "How do I know which oral ED medication is right for me?",
+        answer: "During your consultation, our medical professionals will evaluate your health history and specific needs to recommend the most appropriate treatment option."
+      }
+    ]
+  },
+  "injectable-treatments": {
+    name: "Injectable Treatments",
+    description: "Advanced injectable therapies for various health and wellness needs.",
+    overview: "Our clinic offers a range of injectable treatments including vitamin therapy, peptide therapy, and specialized medications. These treatments are administered by our medical professionals to ensure safety and effectiveness.",
+    benefits: [
+      "Direct delivery for maximum absorption",
+      "Customizable treatment plans",
+      "Administered by medical professionals",
+      "Can be combined with other therapies"
+    ],
+    howItWorks: "Injectable treatments deliver vitamins, minerals, and medications directly into the bloodstream or muscle tissue, bypassing the digestive system for maximum absorption. This method allows for higher concentrations of active ingredients to reach target areas more effectively than oral supplements.",
+    faqs: [
+      {
+        question: "What conditions can injectable treatments help with?",
+        answer: "Injectable therapies can support energy levels, immune function, weight management, hormone balance, and overall wellness. Specific treatments are available for various health concerns."
+      },
+      {
+        question: "How often are treatments needed?",
+        answer: "Frequency varies based on the specific treatment and individual needs. Some therapies may be administered weekly, while others might be monthly. Your provider will create a personalized schedule."
+      },
+      {
+        question: "Are there any side effects?",
+        answer: "Most patients experience minimal side effects, which may include mild soreness at the injection site. Our medical team will discuss all potential risks and benefits during your consultation."
+      }
+    ]
+  }
 };
 
 export async function generateStaticParams() {

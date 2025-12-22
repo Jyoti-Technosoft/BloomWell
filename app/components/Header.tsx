@@ -15,7 +15,7 @@ const navItems = [
       { name: 'Oral ED Treatments', href: '/oral-ed-treatments' },
       { name: 'Testosterone Therapy', href: '/testosterone-therapy' },
       { name: 'Erectile Dysfunction', href: '/erectile-dysfunction' },
-      { name: 'INJECTABLE', href: '/injectable' }
+      { name: 'Injectable Treatments', href: '/injectable-treatments' }
     ],
   },
   { name: 'About', href: '/about' },
