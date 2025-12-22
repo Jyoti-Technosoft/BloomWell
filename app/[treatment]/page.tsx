@@ -98,11 +98,13 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: { treatment: string };
+  params: Promise<{ treatment: string }>;
 }) {
-  const treatment = treatmentsData[params.treatment];
+  const { treatment } = await params;
 
-  if (!treatment) {
+  const treatmentData = treatmentsData[treatment];
+
+  if (!treatmentData) {
     return {
       title: "Treatment Not Found",
       description: "The requested treatment could not be found.",
@@ -110,23 +112,25 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${treatment.name} | Your Clinic Name`,
-    description: treatment.description,
+    title: `${treatmentData.name} | Your Clinic Name`,
+    description: treatmentData.description,
     openGraph: {
-      title: `${treatment.name} | Your Clinic Name`,
-      description: treatment.description,
+      title: `${treatmentData.name} | Your Clinic Name`,
+      description: treatmentData.description,
     },
   };
 }
 
-export default function TreatmentPage({
+export default async function TreatmentPage({
   params,
 }: {
-  params: { treatment: string };
+  params: Promise<{ treatment: string }>;
 }) {
-  const treatment = treatmentsData[params.treatment];
+  const { treatment } = await params;
 
-  if (!treatment) {
+  const treatmentData = treatmentsData[treatment];
+
+  if (!treatmentData) {
     notFound();
   }
 
@@ -136,10 +140,10 @@ export default function TreatmentPage({
       <div className="bg-indigo-700">
         <div className="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
           <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl lg:text-5xl">
-            {treatment.name}
+            {treatmentData.name}
           </h1>
           <p className="mt-6 max-w-3xl text-xl text-indigo-100">
-            {treatment.description}
+            {treatmentData.description}
           </p>
         </div>
       </div>
@@ -149,14 +153,14 @@ export default function TreatmentPage({
           <div className="lg:col-span-2">
             {/* Overview */}
             <div className="prose prose-indigo lg:max-w-none mb-12">
-              <h2>About {treatment.name}</h2>
-              <p className="text-lg text-gray-600">{treatment.overview}</p>
+              <h2>About {treatmentData.name}</h2>
+              <p className="text-lg text-gray-600">{treatmentData.overview}</p>
             </div>
 
             {/* How It Works */}
             <div className="prose prose-indigo lg:max-w-none mb-12">
               <h3>How It Works</h3>
-              <p className="text-gray-600">{treatment.howItWorks}</p>
+              <p className="text-gray-600">{treatmentData.howItWorks}</p>
             </div>
 
             {/* Benefits */}
@@ -165,7 +169,7 @@ export default function TreatmentPage({
                 Benefits
               </h3>
               <ul className="space-y-4">
-                {treatment.benefits.map((benefit: string, index: number) => (
+                {treatmentData.benefits.map((benefit: string, index: number) => (
                   <li key={index} className="flex items-start">
                     <CheckCircleIcon className="h-6 w-6 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
                     <span className="text-gray-700">{benefit}</span>
@@ -180,7 +184,7 @@ export default function TreatmentPage({
                 Frequently Asked Questions
               </h3>
               <div className="space-y-8">
-                {treatment.faqs.map((faq: any, index: number) => (
+                {treatmentData.faqs.map((faq: any, index: number) => (
                   <div key={index} className="border-b border-gray-200 pb-6">
                     <h4 className="text-lg font-medium text-gray-900">
                       {faq.question}
@@ -200,7 +204,7 @@ export default function TreatmentPage({
               </h3>
               <p className="mt-2 text-gray-600">
                 Schedule a consultation with one of our specialists today to
-                learn more about {treatment.name}.
+                learn more about {treatmentData.name}.
               </p>
               <div className="mt-6">
                 <Link

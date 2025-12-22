@@ -42,7 +42,7 @@ export default function Home() {
               className="text-4xl md:text-6xl font-bold text-gray-900 mb-6"
             >
               <span className="block text-indigo-600">Personalized</span>
-              <span className="block bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+              <span className="block bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 h-[100px]">
                 Weight Management
               </span>
             </motion.h1>
