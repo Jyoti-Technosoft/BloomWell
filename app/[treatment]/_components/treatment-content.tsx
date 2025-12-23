@@ -13,7 +13,7 @@ function MedicineCard({ medicine }: { medicine: MedicineOption }) {
   const handleAddToCart = async () => {
     if (status !== "authenticated") {
       router.push(
-        `/login?callbackUrl=${encodeURIComponent(window.location.pathname)}`
+        `/auth/signin?callbackUrl=${encodeURIComponent(window.location.pathname)}`
       );
       return;
     }
