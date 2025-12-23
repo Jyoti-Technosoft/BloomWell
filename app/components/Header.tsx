@@ -1,11 +1,23 @@
 'use client';
-
 import { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDownIcon, UserIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { getDoctorSlug } from '../lib/doctor-utils';
+import { physicians } from '../data/physicians';
 
-const navItems = [
+interface NavItem {
+  name: string;
+  href: string;
+  dropdown?: Array<{
+    name: string;
+    href: string;
+    specialty?: string;
+    image?: string;
+  }>;
+}
+
+const navItems: NavItem[] = [
   {
     name: 'Treatments',
     href: '/treatments',
@@ -17,6 +29,16 @@ const navItems = [
       { name: 'Erectile Dysfunction', href: '/erectile-dysfunction' },
       { name: 'Injectable Treatments', href: '/injectable-treatments' }
     ],
+  },
+  { 
+    name: 'Physicians',
+    href: '/physicians',
+    dropdown: physicians.map(doctor => ({
+      name: doctor.name,
+      href: `/physicians/${getDoctorSlug(doctor.name)}`,
+      specialty: doctor.specialty,
+      image: doctor.image
+    }))
   },
   { name: 'About', href: '/about' },
   { name: 'Reviews', href: '/reviews' },
@@ -36,18 +58,10 @@ export default function Header() {
 
   return (
     <header className="fixed w-full bg-white z-50 shadow-sm">
-      {/* Top Announcement Bar */}
-      {/* <div className="bg-emerald-600 text-white text-center text-sm py-2 px-4 w-full">
-        NEW YEAR, NEW YOU: NEW PATIENTS SAVE ON COMPOUNDED SEMAGLUTIDE AND ORAL ED TREATMENTS
-      </div> */}
-
-      {/* Main Navigation */}
       <nav className="border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
-            {/* Left side - Logo and Desktop Navigation */}
             <div className="flex items-center">
-              {/* Logo */}
               <div className="flex-shrink-0">
                 <Link href="/" className="text-xl font-bold text-gray-900">
                   <img
@@ -58,63 +72,93 @@ export default function Header() {
                   />
                 </Link>
               </div>
-
-              {/* Desktop Navigation */}
-              <div className="hidden md:ml-10 md:flex md:space-x-8">
-                {navItems.map((item) => (
-                  <div key={item.name} className="relative">
-                    {item.dropdown ? (
-                      <div
-                        onMouseEnter={() => setOpenDropdown(item.name)}
-                        onMouseLeave={() => setOpenDropdown(null)}
-                        className="relative"
-                      >
-                        <button className="flex items-center text-gray-700 hover:text-gray-900 px-1 py-2 text-sm font-medium">
-                          {item.name}
-                          <ChevronDownIcon
-                            className={`ml-1 h-4 w-4 transition-transform ${
-                              openDropdown === item.name ? 'rotate-180' : ''
-                            }`}
-                          />
-                        </button>
-
-                        <AnimatePresence>
-                          {openDropdown === item.name && (
-                            <motion.div
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: 10 }}
-                              className="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5"
-                            >
-                              <div className="py-1">
-                                {item.dropdown.map((subItem) => (
-                                  <Link
-                                    key={subItem.name}
-                                    href={subItem.href}
-                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                                  >
-                                    {subItem.name}
-                                  </Link>
-                                ))}
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    ) : (
-                      <Link
-                        href={item.href}
-                        className="text-gray-700 hover:text-gray-900 px-1 py-2 text-sm font-medium"
-                      >
-                        {item.name}
-                      </Link>
-                    )}
-                  </div>
-                ))}
-              </div>
             </div>
 
-            {/* Right side - Auth Buttons */}
+            <div className="hidden md:ml-10 md:flex md:space-x-8 items-center">
+              {navItems.map((item) => (
+                <div key={item.name} className="relative">
+                  {item.dropdown ? (
+                    <div
+                      onMouseEnter={() => setOpenDropdown(item.name)}
+                      onMouseLeave={() => setOpenDropdown(null)}
+                      className="relative"
+                    >
+                      <button className="flex items-center text-gray-700 hover:text-gray-900 px-1 py-2 text-sm font-medium">
+                        {item.name}
+                        <ChevronDownIcon
+                          className={`ml-1 h-4 w-4 transition-transform ${
+                            openDropdown === item.name ? 'rotate-180' : ''
+                          }`}
+                        />
+                      </button>
+
+                      <AnimatePresence>
+                        {openDropdown === item.name && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 10 }}
+                            className={`absolute left-0 mt-2 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 ${
+                              item.name === 'Physicians' ? 'w-80 p-2' : 'w-56'
+                            }`}
+                          >
+                            <div className="py-1">
+                              {item.dropdown?.map((subItem) => (
+                                <div key={subItem.name}>
+                                  {item.name === 'Physicians' ? (
+                                    <Link
+                                      href={subItem.href}
+                                      className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 rounded-md group"
+                                    >
+                                      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 overflow-hidden mr-3">
+                                        {'image' in subItem && subItem.image ? (
+                                          <img
+                                            src={subItem.image}
+                                            alt={subItem.name}
+                                            className="h-full w-full object-cover"
+                                          />
+                                        ) : (
+                                          <div className="h-full w-full bg-gray-300 flex items-center justify-center">
+                                            <UserIcon className="h-5 w-5 text-gray-500" />
+                                          </div>
+                                        )}
+                                      </div>
+                                      <div>
+                                        <p className="font-medium text-gray-900 group-hover:text-indigo-600">
+                                          {subItem.name}
+                                        </p>
+                                        {'specialty' in subItem && subItem.specialty && (
+                                          <p className="text-xs text-gray-500">{subItem.specialty}</p>
+                                        )}
+                                      </div>
+                                    </Link>
+                                  ) : (
+                                    <Link
+                                      href={subItem.href}
+                                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                                    >
+                                      {subItem.name}
+                                    </Link>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      className="text-gray-700 hover:text-gray-900 px-1 py-2 text-sm font-medium"
+                    >
+                      {item.name}
+                    </Link>
+                  )}
+                </div>
+              ))}
+            </div>
+
             <div className="flex items-center space-x-4">
               <Link
                 href="/login"
@@ -130,7 +174,6 @@ export default function Header() {
               </Link>
             </div>
 
-            {/* Mobile menu button */}
             <div className="md:hidden flex items-center">
               <button
                 onClick={toggleMobileMenu}
@@ -147,7 +190,6 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile menu */}
         <AnimatePresence>
           {isMobileMenuOpen && (
             <motion.div
@@ -188,7 +230,29 @@ export default function Header() {
                                   href={subItem.href}
                                   className="block px-4 py-3 text-base text-gray-600 hover:bg-gray-100"
                                 >
-                                  {subItem.name}
+                                  {item.name === 'Physicians' ? (
+                                    <div className="flex items-center">
+                                      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 overflow-hidden mr-3">
+                                        {subItem.image ? (
+                                          <img
+                                            src={subItem.image}
+                                            alt={subItem.name}
+                                            className="h-full w-full object-cover"
+                                          />
+                                        ) : (
+                                          <div className="h-full w-full bg-gray-300 flex items-center justify-center">
+                                            <UserIcon className="h-5 w-5 text-gray-500" />
+                                          </div>
+                                        )}
+                                      </div>
+                                      <div>
+                                        <p className="font-medium text-gray-900">{subItem.name}</p>
+                                        <p className="text-xs text-gray-500">{subItem.specialty}</p>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    subItem.name
+                                  )}
                                 </Link>
                               ))}
                             </motion.div>
@@ -205,17 +269,6 @@ export default function Header() {
                     )}
                   </div>
                 ))}
-                <div className="pt-2 pb-3 border-t border-gray-200">
-                  <div className="flex items-center px-4 py-2">
-                    <UserIcon className="h-5 w-5 text-gray-500" />
-                    <Link
-                      href="/login"
-                      className="ml-3 text-base font-medium text-gray-700 hover:text-gray-900"
-                    >
-                      Log in
-                    </Link>
-                  </div>
-                </div>
               </div>
             </motion.div>
           )}
