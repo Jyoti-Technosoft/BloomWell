@@ -10,6 +10,7 @@ interface MedicineOption {
   dosage: string;
   features: string[];
   inStock: boolean;
+  image: string;
 }
 
 // Treatment data - move this to a separate file if it gets large
@@ -150,7 +151,8 @@ const medicineOptions: Record<string, MedicineOption[]> = {
         'Self-administered',
         'Includes needles and alcohol swabs'
       ],
-      inStock: true
+      inStock: true,
+      image: '/medicines/semaglutide-1mg.jpg'
     },
     {
       id: 'semaglutide-2mg',
@@ -163,7 +165,8 @@ const medicineOptions: Record<string, MedicineOption[]> = {
         'For continued weight management',
         'Includes needles and alcohol swabs'
       ],
-      inStock: true
+      inStock: true,
+      image: '/medicines/semaglutide-2mg.jpg'
     }
   ],
   'tirzepatide': [
@@ -178,15 +181,200 @@ const medicineOptions: Record<string, MedicineOption[]> = {
         'Includes supplies',
         'Medical supervision included'
       ],
-      inStock: true
+      inStock: true,
+      image: '/medicines/tirzepatide-5mg.jpg'
+    },
+    {
+      id: 'tirzepatide-10mg',
+      name: 'Tirzepatide 10mg',
+      description: 'Higher dosage for better results',
+      price: 449,
+      dosage: '4 x 10mg vials',
+      features: [
+        'For type 2 diabetes and weight loss',
+        'Enhanced effectiveness',
+        'Medical supervision included'
+      ],
+      inStock: true,
+      image: '/medicines/tirzepatide-10mg.jpg'
+    }
+  ],
+  'testosterone-therapy': [
+    {
+      id: 'testo-cypionate',
+      name: 'Testosterone Cypionate',
+      description: 'Injectable testosterone for hormone therapy',
+      price: 199,
+      dosage: '10ml vial (200mg/ml)',
+      features: [
+        'For low testosterone levels',
+        'Weekly injections',
+        'Medical supervision required'
+      ],
+      inStock: true,
+      image: '/medicines/testo-cypionate.jpg'
+    },
+    {
+      id: 'testo-gel',
+      name: 'Testosterone Gel',
+      description: 'Topical testosterone gel',
+      price: 249,
+      dosage: '30-day supply',
+      features: [
+        'Easy application',
+        'Daily use',
+        'Absorbs quickly'
+      ],
+      inStock: true,
+      image: '/medicines/testo-gel.webp'
+    }
+  ],
+  'erectile-dysfunction': [
+    {
+      id: 'sildenafil-50mg',
+      name: 'Sildenafil 50mg',
+      description: 'Generic Viagra for ED treatment',
+      price: 99,
+      dosage: '10 tablets',
+      features: [
+        '30-60 minutes before activity',
+        'Lasts 4-6 hours',
+        'Proven effectiveness'
+      ],
+      inStock: true,
+      image: '/medicines/sildenafil-50mg.jpg'
+    },
+    {
+      id: 'tadalafil-20mg',
+      name: 'Tadalafil 20mg',
+      description: 'Daily or as-needed ED treatment',
+      price: 149,
+      dosage: '10 tablets',
+      features: [
+        'Up to 36-hour effectiveness',
+        'Daily or as-needed use',
+        'Lowest effective dose'
+      ],
+      inStock: true,
+      image: '/medicines/tadalafil-20mg.jpg'
+    }
+  ],
+  'oral-ed-treatments': [
+    {
+      id: 'sildenafil-100mg',
+      name: 'Sildenafil 100mg',
+      description: 'High-strength ED medication',
+      price: 129,
+      dosage: '10 tablets',
+      features: [
+        'Maximum strength formula',
+        'Works in 30-60 minutes',
+        'Lasts 4-6 hours',
+        'Discreet delivery'
+      ],
+      inStock: true,
+      image: '/medicines/sildenafil-100mg.jpg'
+    },
+    {
+      id: 'tadalafil-daily',
+      name: 'Tadalafil Daily 5mg',
+      description: 'Low-dose daily treatment',
+      price: 179,
+      dosage: '30 tablets',
+      features: [
+        'Take one daily',
+        'Always ready for spontaneity',
+        'Steady medication level',
+        '30-day supply'
+      ],
+      inStock: true,
+      image: '/medicines/tadalafil-daily.png'
+    },
+    {
+      id: 'vardenafil-20mg',
+      name: 'Vardenafil 20mg',
+      description: 'Fast-acting ED medication',
+      price: 149,
+      dosage: '10 tablets',
+      features: [
+        'Works in 25-60 minutes',
+        'Effective for 4-5 hours',
+        'Can be taken with food',
+        'Discreet packaging'
+      ],
+      inStock: true,
+      image: '/medicines/vardenafil-20mg.webp'
+    }
+  ],
+  'injectable-treatments': [
+    {
+      id: 'b12-injection',
+      name: 'Vitamin B12 Injection',
+      description: 'Energy and metabolism boost',
+      price: 89,
+      dosage: '1ml vial (1000mcg/ml)',
+      features: [
+        'Boosts energy levels',
+        'Supports metabolism',
+        'Monthly injection',
+        'Administered by professional'
+      ],
+      inStock: true,
+      image: '/medicines/b12-injection.avif'
+    },
+    {
+      id: 'glutathione-injection',
+      name: 'Glutathione Injection',
+      description: 'Powerful antioxidant therapy',
+      price: 199,
+      dosage: '10ml vial (200mg/ml)',
+      features: [
+        'Skin brightening',
+        'Detoxification support',
+        'Immune system boost',
+        'Monthly treatment course'
+      ],
+      inStock: true,
+      image: '/medicines/glutathione-injection.jpg'
+    },
+    {
+      id: 'lipotropic-injection',
+      name: 'Lipotropic Injection',
+      description: 'Fat metabolism support',
+      price: 149,
+      dosage: '10ml multi-dose vial',
+      features: [
+        'Supports fat metabolism',
+        'Boosts energy',
+        'Liver support',
+        'Weekly injection'
+      ],
+      inStock: true,
+      image: '/medicines/lipotropic-injection.webp'
     }
   ]
-  // Add more medicines for other treatments
 };
 
 function MedicineCard({ medicine }: { medicine: MedicineOption }) {
   return (
     <div className="flex flex-col rounded-lg border border-gray-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+      {/* Product Image */}
+      <div className="h-48 bg-gray-100 flex items-center justify-center p-4">
+        {medicine.image ? (
+          <img 
+            src={medicine.image} 
+            alt={medicine.name}
+            className="h-full w-full object-contain"
+          />
+        ) : (
+          <div className="text-gray-400">
+            <svg className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+        )}
+      </div>
+      
       <div className="p-6 flex-1">
         <div className="flex justify-between items-start">
           <div>

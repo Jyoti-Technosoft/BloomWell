@@ -37,9 +37,9 @@ export default function Header() {
   return (
     <header className="fixed w-full bg-white z-50 shadow-sm">
       {/* Top Announcement Bar */}
-      <div className="bg-emerald-600 text-white text-center text-sm py-2 px-4 w-full">
+      {/* <div className="bg-emerald-600 text-white text-center text-sm py-2 px-4 w-full">
         NEW YEAR, NEW YOU: NEW PATIENTS SAVE ON COMPOUNDED SEMAGLUTIDE AND ORAL ED TREATMENTS
-      </div>
+      </div> */}
 
       {/* Main Navigation */}
       <nav className="border-b border-gray-200">
@@ -50,7 +50,12 @@ export default function Header() {
               {/* Logo */}
               <div className="flex-shrink-0">
                 <Link href="/" className="text-xl font-bold text-gray-900">
-                  BloomWell
+                  <img
+                    src="/bloomwell-logo.png"
+                    alt="BloomWell"
+                    height="200px"
+                    width="200px"
+                  />
                 </Link>
               </div>
 

@@ -7,8 +7,13 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Wellness Journey - Weight Management for Women',
-  description: 'Personalized weight loss medication made accessible and affordable for every woman.',
+  title: 'BloomWell - Weight Management & Wellness',
+  description: 'Personalized weight loss medication and wellness treatments made accessible and affordable.',
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({
