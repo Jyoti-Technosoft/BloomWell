@@ -108,6 +108,7 @@ export default function Home() {
                   src="/hero-image.avif"
                   alt="Happy person after weight loss"
                   fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover"
                   priority
                 />

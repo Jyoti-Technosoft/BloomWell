@@ -1,7 +1,6 @@
 // app/api/evaluations/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { postgresDb } from '../../lib/postgres-db';
 
 interface EvaluationData {
   medicineId: string;
@@ -98,12 +97,11 @@ export async function POST(request: NextRequest) {
     // Get user from session (you'll need to implement session management)
     const userId = request.headers.get('x-user-id') || 'anonymous';
 
-    // Create evaluation record
-    const evaluationRecord = {
-      id: Date.now().toString(),
-      userId,
-      medicineId: evaluationData.medicineId,
-      medicineName: evaluationData.medicineName,
+    // Create evaluation record in PostgreSQL
+    const evaluationRecord = await postgresDb.evaluations.create({
+      user_id: userId === 'anonymous' ? null : userId,
+      medicine_id: evaluationData.medicineId,
+      medicine_name: evaluationData.medicineName,
       responses: {
         birthday: evaluationData.birthday,
         pregnant: evaluationData.pregnant,
@@ -120,49 +118,8 @@ export async function POST(request: NextRequest) {
         additionalInfo: evaluationData.additionalInfo || '',
         lastFourSSN: evaluationData.lastFourSSN // Note: In production, this should be encrypted
       },
-      status: 'pending_review',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-
-    // Save to database (for now, save to JSON file)
-    const dbPath = path.join(process.cwd(), 'data', 'db.json');
-    
-    try {
-      let db: any = {};
-      
-      // Read existing database or create new structure
-      if (fs.existsSync(dbPath)) {
-        const dbContent = fs.readFileSync(dbPath, 'utf-8');
-        db = JSON.parse(dbContent);
-      } else {
-        // Create new database structure if file doesn't exist
-        db = {
-          users: [],
-          contacts: [],
-          consultations: [],
-          evaluations: []
-        };
-      }
-
-      // Ensure evaluations array exists
-      if (!db.evaluations) {
-        db.evaluations = [];
-      }
-
-      // Add the new evaluation record
-      db.evaluations.push(evaluationRecord);
-
-      // Write back to database
-      fs.writeFileSync(dbPath, JSON.stringify(db, null, 2));
-      
-    } catch (error) {
-      console.error('Error saving evaluation:', error);
-      return NextResponse.json(
-        { error: 'Failed to save evaluation data' },
-        { status: 500 }
-      );
-    }
+      status: 'pending_review'
+    });
 
     // In a real application, you would:
     // 1. Send notification to medical team
@@ -187,18 +144,18 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const dbPath = path.join(process.cwd(), 'data', 'db.json');
+    // Get user from session or query parameter
+    const userId = request.headers.get('x-user-id');
     
-    if (!fs.existsSync(dbPath)) {
-      return NextResponse.json({ evaluations: [] });
+    if (userId) {
+      // Get evaluations for specific user
+      const evaluations = await postgresDb.evaluations.findByUserId(userId);
+      return NextResponse.json({ evaluations });
+    } else {
+      // Get all evaluations with pending_review status
+      const evaluations = await postgresDb.evaluations.findByStatus('pending_review');
+      return NextResponse.json({ evaluations });
     }
-
-    const dbContent = fs.readFileSync(dbPath, 'utf-8');
-    const db = JSON.parse(dbContent);
-
-    return NextResponse.json({ 
-      evaluations: db.evaluations || [] 
-    });
 
   } catch (error) {
     console.error('Error fetching evaluations:', error);

@@ -1,0 +1,9 @@
+# PostgreSQL Database Configuration
+DATABASE_URL=postgresql://bloomwell_user:StrongPassword123@localhost:5432/bloomwell_db
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=bloomwell_db
+DB_USER=bloomwell_user
+DB_PASSWORD=StrongPassword123
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+NODE_ENV=development

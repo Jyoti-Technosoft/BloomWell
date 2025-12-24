@@ -1,0 +1,129 @@
+{
+  "users": [
+    {
+      "email": "charmi.jtdev@gmail.com",
+      "password": "$2b$10$Qmfe.6SxzSs62JF3n9f/rejgu.XmvT4BP/KP/VGzy8FKWYD9DPB8i",
+      "fullName": "Charmi Chauhan",
+      "id": "1766490666414",
+      "createdAt": "2025-12-23T11:51:06.414Z"
+    },
+    {
+      "email": "mitali.jtdev@gmail.com",
+      "password": "$2b$10$FyKxvwSdvytDV6wE6C3X3unT7pzaXf3PSW3KLPOX.4m9/NC/QzFn6",
+      "fullName": "Mitali Rana",
+      "id": "1766556512106",
+      "createdAt": "2025-12-24T06:08:32.106Z"
+    }
+  ],
+  "contacts": [
+    {
+      "name": "Mitali Rana",
+      "email": "mitali.jtdev@gmail.com",
+      "message": "test",
+      "id": "1766555136398",
+      "createdAt": "2025-12-24T05:45:36.398Z"
+    },
+    {
+      "name": "Aagam Shah",
+      "email": "aagam.jtdev@gmail.com",
+      "message": "test",
+      "id": "1766555375256",
+      "createdAt": "2025-12-24T05:49:35.256Z"
+    }
+  ],
+  "consultations": [
+    {
+      "userId": "1766490666414",
+      "doctorName": "Dr. Emily Rodriguez",
+      "doctorSpecialty": "Internal Medicine",
+      "date": "2025-12-25",
+      "time": "9:00 AM",
+      "reason": "test",
+      "status": "pending",
+      "id": "1766554783629",
+      "createdAt": "2025-12-24T05:39:43.629Z"
+    },
+    {
+      "userId": "1766490666414",
+      "doctorName": "Dr. Sarah Johnson",
+      "doctorSpecialty": "Endocrinology",
+      "date": "2025-12-26",
+      "time": "9:30 AM",
+      "reason": "test",
+      "status": "pending",
+      "id": "1766554965020",
+      "createdAt": "2025-12-24T05:42:45.020Z"
+    },
+    {
+      "userId": "1766556512106",
+      "doctorName": "Dr. Sarah Johnson",
+      "doctorSpecialty": "Endocrinology",
+      "date": "2025-12-26",
+      "time": "10:00 AM",
+      "reason": "test",
+      "status": "pending",
+      "id": "1766557374038",
+      "createdAt": "2025-12-24T06:22:54.038Z"
+    }
+  ],
+  "evaluations": [
+    {
+      "id": "1766568715963",
+      "userId": "anonymous",
+      "medicineId": "semaglutide-2mg",
+      "medicineName": "Semaglutide 2.4mg",
+      "responses": {
+        "birthday": "2025-12-24",
+        "pregnant": "Yes",
+        "currentlyUsingMedicines": "test",
+        "hasDiabetes": "Yes",
+        "seenDoctorLastTwoYears": "Yes",
+        "medicalConditions": [
+          "High Blood Pressure"
+        ],
+        "height": "140",
+        "weight": "60",
+        "targetWeight": "50",
+        "goals": [
+          "I want to lose fat without losing muscle"
+        ],
+        "allergies": "no",
+        "currentMedications": "",
+        "additionalInfo": "",
+        "lastFourSSN": "5466"
+      },
+      "status": "pending_review",
+      "createdAt": "2025-12-24T09:31:55.963Z",
+      "updatedAt": "2025-12-24T09:31:55.963Z"
+    },
+    {
+      "id": "1766570333867",
+      "userId": "anonymous",
+      "medicineId": "semaglutide-2mg",
+      "medicineName": "Semaglutide 2.4mg",
+      "responses": {
+        "birthday": "2026-01-11",
+        "pregnant": "Yes",
+        "currentlyUsingMedicines": "test",
+        "hasDiabetes": "No",
+        "seenDoctorLastTwoYears": "No",
+        "medicalConditions": [
+          "High Lipids"
+        ],
+        "height": "70",
+        "weight": "80",
+        "targetWeight": "80",
+        "goals": [
+          "I want to lose fat without losing muscle"
+        ],
+        "allergies": "test",
+        "currentMedications": "",
+        "additionalInfo": "test",
+        "lastFourSSN": "4552"
+      },
+      "status": "pending_review",
+      "createdAt": "2025-12-24T09:58:53.867Z",
+      "updatedAt": "2025-12-24T09:58:53.867Z"
+    }
+  ]
+}
