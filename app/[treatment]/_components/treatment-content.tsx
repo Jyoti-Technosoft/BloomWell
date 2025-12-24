@@ -12,32 +12,8 @@ function MedicineCard({ medicine }: { medicine: MedicineOption }) {
   const router = useRouter();
   const { user } = useUser();
 
-  const handleAddToCart = async () => {
-    if (!user) {
-      router.push(`/auth/signin?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
-      return;
-    }
-    try {
-      const response = await fetch('/api/cart', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          productId: medicine.id,
-          quantity: 1,
-        }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to add to cart');
-      }
-      // Redirect to cart page
-      router.push('/cart');
-    } catch (error) {
-      console.error('Failed to add to cart', error);
-      alert('Failed to add to cart. Please try again.');
-    }
+  const handleViewDetails = () => {
+    router.push(`/medicines/${medicine.id}`);
   };
 
   return (
@@ -105,7 +81,7 @@ function MedicineCard({ medicine }: { medicine: MedicineOption }) {
 
       <div className="border-t border-gray-200 p-4 bg-gray-50">
         <button
-          onClick={handleAddToCart}
+          onClick={handleViewDetails}
           disabled={!medicine.inStock}
           className={`w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
             medicine.inStock
@@ -113,7 +89,7 @@ function MedicineCard({ medicine }: { medicine: MedicineOption }) {
               : "bg-gray-400 cursor-not-allowed"
           } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
         >
-          {!medicine.inStock ? "Out of Stock" : "Claim free Evaluation"}
+          {!medicine.inStock ? "Out of Stock" : "View Details"}
         </button>
       </div>
     </div>

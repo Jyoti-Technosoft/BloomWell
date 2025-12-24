@@ -52,7 +52,7 @@ export default function LogoutButton() {
       </button>
 
       {showConfirmDialog && (
-        <div className="fixed inset-0 bg-black/50 z-40 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
             <h3 className="text-lg font-medium text-gray-900 mb-4">
               Do you want to logout?
