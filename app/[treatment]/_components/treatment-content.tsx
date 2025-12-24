@@ -5,24 +5,38 @@ import Link from "next/link";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 
 import { treatmentsData, medicineOptions, MedicineOption } from "../../data/treatments";
+import { useUser } from "../../context/UserContext";
 
 function MedicineCard({ medicine }: { medicine: MedicineOption }) {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { user } = useUser();
 
   const handleAddToCart = async () => {
-    if (status !== "authenticated") {
-      router.push(
-        `/auth/signin?callbackUrl=${encodeURIComponent(window.location.pathname)}`
-      );
+    if (!user) {
+      router.push(`/auth/signin?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
       return;
     }
-
     try {
-      // Add to cart logic here
-      router.push("/cart");
+      const response = await fetch('/api/cart', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productId: medicine.id,
+          quantity: 1,
+        }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to add to cart');
+      }
+      // Redirect to cart page
+      router.push('/cart');
     } catch (error) {
-      console.error("Error adding to cart:", error);
+      console.error('Failed to add to cart', error);
+      alert('Failed to add to cart. Please try again.');
     }
   };
 
@@ -99,7 +113,7 @@ function MedicineCard({ medicine }: { medicine: MedicineOption }) {
               : "bg-gray-400 cursor-not-allowed"
           } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
         >
-          {!medicine.inStock ? "Out of Stock" : "Add to Cart"}
+          {!medicine.inStock ? "Out of Stock" : "Claim free Evaluation"}
         </button>
       </div>
     </div>
@@ -169,7 +183,7 @@ export function TreatmentContent({ treatment }: { treatment: string }) {
             </div>
           </div>
 
-          <div className="mt-12 lg:mt-0">
+          {/* <div className="mt-12 lg:mt-0">
             <div className="bg-indigo-50 rounded-lg p-6 sticky top-6">
               <h3 className="text-xl font-medium text-gray-900">
                 Ready to get started?
@@ -195,7 +209,7 @@ export function TreatmentContent({ treatment }: { treatment: string }) {
                 </a>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
 

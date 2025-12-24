@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRightIcon, ArrowPathIcon, HeartIcon, ShieldCheckIcon, UserIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
+import { useUser } from './context/UserContext';
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -48,6 +49,8 @@ const features = [
 ];
 
 export default function Home() {
+  const { user } = useUser();
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
       {/* Hero Section */}
@@ -85,12 +88,12 @@ export default function Home() {
                   Explore Treatments
                   <ArrowRightIcon className="ml-2 h-5 w-5" />
                 </Link>
-                <Link 
+                {/* <Link 
                   href="/book-consultation" 
                   className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-full text-indigo-700 bg-white-100 hover:bg-white-200 shadow-lg hover:shadow-xl transition-colors duration-300"
                 >
                   Book Consultation
-                </Link>
+                </Link> */}
               </motion.div>
             </motion.div>
 
@@ -283,10 +286,10 @@ export default function Home() {
           </p>
           <div className="mt-8">
             <Link
-              href="/auth/signup"
+              href={user ? "/book-consultation" : "/auth/signup"}
               className="px-8 py-4 bg-white text-indigo-600 font-medium rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 inline-flex items-center"
             >
-              Get Started Now
+              {user ? "Book Consultation" : "Get Started Now"}
               <ArrowRightIcon className="ml-2 h-5 w-5" />
             </Link>
           </div>

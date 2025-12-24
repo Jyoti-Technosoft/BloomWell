@@ -1,13 +1,35 @@
+'use client';
+
+import React from 'react';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
+import { useState } from 'react';
 import { physicians } from '../../data/physicians';
+import { useUser } from '../../context/UserContext';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import Toast from '../../components/Toast';
 
-export default async function DoctorProfile({
-  params,
-}: {
+interface DoctorProfileProps {
   params: Promise<{ doctor: string }>;
-}) {
-  const { doctor: slug } = await params;
+}
+
+export default function DoctorProfile({ params }: DoctorProfileProps) {
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedTime, setSelectedTime] = useState('');
+  const [reason, setReason] = useState('');
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const { user } = useUser();
+  const router = useRouter();
+
+  const handleCloseToast = () => {
+    setToast(null);
+  };
+
+  // For static generation compatibility
+  const resolvedParams = React.use(params);
+  const { doctor: slug } = resolvedParams;
 
   const doctorData = physicians.find(d =>
     d.name
@@ -20,71 +42,281 @@ export default async function DoctorProfile({
     notFound();
   }
 
+  const handleBookConsultation = () => {
+    if (!user) {
+      router.push(`/auth/signin?callbackUrl=${encodeURIComponent(`/physicians/${slug}`)}`);
+      return;
+    }
+    setShowBookingModal(true);
+  };
+
+  const handleSubmitBooking = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      const response = await fetch('/api/consultations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          doctorName: doctorData.name,
+          doctorSpecialty: doctorData.specialty,
+          date: selectedDate,
+          time: selectedTime,
+          reason,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to book consultation');
+      }
+
+      // Show success message and close modal
+      setToast({
+        message: 'Consultation booking submitted successfully! We will contact you soon.',
+        type: 'success'
+      });
+      setShowBookingModal(false);
+      setSelectedDate('');
+      setSelectedTime('');
+      setReason('');
+    } catch (error) {
+      console.error('Error booking consultation:', error);
+      setToast({
+        message: error instanceof Error ? error.message : 'Failed to book consultation. Please try again.',
+        type: 'error'
+      });
+    }
+  };
+
+  const timeSlots = [
+    '9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM',
+    '11:00 AM', '11:30 AM', '2:00 PM', '2:30 PM',
+    '3:00 PM', '3:30 PM', '4:00 PM', '4:30 PM'
+  ];
+
   return (
     <div className="pt-20 min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <div className="md:flex">
-            <div className="md:flex-shrink-0 p-8">
-              <div className="h-48 w-48 rounded-full overflow-hidden mx-auto">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+        <div className="max-w-4xl mx-auto px-4 py-12">
+          <div className="flex flex-col md:flex-row items-center gap-8">
+            <div className="flex-shrink-0">
+              <div className="h-32 w-32 rounded-full overflow-hidden border-4 border-white shadow-lg">
                 <Image
                   src={doctorData.image}
                   alt={doctorData.name}
-                  width={192}
-                  height={192}
+                  width={128}
+                  height={128}
                   className="h-full w-full object-cover"
                 />
               </div>
             </div>
-            <div className="p-8">
-              <h1 className="text-3xl font-bold text-gray-900">
-                {doctorData.name}
-              </h1>
-              <p className="mt-2 text-xl text-indigo-600">
-                {doctorData.specialty}
-              </p>
-              <p className="mt-1 text-gray-500">
-                {doctorData.education}
-              </p>
-              <div className="mt-6">
-                <h2 className="text-lg font-medium text-gray-900">
-                  About Dr. {doctorData.name.split(' ').slice(1).join(' ')}
-                </h2>
-                <p className="mt-2 text-gray-600">
-                  {doctorData.bio}
-                </p>
-              </div>
+            <div className="text-center md:text-left">
+              <h1 className="text-4xl font-bold mb-2">{doctorData.name}</h1>
+              <p className="text-xl text-indigo-100 mb-1">{doctorData.specialty}</p>
+              <p className="text-indigo-200">{doctorData.education}</p>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Main Content */}
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          {/* About Section */}
+          <div className="p-8 border-b">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">About Dr. {doctorData.name.split(' ').slice(1).join(' ')}</h2>
+            <p className="text-gray-600 leading-relaxed">{doctorData.bio}</p>
+          </div>
+
+          {/* Additional Information */}
+          <div className="p-8 border-b">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Professional Information</h3>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <h4 className="font-medium text-gray-700 mb-2">Specialties</h4>
+                <ul className="text-gray-600 space-y-1">
+                  <li>• {doctorData.specialty}</li>
+                  <li>• Hormone Therapy</li>
+                  <li>• Weight Management</li>
+                  <li>• Preventive Care</li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-medium text-gray-700 mb-2">Education & Training</h4>
+                <ul className="text-gray-600 space-y-1">
+                  <li>• {doctorData.education}</li>
+                  <li>• Residency: Internal Medicine</li>
+                  <li>• Fellowship: Endocrinology</li>
+                  <li>• Board Certified: Internal Medicine</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Consultation Info */}
+          <div className="p-8 border-b">
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">Consultation Information</h3>
+            <div className="grid md:grid-cols-3 gap-6 text-center">
+              <div className="bg-indigo-50 rounded-lg p-4">
+                <p className="text-3xl font-bold text-indigo-600 mb-2">$150</p>
+                <p className="text-gray-600">Initial Consultation</p>
+              </div>
+              <div className="bg-green-50 rounded-lg p-4">
+                <p className="text-3xl font-bold text-green-600 mb-2">30 min</p>
+                <p className="text-gray-600">Consultation Duration</p>
+              </div>
+              <div className="bg-purple-50 rounded-lg p-4">
+                <p className="text-3xl font-bold text-purple-600 mb-2">24-48 hrs</p>
+                <p className="text-gray-600">Response Time</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Booking Section */}
+          <div className="p-8">
+            <div className="text-center">
+              <h3 className="text-2xl font-semibold text-gray-900 mb-4">Ready to Consult?</h3>
+              <p className="text-gray-600 mb-6">Book a consultation with Dr. {doctorData.name.split(' ').slice(1).join(' ')} and take the first step towards better health.</p>
+              <button
+                onClick={handleBookConsultation}
+                className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-full text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+              >
+                Book Consultation
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Related Doctors */}
+        <div className="mt-12">
+          <h3 className="text-2xl font-bold text-gray-900 mb-6">Other Physicians</h3>
+          <div className="grid md:grid-cols-3 gap-6">
+            {physicians
+              .filter(d => d.name !== doctorData.name)
+              .slice(0, 3)
+              .map(doctor => (
+                <Link
+                  key={doctor.name}
+                  href={`/physicians/${doctor.name.toLowerCase().replace(/\s+/g, '-').replace(/\./g, '')}`}
+                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200"
+                >
+                  <div className="h-32 w-32 rounded-full overflow-hidden mx-auto mt-4">
+                    <Image
+                      src={doctor.image}
+                      alt={doctor.name}
+                      width={128}
+                      height={128}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="p-4 text-center">
+                    <h4 className="font-semibold text-gray-900">{doctor.name}</h4>
+                    <p className="text-sm text-indigo-600">{doctor.specialty}</p>
+                  </div>
+                </Link>
+              ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Booking Modal */}
+      {showBookingModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">Book Consultation</h3>
+            <p className="text-gray-600 mb-6">Consultation with {doctorData.name}</p>
+            
+            <form onSubmit={handleSubmitBooking} className="space-y-4">
+              <div className="bg-indigo-50 border border-indigo-200 rounded-md p-4">
+                <div className="flex items-center space-x-3">
+                  <div className="flex-shrink-0 h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
+                    <span className="text-lg font-bold text-indigo-600">
+                      {(() => {
+                        const nameParts = doctorData.name.split(' ');
+                        const firstName = nameParts[nameParts.length - 2]; // Second to last (first name)
+                        const lastName = nameParts[nameParts.length - 1]; // Last name
+                        return `${firstName[0]}${lastName[0]}`;
+                      })()}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-indigo-900">{doctorData.name}</p>
+                    <p className="text-sm text-indigo-700">{doctorData.specialty}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Date</label>
+                <input
+                  type="date"
+                  required
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Time</label>
+                <select
+                  required
+                  value={selectedTime}
+                  onChange={(e) => setSelectedTime(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="">Select a time</option>
+                  {timeSlots.map(time => (
+                    <option key={time} value={time}>{time}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Reason for Visit</label>
+                <textarea
+                  required
+                  rows={3}
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  placeholder="Please describe your symptoms or reason for consultation..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="submit"
+                  className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  Submit Booking
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowBookingModal(false)}
+                  className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={handleCloseToast}
+        />
+      )}
     </div>
   );
 }
 
-export async function generateStaticParams() {
-  return physicians.map(doctor => ({
-    doctor: doctor.name.toLowerCase().replace(/\s+/g, '-').replace(/\./g, ''),
-  }));
-}
-
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ doctor: string }>;
-}) {
-  const { doctor: slug } = await params;
-
-  const doctor = physicians.find(d =>
-    d.name.toLowerCase().replace(/\s+/g, '-').replace(/\./g, '') === slug
-  );
-
-  if (!doctor) {
-    return { title: 'Doctor Not Found' };
-  }
-
-  return {
-    title: `${doctor.name} | ${doctor.specialty}`,
-    description: doctor.bio,
-  };
-}

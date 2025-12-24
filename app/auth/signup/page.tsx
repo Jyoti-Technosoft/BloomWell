@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { ArrowRightIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
@@ -51,22 +51,57 @@ const SignUp = () => {
     register,
     handleSubmit,
     watch,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     getValues,
     trigger
   } = useForm<FormData>();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState({ strength: 0, color: 'bg-gray-200' });
+  const [error, setError] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  const onSubmit: SubmitHandler<FormData> = async (data) => {
+  const onSubmit = async (data: FormData) => {
     try {
-      // Handle form submission
-      console.log(data);
-      // Redirect to success page or dashboard
-      router.push("/dashboard");
-    } catch (error) {
-      console.error("Registration failed:", error);
+      setError(null);
+      
+      // Remove confirmPassword from the data before sending to the server
+      const { confirmPassword, ...userData } = data;
+      
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Sign up failed');
+      }
+      // After successful signup, sign the user in
+      const signInResponse = await fetch('/api/auth/signin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+        }),
+        credentials: 'include',
+      });
+      if (!signInResponse.ok) {
+        const errorData = await signInResponse.json();
+        throw new Error(errorData.error || 'Sign up failed');
+      }
+      // Redirect to dashboard or callback URL
+      setIsSuccess(true);
+      setTimeout(() => {
+        router.push(`/auth/signin?registered=true`);
+      }, 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Sign up failed');
     }
   };
 
@@ -1141,6 +1176,20 @@ const SignUp = () => {
               )}
             </div>
           </form>
+          {isSuccess && (
+            <div className="mb-6 bg-green-50 border-l-4 border-green-400 p-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-green-700">Registration successful! Redirecting to sign in...</p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

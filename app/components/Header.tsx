@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDownIcon, UserIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { getDoctorSlug } from '../lib/doctor-utils';
 import { physicians } from '../data/physicians';
+import { useUser } from '../context/UserContext';
+import LogoutButton from '../auth/LogoutButton';
 
 interface NavItem {
   name: string;
@@ -47,9 +49,14 @@ const navItems: NavItem[] = [
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const { user, loading, logout } = useUser();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
   };
 
   const handleDropdownToggle = (itemName: string) => {
@@ -159,10 +166,22 @@ export default function Header() {
               ))}
             </div>
 
-            <div className="flex items-center space-x-4">
+            <div className="hidden md:flex items-center space-x-4">
+            {user ? (
+              <div className="flex items-center space-x-4">
+                <div className="flex-shrink-0 h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                  <UserIcon className="h-5 w-5 text-indigo-600" />
+                </div>
+                <span className="text-sm font-medium text-gray-700">
+                  Welcome, {user.fullName}
+                </span>
+                <LogoutButton />
+              </div>
+            ) : (
+              <>
               <Link
                 href="/auth/signin"
-                className="text-gray-700 hover:text-gray-900 text-sm font-medium hidden md:block"
+                className="text-gray-700 hover:text-gray-900 text-sm font-medium"
               >
                 Log in
               </Link>
@@ -172,6 +191,8 @@ export default function Header() {
               >
                 Get Started
               </Link>
+              </>
+            )}
             </div>
 
             <div className="md:hidden flex items-center">
@@ -200,8 +221,30 @@ export default function Header() {
               className="md:hidden"
             >
               <div className="pt-2 pb-3 space-y-1 bg-white">
+                {/* User section for mobile */}
+                {user && (
+                  <div className="border-b border-gray-200 pb-3 mb-3">
+                    <div className="px-4 py-3">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                          <UserIcon className="h-6 w-6 text-indigo-600" />
+                        </div>
+                        <div>
+                          <p className="text-base font-medium text-gray-900">
+                            Welcome, {user.fullName}
+                          </p>
+                          <p className="text-sm text-gray-500">{user.email}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <LogoutButton />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {navItems.map((item) => (
-                  <div key={item.name} className="border-b border-gray-100">
+                  <div key={item.name}>
                     {item.dropdown ? (
                       <div>
                         <button
@@ -228,6 +271,7 @@ export default function Header() {
                                 <Link
                                   key={subItem.name}
                                   href={subItem.href}
+                                  onClick={closeMobileMenu}
                                   className="block px-4 py-3 text-base text-gray-600 hover:bg-gray-100"
                                 >
                                   {item.name === 'Physicians' ? (
@@ -262,6 +306,7 @@ export default function Header() {
                     ) : (
                       <Link
                         href={item.href}
+                        onClick={closeMobileMenu}
                         className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50"
                       >
                         {item.name}
@@ -269,6 +314,26 @@ export default function Header() {
                     )}
                   </div>
                 ))}
+
+                {/* Auth links for mobile when not logged in */}
+                {!user && (
+                  <div className="border-t border-gray-200 pt-3 mt-3">
+                    <Link
+                      href="/auth/signin"
+                      onClick={closeMobileMenu}
+                      className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50"
+                    >
+                      Log in
+                    </Link>
+                    <Link
+                      href="/auth/signup"
+                      onClick={closeMobileMenu}
+                      className="block mx-4 mt-3 text-center bg-indigo-600 text-white px-4 py-2 rounded-md text-base font-medium hover:bg-indigo-700 transition-colors"
+                    >
+                      Get Started
+                    </Link>
+                  </div>
+                )}
               </div>
             </motion.div>
           )}
