@@ -5,39 +5,53 @@ export default function AboutPage() {
   return (
     <div className="bg-white">
       {/* Hero Section */}
-      <div className="relative bg-indigo-700">
+      <div className="relative">
         <div className="absolute inset-0">
           <img
-            className="w-full h-full object-cover"
-            src="/images/medical-team.jpg"
+            className="w-full h-full object-cover transform scale-105"
+            src="/medical-team.jpg"
             alt="Medical Team"
           />
-          <div className="absolute inset-0 bg-indigo-800 mix-blend-multiply" />
+            {/* <div className="absolute inset-0 bg-gradient-to-r from-blue-900/40 via-indigo-900/30 to-purple-900/40" />
+            <div className="absolute inset-0 bg-black/10" /> */}
         </div>
         <div className="relative max-w-7xl mx-auto py-24 px-4 sm:py-32 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
-            About Our Clinic
-          </h1>
-          <p className="mt-6 text-xl text-indigo-100 max-w-3xl">
-            Personalized healthcare solutions for a better quality of life.
-          </p>
+          {/* <div className="backdrop-blur-md bg-white/20 rounded-2xl p-8 md:p-12 max-w-4xl border border-white/30 shadow-2xl"> */}
+            <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl drop-shadow-xl">
+              About Our Clinic
+            </h1>
+            <p className="mt-6 text-xl text-white max-w-3xl drop-shadow-lg">
+              Personalized healthcare solutions for a better quality of life.
+            </p>
+          {/* </div> */}
         </div>
       </div>
 
       {/* Our Story */}
       <div className="py-16 bg-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="lg:grid lg:grid-cols-2 lg:gap-8 items-center">
+          <div className="lg:grid lg:grid-cols-2 lg:gap-8 items-start">
             <div>
               <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
                 Our Story
               </h2>
-              <p className="mt-4 text-lg text-gray-500">
-                Founded in 2023, our clinic has been dedicated to providing
-                cutting-edge medical treatments with a personalized touch. Our
-                team of experienced healthcare professionals is committed to
-                helping you achieve your health and wellness goals.
-              </p>
+              <div className="mt-4 text-lg leading-relaxed text-gray-600 space-y-6">
+                <p>
+                  Founded in 2023, our clinic was created with a single mission: to make modern,
+                  evidence-based healthcare more accessible, personalized, and human. We believe
+                  that every individual deserves care that goes beyond one-size-fits-all solutions.
+                </p>
+                <p>
+                  Our team of board-certified physicians and healthcare professionals brings together
+                  years of clinical expertise and a deep understanding of whole-body wellness. By
+                  combining advanced medical treatments with personalized care plans, we help you
+                  move confidently toward your health and wellness goals.
+                </p>
+                <p>
+                  From your first consultation to ongoing care, we’re committed to supporting you
+                  with compassion, transparency, and medical excellence—every step of the way.
+                </p>
+              </div>
               <div className="mt-8">
                 <Link
                   href="/treatments"
