@@ -10,6 +10,9 @@ type Database = {
         email: string;
         password: string;
         fullName: string;
+        gender?: string;
+        phoneNumber?: string;
+        dateOfBirth?: string;
         createdAt: string;
     }>;
     contacts: Array<{
@@ -45,11 +48,12 @@ function readDB(): Database {
         const parsedData = JSON.parse(data);
         
         // Merge with defaultDB to ensure all required properties exist
-        return {
+        const loadedDb = {
             users: parsedData.users || [],
             contacts: parsedData.contacts || [],
             consultations: parsedData.consultations || []
         };
+        return loadedDb;
     } catch (error) {
         console.error('Error reading database:', error);
         return defaultDB;
@@ -77,9 +81,31 @@ export const db = {
             writeDB(db);
             return newUser;
         },
+        async updateByEmail(email: string, updates: Partial<Omit<Database['users'][0], 'id' | 'createdAt' | 'email'>>) {
+            const db = readDB();
+            const index = db.users.findIndex(user => user.email.toLowerCase().trim() === email.toLowerCase().trim());
+            if (index === -1) return null;
+
+            const updatedUser = {
+                ...db.users[index],
+                ...updates,
+            };
+
+            db.users[index] = updatedUser;
+            writeDB(db);
+            return updatedUser;
+        },
         async findByEmail(email: string) {
             const db = readDB();
-            return db.users.find(user => user.email === email) || null;
+            const normalizedEmail = email.toLowerCase().trim();
+            const user = db.users.find(user => 
+                user.email.toLowerCase().trim() === normalizedEmail
+            );
+            return user || null;
+        },
+        async findAllEmails() {
+            const db = readDB();
+            return db.users.map(user => user.email);
         },
     },
     contacts: {

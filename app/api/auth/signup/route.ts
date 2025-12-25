@@ -5,7 +5,7 @@ import { postgresDb } from '../../../lib/postgres-db';
 
 export async function POST(request: Request) {
   try {
-    const { email, password, fullName } = await request.json();
+    const { email, password, fullName, dateOfBirth, gender, phoneNumber } = await request.json();
     
     // Validate input
     if (!email || !password || !fullName) {
@@ -31,7 +31,10 @@ export async function POST(request: Request) {
     const user = await postgresDb.users.create({
       email,
       password_hash: passwordHash,
-      full_name: fullName
+      full_name: fullName,
+      date_of_birth: dateOfBirth,
+      phone_number: phoneNumber,
+      gender: gender
     });
 
     // Return user data without password

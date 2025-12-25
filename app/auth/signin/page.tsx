@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { signIn } from 'next-auth/react';
 
 type FormData = {
   email: string;
@@ -26,24 +27,22 @@ export default function SignIn() {
   const onSubmit = async (data: FormData) => {
     try {
       setError(null);
-      const response = await fetch('/api/auth/signin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-        credentials: 'include',
+      const result = await signIn('credentials', {
+        email: data.email,
+        password: data.password,
+        redirect: false,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Sign in failed');
+      if (result?.error) {
+        throw new Error(result.error === 'CredentialsSignin' 
+          ? 'Invalid email or password' 
+          : 'Sign in failed');
       }
 
-      // Redirect to dashboard or callback URL after successful signin
-      // router.push(callbackUrl);
-      // router.refresh();
-      window.location.href = callbackUrl;
+      if (result?.ok) {
+        // Redirect to dashboard or callback URL after successful signin
+        window.location.href = callbackUrl;
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign in failed');
     }

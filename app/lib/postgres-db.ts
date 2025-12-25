@@ -9,6 +9,9 @@ export interface User {
   password_hash: string;
   full_name: string;
   created_at: string;
+  date_of_birth: string;
+  gender: string;
+  phone_number: string;
 }
 
 export interface Contact {
@@ -48,8 +51,8 @@ export const postgresDb = {
     async create(user: Omit<User, 'id' | 'created_at'>): Promise<User> {
       const id = Date.now().toString();
       const result = await queryOne<User>(
-        'INSERT INTO users (id, email, password_hash, full_name, created_at) VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP) RETURNING *',
-        [id, user.email, user.password_hash, user.full_name]
+        'INSERT INTO users (id, email, password_hash, full_name, gender, date_of_birth, phone_number, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP) RETURNING *',
+        [id, user.email, user.password_hash, user.full_name, user.gender, user.date_of_birth, user.phone_number]
       );
       return result!;
     },

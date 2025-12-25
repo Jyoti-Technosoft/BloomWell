@@ -77,7 +77,7 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
     dietaryRestrictions: []
   });
 
-  const totalSteps = 13;
+  const totalSteps = 14;
   const progress = ((currentStep + 1) / totalSteps) * 100;
 
   const handleInputChange = (field: keyof FormData, value: any) => {
@@ -108,7 +108,7 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
       case 8: return formData.triedWeightLossMethods !== '';
       case 9: return formData.goals.length > 0;
       case 10: return formData.allergies.trim() !== '';
-      case 11: return formData.additionalInfo.trim() !== '';
+      // Case 11:Additional Info (optional)
       case 12: return formData.activityLevel !== '' && formData.sleepHours !== '' && formData.stressLevel !== '';
       case 13: return formData.dietaryRestrictions.length > 0;
       default: return true;
@@ -473,7 +473,7 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
           </motion.div>
         );
 
-      case 8:
+      case 10:
         return (
           <motion.div
             initial={{ opacity: 0, x: 50 }}
@@ -506,7 +506,7 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
           </motion.div>
         );
 
-      case 9:
+      case 11:
         return (
           <motion.div
             initial={{ opacity: 0, x: 50 }}
@@ -539,38 +539,7 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
           </motion.div>
         );
 
-      case 10:
-        return (
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            className="space-y-6"
-          >
-            <div className="text-center">
-              <DocumentTextIcon className="h-12 w-12 text-indigo-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Have you tried any weight loss methods before?</h3>
-              <p className="text-gray-600">This helps us understand your weight loss history</p>
-            </div>
-            <div className="space-y-3">
-              {['Yes', 'No'].map(option => (
-                <label key={option} className="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-                  <input
-                    type="radio"
-                    name="triedWeightLossMethods"
-                    value={option}
-                    checked={formData.triedWeightLossMethods === option}
-                    onChange={(e) => handleInputChange('triedWeightLossMethods', e.target.value)}
-                    className="mr-3"
-                  />
-                  <span className="text-gray-700">{option}</span>
-                </label>
-              ))}
-            </div>
-          </motion.div>
-        );
-
-      case 11:
+      case 12:
         return (
           <motion.div
             initial={{ opacity: 0, x: 50 }}
@@ -640,7 +609,7 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
           </motion.div>
         );
 
-      case 12:
+      case 13:
         return (
           <motion.div
             initial={{ opacity: 0, x: 50 }}
@@ -655,15 +624,12 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
             </div>
             <div className="space-y-3">
               {[
-                'Vegetarian',
-                'Vegan',
-                'Gluten-Free',
-                'Dairy-Free',
-                'Nut Allergy',
-                'Keto',
-                'Paleo',
-                'Halal',
-                'Kosher',
+                'Vegetarian(No meat or fish)',
+                'Vegan(No animal products (meat, dairy, eggs, honey)',
+                'Gluten-Free(Avoids wheat, barley, rye, and gluten-containing foods)',
+                'Dairy-Free(No milk, cheese, yogurt, or other dairy products)',
+                'Nut Allergy(Allergic to peanuts and/or tree nuts)',
+                'Ketogenic Diet(Very low-carbohydrate, high-fat diet)',
                 'None'
               ].map(restriction => (
                 <label key={restriction} className="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">

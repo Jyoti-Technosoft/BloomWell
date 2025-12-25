@@ -70,7 +70,7 @@ async function migrateData() {
       // Migrate users
       for (const user of jsonData.users) {
         await client.query(
-          'INSERT INTO users (id, email, password_hash, full_name, created_at) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (id) DO NOTHING',
+          'INSERT INTO users (id, email, password_hash, full_name, gender, date_of_birth, phone_number, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (id) DO NOTHING',
           [user.id, user.email, user.password, user.fullName, user.createdAt]
         );
       }

@@ -116,7 +116,13 @@ export async function POST(request: NextRequest) {
         allergies: evaluationData.allergies,
         currentMedications: evaluationData.currentMedications || '',
         additionalInfo: evaluationData.additionalInfo || '',
-        lastFourSSN: evaluationData.lastFourSSN // Note: In production, this should be encrypted
+        lastFourSSN: evaluationData.lastFourSSN, // Note: In production, this should be encrypted
+        primaryGoal: evaluationData.primaryGoal,
+        triedWeightLossMethods: evaluationData.triedWeightLossMethods,
+        activityLevel: evaluationData.activityLevel,
+        sleepHours: evaluationData.sleepHours,
+        stressLevel: evaluationData.stressLevel,
+        dietaryRestrictions: evaluationData.dietaryRestrictions
       },
       status: 'pending_review'
     });

@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { db } from '../../../lib/db';
+import { postgresDb } from '../../../lib/postgres-db';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     }
 
     // Find user
-    const user = await db.users.findByEmail(email);
+    const user = await postgresDb.users.findByEmail(email);
     if (!user) {
       return NextResponse.json(
         { error: 'No account found with this email address' },
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     }
 
     // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
     if (!isPasswordValid) {
       return NextResponse.json(
         { error: 'Incorrect password' },
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
     );
 
     // Create response with user data (without password)
-    const { password: _, ...userWithoutPassword } = user;
+    const { password_hash, ...userWithoutPassword } = user;
     const response = NextResponse.json(userWithoutPassword, { status: 200 });
 
     // Set HTTP-only cookie

@@ -15,6 +15,9 @@ interface JsonData {
     fullName: string;
     id: string;
     createdAt: string;
+    dateOfBirth: string;
+    gender: string;
+    phoneNumber: string;
   }>;
   contacts: Array<{
     name: string;
@@ -69,7 +72,10 @@ async function migrateData() {
           const newUser = await postgresDb.users.create({
             email: user.email,
             password_hash: user.password,
-            full_name: user.fullName
+            full_name: user.fullName,
+            date_of_birth: user.dateOfBirth,
+            phone_number: user.phoneNumber,
+            gender: user.gender
           });
           userIdMap[user.id] = newUser.id;
           console.log(`✓ Migrated user: ${user.email} (ID: ${user.id} -> ${newUser.id})`);

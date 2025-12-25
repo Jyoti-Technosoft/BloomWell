@@ -1,5 +1,7 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { postgresDb } from '../../../lib/postgres-db';
+import bcrypt from 'bcryptjs';
 
 declare module 'next-auth' {
   interface Session {
@@ -27,11 +29,34 @@ const handler = NextAuth({
         password: {  label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        // TODO: Add your authentication logic here
-        if (credentials?.email === 'user@example.com' && credentials?.password === 'password') {
-          return { id: '1', name: 'User', email: 'user@example.com' };
+        if (!credentials?.email || !credentials?.password) {
+          return null;
         }
-        return null;
+
+        try {
+          // Find user in PostgreSQL database
+          const user = await postgresDb.users.findByEmail(credentials.email);
+          
+          if (!user) {
+            return null;
+          }
+
+          // Verify password
+          const isPasswordValid = await bcrypt.compare(credentials.password, user.password_hash);
+          if (!isPasswordValid) {
+            return null;
+          }
+
+          // Return user object for NextAuth
+          return { 
+            id: user.id, 
+            name: user.full_name, 
+            email: user.email 
+          };
+        } catch (error) {
+          console.error('Auth error:', error);
+          return null;
+        }
       }
     })
   ],
