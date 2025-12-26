@@ -52,7 +52,7 @@ export default function Home() {
   const { user } = useUser();
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-white">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 md:py-20">
@@ -103,7 +103,7 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="relative"
             >
-              <div className="relative w-full h-96 lg:h-[500px] rounded-3xl overflow-hidden shadow-2xl">
+              <div className="relative w-full h-96 lg:h-125 rounded-3xl overflow-hidden shadow-2xl">
                 <Image
                   src="/hero-image.avif"
                   alt="Happy person after weight loss"
@@ -112,7 +112,7 @@ export default function Home() {
                   className="object-cover"
                   priority
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-primary-500/10 to-primary-700/20" />
+                <div className="absolute inset-0 bg-linear-to-r from-primary-500/10 to-primary-700/20" />
               </div>
             </motion.div>
 
@@ -141,7 +141,7 @@ export default function Home() {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-20 bg-gradient-to-b from-white to-gray-50">
+      <section className="py-20 bg-linear-to-b from-white to-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <motion.h2 
@@ -165,7 +165,7 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
             {/* Connecting line */}
-            <div className="hidden md:block absolute top-16 left-1/4 right-1/4 h-1 bg-gradient-to-r from-indigo-100 via-purple-100 to-pink-100"></div>
+            <div className="hidden md:block absolute top-16 left-1/4 right-1/4 h-1 bg-linear-to-r from-indigo-100 via-purple-100 to-pink-100"></div>
             
             {[
               {
@@ -207,7 +207,7 @@ export default function Home() {
                 transition={{ delay: 0.1 * index }}
                 className="relative group"
               >
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-400 to-purple-600 rounded-2xl opacity-0 group-hover:opacity-100 blur transition duration-300"></div>
+                <div className="absolute -inset-0.5 bg-linear-to-r from-indigo-400 to-purple-600 rounded-2xl opacity-0 group-hover:opacity-100 blur transition duration-300"></div>
                 <div className="relative bg-white p-8 rounded-2xl h-full flex flex-col items-center text-center hover:shadow-xl transition-all duration-300">
                   <div className="w-20 h-20 rounded-full bg-indigo-50 flex items-center justify-center mb-6 group-hover:bg-indigo-100 transition-colors duration-300">
                     <div className="absolute w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xl">
@@ -271,7 +271,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600">
+      <div className="bg-linear-to-r from-indigo-600 to-purple-600">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

@@ -69,7 +69,7 @@ export default function Header() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <Link href="/" className="text-xl font-bold text-gray-900">
                   <img
                     src="/bloomwell-logo.png"
@@ -117,7 +117,7 @@ export default function Header() {
                                       href={subItem.href}
                                       className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 rounded-md group"
                                     >
-                                      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 overflow-hidden mr-3">
+                                      <div className="shrink-0 h-10 w-10 rounded-full bg-gray-200 overflow-hidden mr-3">
                                         {'image' in subItem && subItem.image ? (
                                           <img
                                             src={subItem.image}
@@ -169,7 +169,7 @@ export default function Header() {
             <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <div className="flex items-center space-x-4">
-                <div className="flex-shrink-0 h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                <div className="shrink-0 h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
                   <UserIcon className="h-5 w-5 text-indigo-600" />
                 </div>
                 <span className="text-sm font-medium text-gray-700">
@@ -226,7 +226,7 @@ export default function Header() {
                   <div className="border-b border-gray-200 pb-3 mb-3">
                     <div className="px-4 py-3">
                       <div className="flex items-center space-x-3 mb-3">
-                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                        <div className="shrink-0 h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
                           <UserIcon className="h-6 w-6 text-indigo-600" />
                         </div>
                         <div>
@@ -276,7 +276,7 @@ export default function Header() {
                                 >
                                   {item.name === 'Physicians' ? (
                                     <div className="flex items-center">
-                                      <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 overflow-hidden mr-3">
+                                      <div className="shrink-0 h-10 w-10 rounded-full bg-gray-200 overflow-hidden mr-3">
                                         {subItem.image ? (
                                           <img
                                             src={subItem.image}

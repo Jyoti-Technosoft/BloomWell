@@ -100,10 +100,10 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
   return (
     <div className="pt-20 min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+      <div className="bg-linear-to-r from-indigo-600 to-purple-600 text-white">
         <div className="max-w-4xl mx-auto px-4 py-12">
           <div className="flex flex-col md:flex-row items-center gap-8">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div className="h-32 w-32 rounded-full overflow-hidden border-4 border-white shadow-lg">
                 <Image
                   src={doctorData.image}
@@ -233,7 +233,7 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
             <form onSubmit={handleSubmitBooking} className="space-y-4">
               <div className="bg-indigo-50 border border-indigo-200 rounded-md p-4">
                 <div className="flex items-center space-x-3">
-                  <div className="flex-shrink-0 h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
+                  <div className="shrink-0 h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
                     <span className="text-lg font-bold text-indigo-600">
                       {(() => {
                         const nameParts = doctorData.name.split(' ');

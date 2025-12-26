@@ -81,7 +81,7 @@ export default function BookConsultation() {
   return (
     <div className="pt-20 min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+      <div className="bg-linear-to-r from-indigo-600 to-purple-600 text-white">
         <div className="max-w-4xl mx-auto px-4 py-12">
           <Link 
             href="/physicians" 
@@ -209,7 +209,7 @@ export default function BookConsultation() {
                       onClick={() => setSelectedPhysician(physician.name)}
                     >
                       <div className="flex items-start space-x-4">
-                        <div className="flex-shrink-0">
+                        <div className="shrink-0">
                           <div className="h-12 w-12 rounded-full bg-gray-200 overflow-hidden">
                             <img
                               src={physician.image}

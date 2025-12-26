@@ -35,7 +35,7 @@ export default function Navigation() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex h-16 justify-between">
               <div className="flex">
-                <div className="flex flex-shrink-0 items-center">
+                <div className="flex shrink-0 items-center">
                   <Link href="/" className="text-xl font-bold text-indigo-600">
                     WellnessJourney
                   </Link>
@@ -186,7 +186,7 @@ export default function Navigation() {
             {session && (
               <div className="border-t border-gray-200 pt-4 pb-3">
                 <div className="flex items-center px-4">
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-medium">
                       {session.user?.name?.[0] || 'U'}
                     </div>

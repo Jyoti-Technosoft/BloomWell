@@ -28,7 +28,7 @@ export default function RootLayout({
         <Providers>
           <UserProvider>
             <Header />
-            <main className="min-h-[calc(100vh-80px)] pt-[120px] md:pt-[100px] px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <main className="min-h-[calc(100vh-80px)] pt-30 md:pt-25 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
               {children}
             </main>
           </UserProvider>

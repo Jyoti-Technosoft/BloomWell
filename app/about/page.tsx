@@ -12,18 +12,14 @@ export default function AboutPage() {
             src="/medical-team.jpg"
             alt="Medical Team"
           />
-            {/* <div className="absolute inset-0 bg-gradient-to-r from-blue-900/40 via-indigo-900/30 to-purple-900/40" />
-            <div className="absolute inset-0 bg-black/10" /> */}
         </div>
         <div className="relative max-w-7xl mx-auto py-24 px-4 sm:py-32 sm:px-6 lg:px-8">
-          {/* <div className="backdrop-blur-md bg-white/20 rounded-2xl p-8 md:p-12 max-w-4xl border border-white/30 shadow-2xl"> */}
             <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl drop-shadow-xl">
               About Our Clinic
             </h1>
             <p className="mt-6 text-xl text-white max-w-3xl drop-shadow-lg">
               Personalized healthcare solutions for a better quality of life.
             </p>
-          {/* </div> */}
         </div>
       </div>
 
@@ -179,7 +175,7 @@ export default function AboutPage() {
                 <div className="relative px-4 -mt-16">
                   <div className="bg-white p-6 rounded-lg shadow-lg">
                     <div className="flex items-center">
-                      <div className="flex-shrink-0"></div>
+                      <div className="shrink-0"></div>
                       <div className="ml-4">
                         <h3 className="text-lg font-medium text-gray-900">
                           {person.name}

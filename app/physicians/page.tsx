@@ -25,7 +25,7 @@ export default function PhysiciansPage() {
               >
                 <div className="p-6">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 h-20 w-20 rounded-full bg-gray-200 overflow-hidden">
+                    <div className="shrink-0 h-20 w-20 rounded-full bg-gray-200 overflow-hidden">
                       {doctor.image ? (
                         <Image
                           src={doctor.image}

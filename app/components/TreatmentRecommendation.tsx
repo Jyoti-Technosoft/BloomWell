@@ -133,7 +133,7 @@ const TreatmentRecommendation: React.FC<TreatmentRecommendationProps> = ({
           </div>
 
           {/* Recommended Treatment */}
-          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-6 mb-8">
+          <div className="bg-linear-to-r from-indigo-50 to-purple-50 rounded-xl p-6 mb-8">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-semibold text-gray-900">Recommended Treatment</h3>
               <div className="flex items-center">
@@ -145,7 +145,7 @@ const TreatmentRecommendation: React.FC<TreatmentRecommendationProps> = ({
             </div>
             
             <div className="flex items-start space-x-4">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <div className="w-20 h-20 bg-white rounded-lg shadow-md flex items-center justify-center">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-indigo-600">Rx</div>
@@ -164,7 +164,7 @@ const TreatmentRecommendation: React.FC<TreatmentRecommendationProps> = ({
                   <ul className="space-y-1">
                     {recommendationReasons.map((reason, index) => (
                       <li key={index} className="flex items-center text-sm text-gray-700">
-                        <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                        <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2 shrink-0" />
                         {reason}
                       </li>
                     ))}
@@ -251,21 +251,21 @@ const TreatmentRecommendation: React.FC<TreatmentRecommendationProps> = ({
             <h4 className="font-semibold text-gray-900 mb-4">What's Included in Your Treatment</h4>
             <div className="grid md:grid-cols-3 gap-4">
               <div className="flex items-start">
-                <TruckIcon className="h-5 w-5 text-indigo-600 mr-3 mt-0.5 flex-shrink-0" />
+                <TruckIcon className="h-5 w-5 text-indigo-600 mr-3 mt-0.5 shrink-0" />
                 <div>
                   <p className="font-medium text-gray-900">Free Shipping</p>
                   <p className="text-sm text-gray-600">Discreet delivery to your door</p>
                 </div>
               </div>
               <div className="flex items-start">
-                <UserIcon className="h-5 w-5 text-indigo-600 mr-3 mt-0.5 flex-shrink-0" />
+                <UserIcon className="h-5 w-5 text-indigo-600 mr-3 mt-0.5 shrink-0" />
                 <div>
                   <p className="font-medium text-gray-900">Medical Support</p>
                   <p className="text-sm text-gray-600">24/7 access to healthcare team</p>
                 </div>
               </div>
               <div className="flex items-start">
-                <ShieldCheckIcon className="h-5 w-5 text-indigo-600 mr-3 mt-0.5 flex-shrink-0" />
+                <ShieldCheckIcon className="h-5 w-5 text-indigo-600 mr-3 mt-0.5 shrink-0" />
                 <div>
                   <p className="font-medium text-gray-900">FDA Approved</p>
                   <p className="text-sm text-gray-600">Safe and effective treatments</p>
@@ -277,7 +277,7 @@ const TreatmentRecommendation: React.FC<TreatmentRecommendationProps> = ({
           {/* Important Information */}
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-8">
             <div className="flex items-start">
-              <ClockIcon className="h-5 w-5 text-yellow-600 mr-3 mt-0.5 flex-shrink-0" />
+              <ClockIcon className="h-5 w-5 text-yellow-600 mr-3 mt-0.5 shrink-0" />
               <div>
                 <h4 className="font-medium text-yellow-900 mb-1">Next Steps</h4>
                 <p className="text-sm text-yellow-800">
