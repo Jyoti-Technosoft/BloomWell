@@ -128,69 +128,6 @@ export default function AboutPage() {
         </div>
       </div>
 
-      {/* Team Section */}
-      <div className="bg-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-              Meet Our Team
-            </h2>
-            <p className="mt-4 max-w-2xl text-xl text-gray-500 mx-auto">
-              Experienced professionals dedicated to your health.
-            </p>
-          </div>
-
-          <div className="mt-12 grid gap-8 md:grid-cols-3">
-            {[
-              {
-                name: 'Dr. Sarah Johnson',
-                role: 'Medical Director',
-                bio: 'Board-certified physician with over 15 years of experience in hormone therapy and weight management.',
-                image: '/images/dr-sarah.jpg',
-              },
-              {
-                name: 'Dr. Michael Chen',
-                role: 'Endocrinologist',
-                bio: 'Specializes in hormonal imbalances and metabolic health with a focus on personalized treatment plans.',
-                image: '/images/dr-chen.jpg',
-              },
-              {
-                name: 'Natalie Williams, NP',
-                role: 'Nurse Practitioner',
-                bio: 'Dedicated to patient education and providing compassionate care for all our patients.',
-                image: '/images/nurse-natalie.jpg',
-              },
-            ].map((person) => (
-              <div
-                key={person.name}
-                className="pt-6 bg-white rounded-lg shadow-md"
-              >
-                <div className="relative pb-5/6">
-                  <img
-                    className="absolute h-full w-full object-cover shadow-lg rounded-t-lg"
-                    src={person.image}
-                    alt={person.name}
-                  />
-                </div>
-                <div className="relative px-4 -mt-16">
-                  <div className="bg-white p-6 rounded-lg shadow-lg">
-                    <div className="flex items-center">
-                      <div className="shrink-0"></div>
-                      <div className="ml-4">
-                        <h3 className="text-lg font-medium text-gray-900">
-                          {person.name}
-                        </h3>
-                        <p className="text-sm text-indigo-600">{person.role}</p>
-                      </div>
-                    </div>
-                    <p className="mt-4 text-sm text-gray-500">{person.bio}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

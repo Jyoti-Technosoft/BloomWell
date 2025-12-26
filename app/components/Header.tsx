@@ -34,13 +34,7 @@ const navItems: NavItem[] = [
   },
   { 
     name: 'Physicians',
-    href: '/physicians',
-    dropdown: physicians.map(doctor => ({
-      name: doctor.name,
-      href: `/physicians/${getDoctorSlug(doctor.name)}`,
-      specialty: doctor.specialty,
-      image: doctor.image
-    }))
+    href: '/physicians'
   },
   { name: 'About', href: '/about' },
   { name: 'Reviews', href: '/reviews' },

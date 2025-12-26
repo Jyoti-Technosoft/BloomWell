@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { ArrowRightIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 
 type FormData = {
   // Personal Information
@@ -31,13 +32,19 @@ const SignUp = () => {
   const [passwordStrength, setPasswordStrength] = useState({ strength: 0, color: 'bg-gray-200' });
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [phone, setPhone] = useState<string>('');
 
   const onSubmit = async (data: FormData) => {
     try {
       setError(null);
       
+      const submitData = {
+        ...data,
+        phoneNumber: phone || '',
+      };
+      
       // Remove confirmPassword from the data before sending to the server
-      const { confirmPassword, ...userData } = data;
+      const { confirmPassword, ...userData } = submitData;
       
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
@@ -84,14 +91,6 @@ const SignUp = () => {
     if (!/[a-z]/.test(value))
       return "Must contain at least one lowercase letter";
     if (!/[0-9]/.test(value)) return "Must contain at least one number";
-    return true;
-  };
-
-  const validatePhone = (value: string) => {
-    const phoneRegex = /^[0-9]{10}$/;
-    if (!value) return "Phone number is required";
-    if (!phoneRegex.test(value))
-      return "Please enter a valid 10-digit phone number";
     return true;
   };
 
@@ -212,24 +211,20 @@ const SignUp = () => {
                   >
                     Phone Number
                   </label>
-                  <div className="mt-1 relative rounded-md shadow-sm">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <span className="text-gray-500 sm:text-sm">+1</span>
-                    </div>
-                    <input
-                      type="tel"
-                      id="phoneNumber"
-                      {...register("phoneNumber", {
-                        required: "Phone number is required",
-                        validate: validatePhone,
-                      })}
-                      className={`${inputClassName} pl-10`}
-                      placeholder="(555) 123-4567"
+                  <div className="mt-1">
+                    <PhoneInput
+                      international
+                      countryCallingCodeEditable={false}
+                      defaultCountry="US"
+                      value={phone}
+                      onChange={(value) => setPhone(value || '')}
+                      className="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                      placeholder="Enter phone number"
                     />
                   </div>
-                  {errors.phoneNumber && (
+                  {!phone && (
                     <p className="mt-1 text-sm text-red-600">
-                      {errors.phoneNumber.message}
+                      Phone number is required
                     </p>
                   )}
                 </div>
