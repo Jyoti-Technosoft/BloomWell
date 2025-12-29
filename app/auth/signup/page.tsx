@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
+import { validatePhoneNumber, getCountryPhoneConfig, getSupportedCountries } from '../../lib/phoneValidation';
 
 type FormData = {
   // Personal Information
@@ -33,10 +34,19 @@ const SignUp = () => {
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [phone, setPhone] = useState<string>('');
+  const [selectedCountry, setSelectedCountry] = useState<string>('US');
+  const [phoneError, setPhoneError] = useState<string>('');
 
   const onSubmit = async (data: FormData) => {
     try {
       setError(null);
+      
+      // Validate phone number based on selected country
+      const phoneValidation = validatePhoneNumber(phone, selectedCountry);
+      if (!phoneValidation.isValid) {
+        setPhoneError(phoneValidation.error || 'Invalid phone number');
+        return;
+      }
       
       const submitData = {
         ...data,
@@ -212,21 +222,48 @@ const SignUp = () => {
                     Phone Number
                   </label>
                   <div className="mt-1">
-                    <PhoneInput
-                      international
-                      countryCallingCodeEditable={false}
-                      defaultCountry="US"
-                      value={phone}
-                      onChange={(value) => setPhone(value || '')}
-                      className="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                      placeholder="Enter phone number"
-                    />
+                    <div className="flex gap-2 mb-2">
+                      <select
+                        value={selectedCountry}
+                        onChange={(e) => {
+                          const country = e.target.value as string;
+                          setSelectedCountry(country);
+                          setPhoneError(''); // Clear error when country changes
+                        }}
+                        className="block rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                      >
+                        {getSupportedCountries().map((country) => (
+                          <option key={country.code} value={country.code}>
+                            {country.name} ({country.code})
+                          </option>
+                        ))}
+                      </select>
+                      <div className="flex-1">
+                        <PhoneInput
+                          international
+                          countryCallingCodeEditable={false}
+                          defaultCountry={selectedCountry as any}
+                          value={phone}
+                          onChange={(value) => {
+                            setPhone(value || '');
+                            setPhoneError(''); // Clear error on input change
+                          }}
+                          className="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                          placeholder={`Enter phone number for ${getCountryPhoneConfig(selectedCountry)?.name || 'your country'}`}
+                        />
+                      </div>
+                    </div>
+                    {phoneError && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {phoneError}
+                      </p>
+                    )}
+                    {!phoneError && selectedCountry && (
+                      <p className="mt-1 text-xs text-gray-500">
+                        Expected format: {getCountryPhoneConfig(selectedCountry)?.format || 'International format (+XX XXX...)'}
+                      </p>
+                    )}
                   </div>
-                  {!phone && (
-                    <p className="mt-1 text-sm text-red-600">
-                      Phone number is required
-                    </p>
-                  )}
                 </div>
                 <div>
                   <label
