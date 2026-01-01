@@ -1,12 +1,6 @@
-// database/migrate-json-data.ts
-// Migrate data from db.json to PostgreSQL
 import fs from 'fs';
 import path from 'path';
-import dotenv from 'dotenv';
 import { postgresDb } from '../app/lib/postgres-db';
-
-// Load environment variables
-dotenv.config({ path: '.env.local' });
 
 interface JsonData {
   users: Array<{

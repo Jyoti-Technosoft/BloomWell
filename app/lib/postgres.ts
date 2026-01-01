@@ -1,30 +1,31 @@
 // lib/postgres.ts
 import { Pool, PoolClient } from 'pg';
-import dotenv from 'dotenv';
 
-// Load environment variables
-dotenv.config({ path: '.env.local' });
+if (!process.env.DATABASE_URL) {
+  throw new Error('❌ DATABASE_URL is not defined in environment variables');
+}
 
-// Debug: Check if environment variables are loaded
-console.log('Environment variables loaded:');
-console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL);
-console.log('DB_USER exists:', !!process.env.DB_USER);
-console.log('DB_PASSWORD exists:', !!process.env.DB_PASSWORD);
-console.log('DB_HOST exists:', !!process.env.DB_HOST);
-console.log('DB_NAME exists:', !!process.env.DB_NAME);
-
-// Connection pool configuration with fallback
+// Connection pool configuration
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  host: process.env.DB_HOST || 'localhost',
+  host: process.env.DB_HOST,
   port: parseInt(process.env.DB_PORT || '5432'),
-  database: process.env.DB_NAME || 'bloomwell_db',
-  user: process.env.DB_USER || 'bloomwell_user',
-  password: process.env.DB_PASSWORD || 'StrongPassword123',
+  database: process.env.DB_NAME,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
   max: 20, // Maximum number of connections in the pool
   idleTimeoutMillis: 30000, // How long a client is allowed to remain idle before being closed
   connectionTimeoutMillis: 2000, // How long to wait when connecting a new client
 });
+
+// Debug: Check if environment variables are loaded
+console.log('Environment variables loaded:');
+console.log('DATABASE_URL:', process.env.DATABASE_URL);
+console.log('DB_PORT:', process.env.DB_PORT);
+console.log('DB_USER:', process.env.DB_USER);
+console.log('DB_PASSWORD:', process.env.DB_PASSWORD);
+console.log('DB_HOST:', process.env.DB_HOST);
+console.log('DB_NAME:', process.env.DB_NAME);
 
 // Handle pool errors
 pool.on('error', (err) => {

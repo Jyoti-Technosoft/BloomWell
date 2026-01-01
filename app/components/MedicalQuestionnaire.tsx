@@ -7,7 +7,6 @@ import {
   ArrowRightIcon, 
   CheckCircleIcon,
   ExclamationTriangleIcon,
-  ShieldCheckIcon,
   UserIcon,
   CalendarIcon,
   ScaleIcon,
@@ -695,7 +694,6 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
           </AnimatePresence>
         </div>
 
-        {/* Navigation */}
         <div className="sticky bottom-0 bg-white border-t border-gray-200 p-6">
           <div className="flex justify-between">
             <button

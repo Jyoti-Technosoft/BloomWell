@@ -1,12 +1,6 @@
-// database/init-db.ts
-// Database initialization script
 import fs from 'fs';
 import path from 'path';
-import dotenv from 'dotenv';
 import { query, queryOne, healthCheck } from '../app/lib/postgres';
-
-// Load environment variables
-dotenv.config({ path: '.env.local' });
 
 async function initializeDatabase() {
   try {

@@ -229,6 +229,7 @@ const SignUp = () => {
                           const country = e.target.value as string;
                           setSelectedCountry(country);
                           setPhoneError(''); // Clear error when country changes
+                          setPhone('');
                         }}
                         className="block rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                       >
@@ -246,7 +247,7 @@ const SignUp = () => {
                           value={phone}
                           onChange={(value) => {
                             setPhone(value || '');
-                            setPhoneError(''); // Clear error on input change
+                            setPhoneError('');
                           }}
                           className="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                           placeholder={`Enter phone number for ${getCountryPhoneConfig(selectedCountry)?.name || 'your country'}`}
