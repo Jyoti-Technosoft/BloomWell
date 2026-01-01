@@ -1,11 +1,9 @@
 'use client';
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDownIcon, UserIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
-import { getDoctorSlug } from '../lib/doctor-utils';
-import { physicians } from '../data/physicians';
-import { useUser } from '../context/UserContext';
 import LogoutButton from '../auth/LogoutButton';
 
 interface NavItem {
@@ -43,7 +41,7 @@ const navItems: NavItem[] = [
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-  const { user, loading, logout } = useUser();
+  const { data: session, status } = useSession();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -161,13 +159,13 @@ export default function Header() {
             </div>
 
             <div className="hidden md:flex items-center space-x-4">
-            {user ? (
+            {status === 'authenticated' ? (
               <div className="flex items-center space-x-4">
                 <div className="shrink-0 h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
                   <UserIcon className="h-5 w-5 text-indigo-600" />
                 </div>
                 <span className="text-sm font-medium text-gray-700">
-                  Welcome, {user.fullName}
+                  Welcome, {session.user.name}
                 </span>
                 <LogoutButton />
               </div>
@@ -216,7 +214,7 @@ export default function Header() {
             >
               <div className="pt-2 pb-3 space-y-1 bg-white">
                 {/* User section for mobile */}
-                {user && (
+                {status === 'authenticated' && (
                   <div className="border-b border-gray-200 pb-3 mb-3">
                     <div className="px-4 py-3">
                       <div className="flex items-center space-x-3 mb-3">
@@ -225,9 +223,9 @@ export default function Header() {
                         </div>
                         <div>
                           <p className="text-base font-medium text-gray-900">
-                            Welcome, {user.fullName}
+                            Welcome, {session.user.name}
                           </p>
-                          <p className="text-sm text-gray-500">{user.email}</p>
+                          <p className="text-sm text-gray-500">{session.user.email}</p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-3">
@@ -310,7 +308,7 @@ export default function Header() {
                 ))}
 
                 {/* Auth links for mobile when not logged in */}
-                {!user && (
+                {status === 'authenticated' && (
                   <div className="border-t border-gray-200 pt-3 mt-3">
                     <Link
                       href="/auth/signin"

@@ -1,10 +1,9 @@
 'use client';
-
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import Link from 'next/link';
-import { useEffect, useState, Suspense } from 'react';
 import { signIn } from 'next-auth/react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 type FormData = {
   email: string;
@@ -34,7 +33,6 @@ function SignInContent() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      setError(null);
       const result = await signIn('credentials', {
         email: data.email,
         password: data.password,
@@ -48,6 +46,7 @@ function SignInContent() {
       }
 
       if (result?.ok) {
+        setError(null);
         // Redirect to dashboard or callback URL after successful signin
         window.location.href = callbackUrl;
       }

@@ -12,7 +12,7 @@ export function useAuth(redirectToLogin = false) {
     if (status === 'loading') return;
 
     if (redirectToLogin && status === 'unauthenticated') {
-      router.push(`/auth/signin?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
+      router.replace('/auth/signin');
       return;
     }
 

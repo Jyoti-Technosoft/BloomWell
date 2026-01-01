@@ -39,7 +39,7 @@ export default function BookConsultation() {
         },
         body: JSON.stringify({
           doctorName: selectedPhysician,
-          doctorSpecialty: selectedDoctor?.specialty,
+          doctorSpecialty: selectedDoctor?.specialties?.join(', ') || '',
           date: selectedDate,
           time: selectedTime,
           reason,
@@ -122,7 +122,7 @@ export default function BookConsultation() {
                       <option value="">Choose a physician</option>
                       {physicians.map((physician: Physician) => (
                         <option key={physician.name} value={physician.name}>
-                          {physician.name} - {physician.specialty}
+                          {physician.name} - {physician.specialties.join(', ')}
                         </option>
                       ))}
                     </select>
@@ -220,7 +220,7 @@ export default function BookConsultation() {
                         </div>
                         <div className="flex-1">
                           <h4 className="font-semibold text-gray-900">{physician.name}</h4>
-                          <p className="text-sm text-indigo-600 font-medium">{physician.specialty}</p>
+                          <p className="text-sm text-indigo-600 font-medium">{physician.specialties.join(', ')}</p>
                           <p className="text-sm text-gray-600 mt-1">{physician.education}</p>
                           <p className="text-sm text-gray-500 mt-2 line-clamp-2">{physician.bio}</p>
                         </div>

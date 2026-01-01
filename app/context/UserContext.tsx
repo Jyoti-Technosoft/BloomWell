@@ -1,9 +1,7 @@
-// app/context/UserContext.tsx
 'use client';
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 
 type User = {
   id: string;
@@ -40,12 +38,20 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      await signOut({ redirect: false });
+      await fetch('/api/auth/signout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      // Clear client-side storage
+      localStorage.clear();
+      sessionStorage.clear();
       setUser(null);
-      // Force a full page reload to clear all state
-      window.location.href = '/';
+      // Redirect to signin page
+      window.location.href = '/auth/signin';
     } catch (error) {
-      console.error('Logout failed', error);
+      console.error('Logout failed:', error);
+      setUser(null);
+      window.location.href = '/auth/signin';
     }
   };
 

@@ -1,14 +1,11 @@
 'use client';
-
-import React from 'react';
-import { notFound } from 'next/navigation';
+import React, { useState } from 'react';
+import { notFound, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { useState } from 'react';
-import { physicians } from '../../data/physicians';
-import { useUser } from '../../context/UserContext';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Toast from '../../components/Toast';
+import { useUser } from '../../context/UserContext';
+import { physicians } from '../../data/physicians';
 
 interface DoctorProfileProps {
   params: Promise<{ doctor: string }>;
@@ -61,7 +58,7 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
         },
         body: JSON.stringify({
           doctorName: doctorData.name,
-          doctorSpecialty: doctorData.specialty,
+          doctorSpecialty: doctorData.specialties?.join(', ') || '',
           date: selectedDate,
           time: selectedTime,
           reason,
@@ -116,7 +113,7 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
             </div>
             <div className="text-center md:text-left">
               <h1 className="text-4xl font-bold mb-2">{doctorData.name}</h1>
-              <p className="text-xl text-indigo-100 mb-1">{doctorData.specialty}</p>
+              <p className="text-xl text-indigo-100 mb-1">{doctorData.specialties?.join(', ') || ''}</p>
               <p className="text-indigo-200">{doctorData.education}</p>
             </div>
           </div>
@@ -139,7 +136,7 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
               <div>
                 <h4 className="font-medium text-gray-700 mb-2">Specialties</h4>
                 <ul className="text-gray-600 space-y-1">
-                  <li>• {doctorData.specialty}</li>
+                  <li>• {doctorData.specialties?.join(', ') || ''}</li>
                   <li>• Hormone Therapy</li>
                   <li>• Weight Management</li>
                   <li>• Preventive Care</li>
@@ -215,7 +212,7 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
                   </div>
                   <div className="p-4 text-center">
                     <h4 className="font-semibold text-gray-900">{doctor.name}</h4>
-                    <p className="text-sm text-indigo-600">{doctor.specialty}</p>
+                    <p className="text-sm text-indigo-600">{doctor.specialties?.join(', ') || ''}</p>
                   </div>
                 </Link>
               ))}
@@ -228,7 +225,6 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">Book Consultation</h3>
-            <p className="text-gray-600 mb-6">Consultation with {doctorData.name}</p>
             
             <form onSubmit={handleSubmitBooking} className="space-y-4">
               <div className="bg-indigo-50 border border-indigo-200 rounded-md p-4">
@@ -245,7 +241,7 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
                   </div>
                   <div>
                     <p className="font-medium text-indigo-900">{doctorData.name}</p>
-                    <p className="text-sm text-indigo-700">{doctorData.specialty}</p>
+                    <p className="text-sm text-indigo-700">{doctorData.specialties?.join(', ') || ''}</p>
                   </div>
                 </div>
               </div>
