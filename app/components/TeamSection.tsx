@@ -1,14 +1,88 @@
 'use client';
-
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { getPhysicians } from '../data/physicians';
-import Pagination from './Pagination';
 import { UserIcon } from '@heroicons/react/24/outline';
+import Pagination from './Pagination';
+
+interface Physician {
+  id: string;
+  name: string;
+  role: string;
+  bio: string;
+  image: string;
+  education: string;
+  experience: string;
+  specialties: string[];
+}
 
 export default function TeamSection() {
   const searchParams = useSearchParams();
   const page = parseInt(searchParams.get('page') || '1');
-  const teamData = getPhysicians(page, 9);
+  const [teamData, setTeamData] = useState<{ members: Physician[]; currentPage: number; totalPages: number; hasNext: boolean; hasPrev: boolean }>({
+    members: [],
+    currentPage: 1,
+    totalPages: 1,
+    hasNext: false,
+    hasPrev: false
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPhysicians = async () => {
+      try {
+        const response = await fetch('/api/physicians');
+        const data = await response.json();
+        const physicians = data.members || [];
+        
+        // Simple pagination logic (9 items per page)
+        const itemsPerPage = 9;
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        const paginatedMembers = physicians.slice(startIndex, endIndex);
+        
+        setTeamData({
+          members: paginatedMembers,
+          currentPage: page,
+          totalPages: Math.ceil(physicians.length / itemsPerPage),
+          hasNext: endIndex < physicians.length,
+          hasPrev: page > 1
+        });
+      } catch (error) {
+        console.error('Error fetching physicians:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPhysicians();
+  }, [page]);
+
+  if (loading) {
+    return (
+      <div className="bg-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+              Meet Our Team
+            </h2>
+            <p className="mt-4 max-w-2xl text-xl text-gray-500 mx-auto">
+              Loading team members...
+            </p>
+          </div>
+          <div className="mt-12 grid gap-8 md:grid-cols-3">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="animate-pulse">
+                <div className="bg-gray-200 h-48 rounded-lg mb-4"></div>
+                <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded mb-2"></div>
+                <div className="h-16 bg-gray-200 rounded"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white py-16">

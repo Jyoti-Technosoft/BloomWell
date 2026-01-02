@@ -1,6 +1,5 @@
 'use client';
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -15,20 +14,58 @@ import {
 } from '@heroicons/react/24/outline';
 import { useUser } from '../../context/UserContext';
 import Toast from '../../components/Toast';
-import { getMedicineDetails, getTreatmentCategory } from '../../data/medicine-details';
 import MedicalQuestionnaire from '../../components/MedicalQuestionnaire';
 import IdentityVerification from '../../components/IdentityVerification';
 import TreatmentRecommendation from '../../components/TreatmentRecommendation';
+
+interface Medicine {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  image: string;
+  price: number;
+  dosage: string;
+  sideEffects: string[];
+  benefits: string[];
+  inStock: boolean;
+  overview?: string;
+  howItWorks?: string;
+  shipping?: string;
+  support?: string;
+  usageInstructions?: string[];
+  precautions?: string[];
+  features?: string[];
+}
 
 export default function MedicineDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useUser();
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [medicine, setMedicine] = useState<Medicine | null>(null);
+  const [loading, setLoading] = useState(true);
   
   const medicineId = params.medicineId as string;
-  const medicine = getMedicineDetails(medicineId);
-  const treatmentCategory = getTreatmentCategory(medicineId);
+
+  useEffect(() => {
+    const fetchMedicine = async () => {
+      try {
+        // Try to fetch from API first
+        const response = await fetch('/api/medicines');
+        const medicines = await response.json();
+        
+        const foundMedicine = medicines.find((m: Medicine) => m.id === medicineId);
+        setMedicine(foundMedicine || null);
+      } catch (error) {
+        console.error('Error fetching medicine:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMedicine();
+  }, [medicineId]);
 
   // Questionnaire flow state
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
@@ -39,6 +76,41 @@ export default function MedicineDetailsPage() {
   const handleCloseToast = () => {
     setToast(null);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-4xl mx-auto px-4 py-12">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded mb-4"></div>
+            <div className="h-64 bg-gray-200 rounded mb-8"></div>
+            <div className="h-8 bg-gray-200 rounded mb-4"></div>
+            <div className="h-32 bg-gray-200 rounded mb-8"></div>
+            <div className="h-8 bg-gray-200 rounded mb-4"></div>
+            <div className="h-48 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!medicine) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-4xl mx-auto px-4 py-12">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">Medicine Not Found</h1>
+            <p className="text-gray-600 mb-6">The medicine you're looking for doesn't exist.</p>
+            <Link href="/treatments" className="text-indigo-600 hover:text-indigo-500">
+              ← Back to Treatments
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const treatmentCategory = medicine.category;
 
   const handleClaimEvaluation = () => {
     if (!user) {
@@ -210,7 +282,7 @@ export default function MedicineDetailsPage() {
             >
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Benefits</h2>
               <div className="grid md:grid-cols-2 gap-4">
-                {medicine.benefits.map((benefit, index) => (
+                {medicine.benefits.map((benefit: string, index: number) => (
                   <div key={index} className="flex items-start">
                     <CheckCircleIcon className="h-6 w-6 text-green-500 mr-3 mt-0.5 shrink-0" />
                     <span className="text-gray-700">{benefit}</span>
@@ -220,7 +292,8 @@ export default function MedicineDetailsPage() {
             </motion.div>
 
             {/* Usage Instructions */}
-            <motion.div
+            {medicine.usageInstructions && medicine.usageInstructions.length > 0 && (
+              <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
@@ -228,7 +301,7 @@ export default function MedicineDetailsPage() {
             >
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Usage Instructions</h2>
               <ul className="space-y-3">
-                {medicine.usageInstructions.map((instruction, index) => (
+                {medicine.usageInstructions?.map((instruction: string, index: number) => (
                   <li key={index} className="flex items-start">
                     <span className="shrink-0 w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">
                       {index + 1}
@@ -238,9 +311,11 @@ export default function MedicineDetailsPage() {
                 ))}
               </ul>
             </motion.div>
+            )}
 
             {/* Side Effects */}
-            <motion.div
+            {medicine.precautions && medicine.precautions.length > 0 && (
+              <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
@@ -253,7 +328,7 @@ export default function MedicineDetailsPage() {
                 </p>
               </div>
               <ul className="space-y-2">
-                {medicine.sideEffects.map((sideEffect, index) => (
+                {medicine.sideEffects.map((sideEffect: string, index: number) => (
                   <li key={index} className="flex items-start">
                     <span className="text-yellow-600 mr-2">•</span>
                     <span className="text-gray-700">{sideEffect}</span>
@@ -261,9 +336,11 @@ export default function MedicineDetailsPage() {
                 ))}
               </ul>
             </motion.div>
+            )}
 
             {/* Precautions */}
-            <motion.div
+            {medicine.precautions && medicine.precautions.length > 0 && (
+              <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
@@ -276,7 +353,7 @@ export default function MedicineDetailsPage() {
                 </p>
               </div>
               <ul className="space-y-2">
-                {medicine.precautions.map((precaution, index) => (
+                {medicine.precautions?.map((precaution: string, index: number) => (
                   <li key={index} className="flex items-start">
                     <ShieldCheckIcon className="h-5 w-5 text-red-500 mr-2 mt-0.5 shrink-0" />
                     <span className="text-gray-700">{precaution}</span>
@@ -284,19 +361,21 @@ export default function MedicineDetailsPage() {
                 ))}
               </ul>
             </motion.div>
+            )}
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Features */}
-            <motion.div
+            {medicine.features && medicine.features.length > 0 && (
+              <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               className="bg-white rounded-lg shadow-lg p-6"
             >
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Features</h3>
               <ul className="space-y-3">
-                {medicine.features.map((feature, index) => (
+                {medicine.features?.map((feature: string, index: number) => (
                   <li key={index} className="flex items-start">
                     <CheckCircleIcon className="h-5 w-5 text-green-500 mr-2 mt-0.5 shrink-0" />
                     <span className="text-gray-700 text-sm">{feature}</span>
@@ -304,6 +383,7 @@ export default function MedicineDetailsPage() {
                 ))}
               </ul>
             </motion.div>
+            )}
 
             {/* Support */}
             <motion.div

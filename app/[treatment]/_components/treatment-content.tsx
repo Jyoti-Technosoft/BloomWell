@@ -1,11 +1,36 @@
 "use client";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 
-import { treatmentsData, medicineOptions, MedicineOption } from "../../data/treatments";
+interface Medicine {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  image: string;
+  price: number;
+  dosage: string;
+  sideEffects: string[];
+  benefits: string[];
+  inStock: boolean;
+}
 
-function MedicineCard({ medicine }: { medicine: MedicineOption }) {
+interface Treatment {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  image: string;
+  medicines: string[];
+  overview?: string;
+  howItWorks?: string;
+  benefits?: string[];
+  faqs?: Array<{ question: string; answer: string }>;
+}
+
+function MedicineCard({ medicine }: { medicine: Medicine }) {
   const router = useRouter();
 
   const handleViewDetails = () => {
@@ -66,7 +91,7 @@ function MedicineCard({ medicine }: { medicine: MedicineOption }) {
         </div>
 
         <ul className="mt-4 space-y-2">
-          {medicine.features.map((feature, index) => (
+          {medicine.benefits.map((feature: string, index: number) => (
             <li key={index} className="flex items-start">
               <CheckCircleIcon className="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
               <span className="ml-2 text-sm text-gray-600">{feature}</span>
@@ -93,8 +118,66 @@ function MedicineCard({ medicine }: { medicine: MedicineOption }) {
 }
 
 export function TreatmentContent({ treatment }: { treatment: string }) {
-  const treatmentData = treatmentsData[treatment];
-  const medicines = medicineOptions[treatment] || [];
+  const [treatmentData, setTreatmentData] = useState<Treatment | null>(null);
+  const [medicines, setMedicines] = useState<Medicine[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch treatment data
+        const treatmentResponse = await fetch('/api/treatments');
+        const treatments = await treatmentResponse.json();
+        const foundTreatment = treatments.find((t: Treatment) => 
+          t.name.toLowerCase().replace(/\s+/g, '-') === treatment
+        );
+        
+        if (foundTreatment) {
+          setTreatmentData(foundTreatment);
+          
+          // Fetch medicines for this treatment category, with fallback to all medicines
+          const category = foundTreatment.category || 'weight-loss'; // Default fallback
+          const medicinesResponse = await fetch(`/api/medicines?category=${category}`);
+          const medicinesData = await medicinesResponse.json();
+          setMedicines(medicinesData);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [treatment]);
+
+  if (loading) {
+    return (
+      <div className="bg-white">
+        <div className="animate-pulse">
+          <div className="bg-indigo-700 h-64"></div>
+          <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+            <div className="h-8 bg-gray-200 rounded mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!treatmentData) {
+    return (
+      <div className="bg-white">
+        <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-3xl font-extrabold text-gray-900">Treatment Not Found</h1>
+          <p className="mt-4 text-gray-600">The treatment you're looking for doesn't exist.</p>
+          <Link href="/treatments" className="mt-6 inline-flex items-center text-indigo-600 hover:text-indigo-500">
+            ← Back to Treatments
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white">
@@ -114,45 +197,51 @@ export function TreatmentContent({ treatment }: { treatment: string }) {
           <div className="lg:col-span-2">
             <div className="prose prose-indigo lg:max-w-none mb-12">
               <h2>About {treatmentData.name}</h2>
-              <p className="text-lg text-gray-600">{treatmentData.overview}</p>
+              <p className="text-lg text-gray-600">{treatmentData.overview || treatmentData.description}</p>
             </div>
 
-            <div className="prose prose-indigo lg:max-w-none mb-12">
-              <h3>How It Works</h3>
-              <p className="text-gray-600">{treatmentData.howItWorks}</p>
-            </div>
-
-            <div className="mb-12">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                Benefits
-              </h3>
-              <ul className="space-y-4">
-                {treatmentData.benefits.map(
-                  (benefit: string, index: number) => (
-                    <li key={index} className="flex items-start">
-                      <CheckCircleIcon className="h-6 w-6 text-green-500 mr-3 mt-0.5 shrink-0" />
-                      <span className="text-gray-700">{benefit}</span>
-                    </li>
-                  )
-                )}
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                Frequently Asked Questions
-              </h3>
-              <div className="space-y-8">
-                {treatmentData.faqs.map((faq: any, index: number) => (
-                  <div key={index} className="border-b border-gray-200 pb-6">
-                    <h4 className="text-lg font-medium text-gray-900">
-                      {faq.question}
-                    </h4>
-                    <p className="mt-2 text-gray-600">{faq.answer}</p>
-                  </div>
-                ))}
+            {treatmentData.howItWorks && (
+              <div className="prose prose-indigo lg:max-w-none mb-12">
+                <h3>How It Works</h3>
+                <p className="text-gray-600">{treatmentData.howItWorks}</p>
               </div>
-            </div>
+            )}
+
+            {treatmentData.benefits && treatmentData.benefits.length > 0 && (
+              <div className="mb-12">
+                <h3 className="text-2xl font-bold text-gray-900 mb-6">
+                  Benefits
+                </h3>
+                <ul className="space-y-4">
+                  {treatmentData.benefits.map(
+                    (benefit: string, index: number) => (
+                      <li key={index} className="flex items-start">
+                        <CheckCircleIcon className="h-6 w-6 text-green-500 mr-3 mt-0.5 shrink-0" />
+                        <span className="text-gray-700">{benefit}</span>
+                      </li>
+                    )
+                  )}
+                </ul>
+              </div>
+            )}
+
+            {treatmentData.faqs && treatmentData.faqs.length > 0 && (
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-6">
+                  Frequently Asked Questions
+                </h3>
+                <div className="space-y-8">
+                  {treatmentData.faqs.map((faq: { question: string; answer: string }, index: number) => (
+                    <div key={index} className="border-b border-gray-200 pb-6">
+                      <h4 className="text-lg font-medium text-gray-900">
+                        {faq.question}
+                      </h4>
+                      <p className="mt-2 text-gray-600">{faq.answer}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* <div className="mt-12 lg:mt-0">
@@ -197,7 +286,7 @@ export function TreatmentContent({ treatment }: { treatment: string }) {
 
         <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {medicines.length > 0 ? (
-            medicines.map((medicine) => (
+            medicines.map((medicine: Medicine) => (
               <MedicineCard key={medicine.id} medicine={medicine} />
             ))
           ) : (

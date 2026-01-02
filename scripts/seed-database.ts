@@ -138,7 +138,7 @@ const medicineDetailsData = {
         ],
         inStock: true,
         image: '/medicines/semaglutide-1mg.jpg',
-        category: 'Weight Loss',
+        category: 'weight-loss',
         overview: 'Semaglutide 1mg is an FDA-approved medication that helps with weight management by regulating appetite and food intake. This starting dose is perfect for beginners beginning their weight loss journey.',
         howItWorks: 'Semaglutide works by mimicking the GLP-1 hormone, which helps regulate blood sugar levels and slows down digestion. This makes you feel fuller longer and reduces appetite.',
         benefits: [
@@ -183,7 +183,7 @@ const medicineDetailsData = {
         ],
         inStock: true,
         image: '/medicines/semaglutide-2mg.jpg',
-        category: 'Weight Loss',
+        category: 'weight-loss',
         overview: 'Semaglutide 2.4mg is the maintenance dose for patients who have completed the initial phase and need to continue their weight management journey with optimal results.',
         howItWorks: 'The higher dose provides enhanced GLP-1 receptor activation for greater appetite control and blood sugar regulation.',
         benefits: [
@@ -230,7 +230,7 @@ const medicineDetailsData = {
         ],
         inStock: true,
         image: '/medicines/tirzepatide-5mg.jpg',
-        category: 'Weight Loss',
+        category: 'weight-loss',
         overview: 'Tirzepatide 5mg is a revolutionary dual-action medication that combines GIP and GLP-1 receptor agonism for enhanced weight loss results.',
         howItWorks: 'Tirzepatide works by activating both GIP and GLP-1 receptors, providing a dual-action approach that regulates blood sugar levels and reduces appetite more effectively than single-agonist treatments.',
         benefits: [
@@ -275,7 +275,7 @@ const medicineDetailsData = {
         ],
         inStock: true,
         image: '/medicines/tirzepatide-10mg.jpg',
-        category: 'Weight Loss',
+        category: 'weight-loss',
         overview: 'Tirzepatide 10mg provides enhanced dual-action receptor activation for patients requiring maximum therapeutic effect.',
         howItWorks: 'Higher dose provides stronger GIP and GLP-1 receptor activation for superior glycemic control and weight management.',
         benefits: [
@@ -322,7 +322,7 @@ const medicineDetailsData = {
         ],
         inStock: true,
         image: '/medicines/testo-cypionate.jpg',
-        category: 'Hormone Therapy',
+        category: 'hormone-therapy',
         overview: 'Testosterone Cypionate is a long-acting testosterone ester used for hormone replacement therapy in men with clinically low testosterone levels.',
         howItWorks: 'Provides sustained release of testosterone into the bloodstream, restoring normal hormone levels and alleviating symptoms of low testosterone.',
         benefits: [
@@ -367,7 +367,7 @@ const medicineDetailsData = {
         ],
         inStock: true,
         image: '/medicines/testo-gel.webp',
-        category: 'Hormone Therapy',
+        category: 'hormone-therapy',
         overview: 'Testosterone Gel is a convenient topical application method for testosterone replacement therapy, providing steady hormone levels through daily application.',
         howItWorks: 'Absorbs through the skin into the bloodstream, providing consistent testosterone levels throughout the day with minimal peaks and valleys.',
         benefits: [
@@ -414,7 +414,7 @@ const medicineDetailsData = {
         ],
         inStock: true,
         image: '/medicines/sildenafil-50mg.jpg',
-        category: 'ED Treatment',
+        category: 'ed-treatments',
         overview: 'Sildenafil 50mg is a well-established ED medication that helps men achieve and maintain erections by increasing blood flow to the penis.',
         howItWorks: 'Sildenafil works by relaxing the smooth muscles in the blood vessels of the penis, allowing for increased blood flow when sexually aroused.',
         benefits: [
@@ -460,7 +460,7 @@ const medicineDetailsData = {
         ],
         inStock: true,
         image: '/medicines/tadalafil-20mg.jpg',
-        category: 'ED Treatment',
+        category: 'ed-treatments',
         overview: 'Tadalafil 20mg offers extended duration of action, providing flexibility for spontaneous sexual activity with longer effectiveness window.',
         howItWorks: 'Relaxes blood vessels and increases blood flow to the penis, with effects lasting up to 36 hours for greater spontaneity.',
         benefits: [
@@ -509,7 +509,7 @@ const medicineDetailsData = {
         ],
         inStock: true,
         image: '/medicines/sildenafil-100mg.jpg',
-        category: 'ED Treatment',
+        category: 'ed-treatments',
         overview: 'Sildenafil 100mg is the maximum strength formulation for men who require higher doses for optimal effectiveness.',
         howItWorks: 'Maximum dose provides enhanced blood flow to the penis for stronger, more reliable erections in men with more severe ED.',
         benefits: [
@@ -556,7 +556,7 @@ const medicineDetailsData = {
         ],
         inStock: true,
         image: '/medicines/tadalafil-daily.png',
-        category: 'ED Treatment',
+        category: 'ed-treatments',
         overview: 'Tadalafil Daily 5mg provides continuous ED treatment with a low daily dose, eliminating the need to plan for sexual activity.',
         howItWorks: 'Maintains consistent levels of tadalafil in the bloodstream, allowing for spontaneous erections whenever aroused without timing medication.',
         benefits: [
@@ -602,7 +602,7 @@ const medicineDetailsData = {
         ],
         inStock: true,
         image: '/medicines/vardenafil-20mg.webp',
-        category: 'ED Treatment',
+        category: 'ed-treatments',
         overview: 'Vardenafil 20mg is a fast-acting ED medication known for its quick onset and effectiveness, even when taken with food.',
         howItWorks: 'Potently inhibits PDE5 enzyme, allowing for increased blood flow and rapid onset of erectile function.',
         benefits: [
@@ -651,7 +651,7 @@ const medicineDetailsData = {
         ],
         inStock: true,
         image: '/medicines/b12-injection.avif',
-        category: 'Wellness',
+        category: 'injectable-therapy',
         overview: 'Vitamin B12 Injection provides a direct boost of this essential nutrient, supporting energy production, metabolism, and overall wellness.',
         howItWorks: 'Delivers high-dose B12 directly into the bloodstream for maximum absorption, bypassing digestive limitations.',
         benefits: [
@@ -697,7 +697,7 @@ const medicineDetailsData = {
         ],
         inStock: true,
         image: '/medicines/glutathione-injection.jpg',
-        category: 'Wellness',
+        category: 'injectable-therapy',
         overview: 'Glutathione Injection delivers the body\'s master antioxidant directly, supporting detoxification, skin health, and immune function.',
         howItWorks: 'Provides high concentrations of reduced glutathione to combat oxidative stress and support cellular detoxification processes.',
         benefits: [
@@ -743,7 +743,7 @@ const medicineDetailsData = {
         ],
         inStock: true,
         image: '/medicines/lipotropic-injection.webp',
-        category: 'Wellness',
+        category: 'injectable-therapy',
         overview: 'Lipotropic Injection contains essential nutrients that support fat metabolism, liver function, and energy production for weight management.',
         howItWorks: 'Combines B-vitamins, amino acids, and other compounds that enhance the body\'s ability to metabolize fat and remove toxins.',
         benefits: [
@@ -795,6 +795,7 @@ const treatmentsData = {
                 answer: "Administered as a once-weekly subcutaneous injection.",
             },
         ],
+        category: "weight-loss",
     },
     tirzepatide: {
         name: "Tirzepatide",
@@ -812,6 +813,7 @@ const treatmentsData = {
                 answer: "It activates both GIP and GLP-1 receptors for enhanced effects.",
             },
         ],
+        category: "weight-loss",
     },
     "testosterone-therapy": {
         name: "Testosterone Therapy",
@@ -829,6 +831,7 @@ const treatmentsData = {
                 answer: "Injections, gels, patches, and pellets are common methods.",
             },
         ],
+        category: "hormone-therapy",
     },
     "erectile-dysfunction": {
         name: "Erectile Dysfunction",
@@ -846,6 +849,7 @@ const treatmentsData = {
                 answer: "Oral medications, injections, and lifestyle changes are common approaches.",
             },
         ],
+        category: "ed-treatments",
     },
     "oral-ed-treatments": {
         name: "Oral ED Treatments",
@@ -871,7 +875,8 @@ const treatmentsData = {
                 question: "How do I know which oral ED medication is right for me?",
                 answer: "During your consultation, our medical professionals will evaluate your health history and specific needs to recommend the most appropriate treatment option."
             }
-        ]
+        ],
+        category: "ed-treatments",
     },
     "injectable-treatments": {
         name: "Injectable Treatments",
@@ -897,7 +902,8 @@ const treatmentsData = {
                 question: "Are there any side effects?",
                 answer: "Most patients experience minimal side effects, which may include mild soreness at the injection site. Our medical team will discuss all potential risks and benefits during your consultation."
             }
-        ]
+        ],
+        category: "injectable-therapy",
     }
 };
 
@@ -1197,13 +1203,16 @@ async function seedTreatments() {
 
         await query(
             `
-        INSERT INTO treatments (id, name, description, overview, how_it_works)
-        VALUES ($1, $2, $3, $4, $5)
+        INSERT INTO treatments (id, name, description, overview, how_it_works, category, benefits, faqs)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         ON CONFLICT (id) DO UPDATE SET
           name = excluded.name,
           description = excluded.description,
           overview = excluded.overview,
           how_it_works = excluded.how_it_works,
+          category = excluded.category,
+          benefits = excluded.benefits,
+          faqs = excluded.faqs,
           updated_at = CURRENT_TIMESTAMP
       `,
             [
@@ -1211,7 +1220,10 @@ async function seedTreatments() {
                 treatment.name,
                 treatment.description,
                 treatment.overview,
-                treatment.howItWorks
+                treatment.howItWorks,
+                treatment.category,
+                treatment.benefits ? JSON.stringify(treatment.benefits) : null,
+                treatment.faqs ? JSON.stringify(treatment.faqs) : null
             ]
         );
     }
