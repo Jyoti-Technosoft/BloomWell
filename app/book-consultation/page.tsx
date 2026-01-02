@@ -1,12 +1,21 @@
 'use client';
-
-import React, { useState } from 'react';
-import { physicians, Physician } from '../data/physicians';
-import { useUser } from '../context/UserContext';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Toast from '../components/Toast';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { useUser } from '../context/UserContext';
+import Toast from '../components/Toast';
+
+interface Physician {
+  id: string;
+  name: string;
+  role: string;
+  bio: string;
+  image: string;
+  education: string;
+  experience: string;
+  specialties: string[];
+}
 
 export default function BookConsultation() {
   const [selectedPhysician, setSelectedPhysician] = useState('');
@@ -14,8 +23,26 @@ export default function BookConsultation() {
   const [selectedTime, setSelectedTime] = useState('');
   const [reason, setReason] = useState('');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [physicians, setPhysicians] = useState<Physician[]>([]);
+  const [loading, setLoading] = useState(true);
   const { user } = useUser();
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchPhysicians = async () => {
+      try {
+        const response = await fetch('/api/physicians');
+        const data = await response.json();
+        setPhysicians(data.members || []);
+      } catch (error) {
+        console.error('Error fetching physicians:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPhysicians();
+  }, []);
 
   const handleCloseToast = () => {
     setToast(null);

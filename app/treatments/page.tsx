@@ -1,87 +1,47 @@
+'use client';
+
 import Link from "next/link";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
+import { useState, useEffect } from "react";
 
-const treatments = [
-  {
-    name: "Semaglutide",
-    href: "/semaglutide",
-    description:
-      "Advanced GLP-1 medication for sustainable weight management and blood sugar control.",
-    features: [
-      "Weekly injections",
-      "Appetite suppression",
-      "Blood sugar regulation",
-      "FDA-approved",
-    ],
-  },
-  {
-    name: "Tirzepatide",
-    href: "/tirzepatide",
-    description:
-      "Dual GIP and GLP-1 receptor agonist for significant weight loss and glycemic control.",
-    features: [
-      "Weekly injections",
-      "Dual-action formula",
-      "Clinically proven results",
-      "Professional monitoring",
-    ],
-  },
-  {
-    name: "Testosterone Therapy",
-    href: "/testosterone-therapy",
-    description:
-      "Personalized hormone therapy to optimize energy, strength, and overall well-being.",
-    features: [
-      "Hormone level testing",
-      "Custom treatment plans",
-      "Ongoing monitoring",
-      "Expert medical supervision",
-    ],
-  },
-  {
-    name: "Erectile Dysfunction",
-    href: "/erectile-dysfunction",
-    description:
-      "Comprehensive solutions for improved sexual health and performance.",
-    features: [
-      "Discrete consultations",
-      "Personalized treatment",
-      "Oral medications",
-      "Lifestyle guidance",
-    ],
-  },
-  {
-    name: "Oral ED Treatments",
-    href: "/oral-ed-treatments",
-    description:
-      "Effective oral medications for erectile dysfunction management.",
-    features: [
-      "Proven medications",
-      "Flexible dosing",
-      "Quick results",
-      "Private consultations",
-    ],
-  },
-  {
-    name: "Injectable Treatments",
-    href: "/injectable-treatments",
-    description:
-      "Advanced injectable therapies for various health and wellness needs.",
-    features: [
-      "Professional administration",
-      "Precise dosing",
-      "Effective results",
-      "Medical supervision",
-    ],
-  },
-];
+interface Treatment {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  image: string;
+  medicines: string[];
+}
 
 export default function TreatmentsPage() {
-  return (
+  const [treatments, setTreatments] = useState<Treatment[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTreatments = async () => {
+      try {
+        const response = await fetch('/api/treatments');
+        const data = await response.json();
+        setTreatments(data);
+      } catch (error) {
+        console.error('Error fetching treatments:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTreatments();
+  }, []);
+
+  const getTreatmentHref = (name: string) => {
+    return name.toLowerCase().replace(/\s+/g, '-').replace(/\//g, '');
+  };
+
+return (
     <div className="bg-white">
       {/* Hero Section */}
       <div className="bg-indigo-700">
-        <div className="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:py-24 sm:px-6 lg:px-8">
           <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl lg:text-5xl">
             Our Treatments
           </h1>
@@ -94,30 +54,44 @@ export default function TreatmentsPage() {
 
       {/* Treatments Grid */}
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {treatments.map((treatment) => (
-            <Link
-              key={treatment.href}
-              href={`${treatment.href}`}
-              className="group"
-            >
-              <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
-                <div className="p-6 flex-1">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                    {treatment.name}
-                  </h2>
-                  <p className="text-gray-600 mb-4">{treatment.description}</p>
-                  <div className="mt-auto">
-                    <span className="inline-flex items-center text-indigo-600 group-hover:text-indigo-800 font-medium">
-                      Learn more
-                      <ArrowRightIcon className="ml-2 h-4 w-4" />
-                    </span>
-                  </div>
+        {loading ? (
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }, (_, i) => (
+              <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden animate-pulse h-48">
+                <div className="p-6">
+                  <div className="h-6 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded mb-4"></div>
+                  <div className="h-4 bg-gray-200 rounded w-24"></div>
                 </div>
               </div>
-            </Link>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            {treatments.map((treatment) => (
+              <Link
+                key={treatment.id}
+                href={`/${getTreatmentHref(treatment.name)}`}
+                className="group"
+              >
+                <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 h-full flex flex-col">
+                  <div className="p-6 flex-1">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                      {treatment.name}
+                    </h2>
+                    <p className="text-gray-600 mb-4">{treatment.description}</p>
+                    <div className="mt-auto">
+                      <span className="inline-flex items-center text-indigo-600 group-hover:text-indigo-800 font-medium">
+                        Learn more
+                        <ArrowRightIcon className="ml-2 h-4 w-4" />
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* CTA Section */}

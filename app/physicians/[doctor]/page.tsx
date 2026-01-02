@@ -1,14 +1,24 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { notFound, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import Toast from '../../components/Toast';
 import { useUser } from '../../context/UserContext';
-import { physicians } from '../../data/physicians';
 
 interface DoctorProfileProps {
   params: Promise<{ doctor: string }>;
+}
+
+interface Physician {
+  id: string;
+  name: string;
+  role: string;
+  bio: string;
+  image: string;
+  education: string;
+  experience: string;
+  specialties: string[];
 }
 
 export default function DoctorProfile({ params }: DoctorProfileProps) {
@@ -17,6 +27,9 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
   const [selectedTime, setSelectedTime] = useState('');
   const [reason, setReason] = useState('');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [doctorData, setDoctorData] = useState<Physician | null>(null);
+  const [physicians, setPhysicians] = useState<Physician[]>([]);
+  const [loading, setLoading] = useState(true);
   const { user } = useUser();
   const router = useRouter();
 
@@ -28,12 +41,48 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
   const resolvedParams = React.use(params);
   const { doctor: slug } = resolvedParams;
 
-  const doctorData = physicians.find(d =>
-    d.name
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/\./g, '') === slug  
-  );
+  useEffect(() => {
+    const fetchPhysicians = async () => {
+      try {
+        const response = await fetch('/api/physicians');
+        const data = await response.json();
+        const physiciansList = data.members || [];
+        setPhysicians(physiciansList);
+        
+        // Find the specific doctor
+        const doctor = physiciansList.find((d: Physician) =>
+          d.name
+            .toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/\./g, '') === slug  
+        );
+        
+        setDoctorData(doctor || null);
+      } catch (error) {
+        console.error('Error fetching physicians:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPhysicians();
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="pt-20 min-h-screen bg-gray-50">
+        <div className="max-w-4xl mx-auto px-4 py-12">
+          <div className="animate-pulse">
+            <div className="h-64 bg-gray-200 rounded-lg mb-8"></div>
+            <div className="h-8 bg-gray-200 rounded mb-4"></div>
+            <div className="h-32 bg-gray-200 rounded mb-8"></div>
+            <div className="h-8 bg-gray-200 rounded mb-4"></div>
+            <div className="h-48 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (!doctorData) {
     notFound();

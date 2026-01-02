@@ -70,8 +70,8 @@ async function migrateData() {
       // Migrate users
       for (const user of jsonData.users) {
         await client.query(
-          'INSERT INTO users (id, email, password_hash, full_name, gender, date_of_birth, phone_number, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (id) DO NOTHING',
-          [user.id, user.email, user.password, user.fullName, user.createdAt]
+          'INSERT INTO users (id, email, password_hash, full_name, gender, date_of_birth, phone_number, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (email) DO UPDATE SET password_hash = excluded.password_hash, full_name = excluded.full_name, gender = excluded.gender, date_of_birth = excluded.date_of_birth, phone_number = excluded.phone_number, created_at = excluded.created_at',
+          [user.id, user.email, user.password, user.fullName, null, null, null, user.createdAt]
         );
       }
       console.log(`Migrated ${jsonData.users.length} users`);
@@ -87,38 +87,50 @@ async function migrateData() {
       
       // Migrate consultations
       for (const consultation of jsonData.consultations) {
-        await client.query(
-          'INSERT INTO consultations (id, user_id, doctor_name, doctor_specialty, consultation_date, consultation_time, reason, status, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (id) DO NOTHING',
-          [
-            consultation.id,
-            consultation.userId,
-            consultation.doctorName,
-            consultation.doctorSpecialty,
-            consultation.date,
-            consultation.time,
-            consultation.reason,
-            consultation.status,
-            consultation.createdAt
-          ]
-        );
+        // Check if the user exists before inserting consultation
+        const userExists = await client.query('SELECT id FROM users WHERE id = $1', [consultation.userId]);
+        if (userExists.rows.length > 0) {
+          await client.query(
+            'INSERT INTO consultations (id, user_id, doctor_name, doctor_specialty, consultation_date, consultation_time, reason, status, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) ON CONFLICT (id) DO NOTHING',
+            [
+              consultation.id,
+              consultation.userId,
+              consultation.doctorName,
+              consultation.doctorSpecialty,
+              consultation.date,
+              consultation.time,
+              consultation.reason,
+              consultation.status,
+              consultation.createdAt
+            ]
+          );
+        } else {
+          console.log(`Skipping consultation ${consultation.id} - user ${consultation.userId} not found`);
+        }
       }
       console.log(`Migrated ${jsonData.consultations.length} consultations`);
       
       // Migrate evaluations
       for (const evaluation of jsonData.evaluations) {
-        await client.query(
-          'INSERT INTO evaluations (id, user_id, medicine_id, medicine_name, responses, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (id) DO NOTHING',
-          [
-            evaluation.id,
-            evaluation.userId,
-            evaluation.medicineId,
-            evaluation.medicineName,
-            JSON.stringify(evaluation.responses),
-            evaluation.status,
-            evaluation.createdAt,
-            evaluation.updatedAt
-          ]
-        );
+        // Check if the user exists before inserting evaluation
+        const userExists = await client.query('SELECT id FROM users WHERE id = $1', [evaluation.userId]);
+        if (userExists.rows.length > 0) {
+          await client.query(
+            'INSERT INTO evaluations (id, user_id, medicine_id, medicine_name, responses, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (id) DO NOTHING',
+            [
+              evaluation.id,
+              evaluation.userId,
+              evaluation.medicineId,
+              evaluation.medicineName,
+              JSON.stringify(evaluation.responses),
+              evaluation.status,
+              evaluation.createdAt,
+              evaluation.updatedAt
+            ]
+          );
+        } else {
+          console.log(`Skipping evaluation ${evaluation.id} - user ${evaluation.userId} not found`);
+        }
       }
       console.log(`Migrated ${jsonData.evaluations.length} evaluations`);
       

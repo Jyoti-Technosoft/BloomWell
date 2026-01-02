@@ -1,11 +1,10 @@
 'use client';
-
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ArrowRightIcon, ArrowPathIcon, HeartIcon, ShieldCheckIcon, UserIcon } from '@heroicons/react/24/outline';
-import Image from 'next/image';
 import { useUser } from './context/UserContext';
-import { getPhysicians } from './data/physicians';
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -51,6 +50,24 @@ const features = [
 
 export default function Home() {
   const { user } = useUser();
+  const [physicians, setPhysicians] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPhysicians = async () => {
+      try {
+        const response = await fetch('/api/physicians?page=1&limit=3');
+        const data = await response.json();
+        setPhysicians(data.members || []);
+      } catch (error) {
+        console.error('Error fetching physicians:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPhysicians();
+  }, []);
   
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-50 to-white">
@@ -295,40 +312,57 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {getPhysicians(1, 3).members.map((member, index) => (
-              <motion.div
-                key={member.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.1 * index }}
-                className="bg-gray-50 rounded-2xl overflow-hidden hover:shadow-xl transition-shadow duration-300"
-              >
-                <div className="relative h-48 bg-linear-to-br from-indigo-500 to-purple-600 overflow-hidden">
-                  <div className="absolute inset-0 bg-white/20 backdrop-blur-sm"></div>
-                  <div className="relative h-full flex items-center justify-center">
-                    <div className="w-24 h-24 rounded-full bg-white/90 flex items-center justify-center shadow-xl">
-                      <UserIcon className="h-12 w-12 text-indigo-600" />
+            {loading ? (
+              [1, 2, 3].map((i) => (
+                <div key={i} className="bg-gray-50 rounded-2xl overflow-hidden animate-pulse">
+                  <div className="h-48 bg-gray-200"></div>
+                  <div className="p-6">
+                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded mb-3"></div>
+                    <div className="h-3 bg-gray-200 rounded mb-4"></div>
+                    <div className="flex gap-2">
+                      <div className="h-6 bg-gray-200 rounded-full w-20"></div>
+                      <div className="h-6 bg-gray-200 rounded-full w-20"></div>
                     </div>
                   </div>
-                  <div className="absolute top-4 right-4 bg-white/90 rounded-full px-3 py-1">
-                    <span className="text-xs font-medium text-indigo-600">Expert</span>
-                  </div>
                 </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{member.name}</h3>
-                  <p className="text-indigo-600 font-medium mb-3">{member.role}</p>
-                  <p className="text-gray-600 text-sm leading-relaxed">{member.bio}</p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {member.specialties.slice(0, 2).map((specialty, idx) => (
-                      <span key={idx} className="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs rounded-full">
-                        {specialty}
-                      </span>
-                    ))}
+              ))
+            ) : (
+              physicians.map((member: any, index: number) => (
+                <motion.div
+                  key={member.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.1 * index }}
+                  className="bg-gray-50 rounded-2xl overflow-hidden hover:shadow-xl transition-shadow duration-300"
+                >
+                  <div className="relative h-48 bg-linear-to-br from-indigo-500 to-purple-600 overflow-hidden">
+                    <div className="absolute inset-0 bg-white/20 backdrop-blur-sm"></div>
+                    <div className="relative h-full flex items-center justify-center">
+                      <div className="w-24 h-24 rounded-full bg-white/90 flex items-center justify-center shadow-xl">
+                        <UserIcon className="h-12 w-12 text-indigo-600" />
+                      </div>
+                    </div>
+                    <div className="absolute top-4 right-4 bg-white/90 rounded-full px-3 py-1">
+                      <span className="text-xs font-medium text-indigo-600">Expert</span>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                  <div className="p-6">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">{member.name}</h3>
+                    <p className="text-indigo-600 font-medium mb-3">{member.role}</p>
+                    <p className="text-gray-600 text-sm leading-relaxed">{member.bio}</p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {member.specialties.slice(0, 2).map((specialty: string, idx: number) => (
+                        <span key={idx} className="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs rounded-full">
+                          {specialty}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              ))
+            )}
           </div>
 
           <div className="text-center mt-12">
