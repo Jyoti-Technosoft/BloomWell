@@ -1,6 +1,6 @@
 // app/api/contact/route.ts
 import { NextResponse } from 'next/server';
-import { db } from '../../lib/db';
+import { postgresDb } from '../../lib/postgres-db';
 
 export async function POST(request: Request) {
   try {
@@ -14,8 +14,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Save contact form submission
-    const contact = await db.contacts.create({
+    // Save contact form submission to PostgreSQL
+    const contact = await postgresDb.contacts.create({
       name,
       email,
       message,

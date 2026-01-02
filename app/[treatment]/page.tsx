@@ -3,10 +3,6 @@ import { notFound } from "next/navigation";
 import { treatmentsData } from "../data/treatments";
 import { TreatmentContent } from "./_components/treatment-content";
 
-if (typeof window === "undefined") {
-  console.log("Available treatments:", Object.keys(treatmentsData));
-}
-
 export async function generateStaticParams() {
   const treatments = Object.keys(treatmentsData);
   return treatments.map((treatment) => ({

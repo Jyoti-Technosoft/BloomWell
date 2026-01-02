@@ -1,9 +1,9 @@
 'use client';
-
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { signIn } from 'next-auth/react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 type FormData = {
   email: string;
@@ -11,6 +11,14 @@ type FormData = {
 };
 
 export default function SignIn() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SignInContent />
+    </Suspense>
+  );
+}
+
+function SignInContent() {
   const router = useRouter();
   const { 
     register, 
@@ -25,25 +33,23 @@ export default function SignIn() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      setError(null);
-      const response = await fetch('/api/auth/signin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-        credentials: 'include',
+      const result = await signIn('credentials', {
+        email: data.email,
+        password: data.password,
+        redirect: false,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Sign in failed');
+      if (result?.error) {
+        throw new Error(result.error === 'CredentialsSignin' 
+          ? 'Invalid email or password' 
+          : 'Sign in failed');
       }
 
-      // Redirect to dashboard or callback URL after successful signin
-      // router.push(callbackUrl);
-      // router.refresh();
-      window.location.href = callbackUrl;
+      if (result?.ok) {
+        setError(null);
+        // Redirect to dashboard or callback URL after successful signin
+        window.location.href = callbackUrl;
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign in failed');
     }
@@ -78,7 +84,7 @@ export default function SignIn() {
           {error && (
             <div className="mb-6 bg-red-50 border-l-4 border-red-400 p-4">
               <div className="flex">
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <svg
                     className="h-5 w-5 text-red-400"
                     xmlns="http://www.w3.org/2000/svg"
@@ -186,7 +192,7 @@ export default function SignIn() {
           {success && (
             <div className="mb-6 bg-green-50 border-l-4 border-green-400 p-4">
               <div className="flex">
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <svg className="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>

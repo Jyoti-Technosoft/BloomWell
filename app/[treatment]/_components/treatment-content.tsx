@@ -1,16 +1,12 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 
 import { treatmentsData, medicineOptions, MedicineOption } from "../../data/treatments";
-import { useUser } from "../../context/UserContext";
 
 function MedicineCard({ medicine }: { medicine: MedicineOption }) {
-  const { data: session, status } = useSession();
   const router = useRouter();
-  const { user } = useUser();
 
   const handleViewDetails = () => {
     router.push(`/medicines/${medicine.id}`);
@@ -72,7 +68,7 @@ function MedicineCard({ medicine }: { medicine: MedicineOption }) {
         <ul className="mt-4 space-y-2">
           {medicine.features.map((feature, index) => (
             <li key={index} className="flex items-start">
-              <CheckCircleIcon className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+              <CheckCircleIcon className="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
               <span className="ml-2 text-sm text-gray-600">{feature}</span>
             </li>
           ))}
@@ -134,7 +130,7 @@ export function TreatmentContent({ treatment }: { treatment: string }) {
                 {treatmentData.benefits.map(
                   (benefit: string, index: number) => (
                     <li key={index} className="flex items-start">
-                      <CheckCircleIcon className="h-6 w-6 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                      <CheckCircleIcon className="h-6 w-6 text-green-500 mr-3 mt-0.5 shrink-0" />
                       <span className="text-gray-700">{benefit}</span>
                     </li>
                   )

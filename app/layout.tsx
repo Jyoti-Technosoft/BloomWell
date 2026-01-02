@@ -25,14 +25,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} antialiased bg-white`}>
-        <UserProvider>
-          <Providers>
+        <Providers>
+          <UserProvider>
             <Header />
-            <main className="min-h-[calc(100vh-80px)] pt-[120px] md:pt-[100px] px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <main className="min-h-[calc(100vh-80px)] pt-30 md:pt-25 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
               {children}
             </main>
-          </Providers>
-        </UserProvider>
+          </UserProvider>
+        </Providers>
       </body>
     </html>
   );

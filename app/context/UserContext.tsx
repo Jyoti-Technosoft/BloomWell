@@ -1,8 +1,7 @@
-// app/context/UserContext.tsx
 'use client';
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 type User = {
   id: string;
@@ -19,40 +18,23 @@ type UserContextType = {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
+  const { data: session, status } = useSession();
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const response = await fetch('/api/auth/me', {
-          credentials: 'include',
-        });
+    if (status === 'loading') return;
 
-        if (response.ok) {
-          const userData = await response.json();
-          setUser(userData);
-        }
-      } catch (error) {
-        console.error('Failed to fetch user', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUser();
-
-    // Set up a listener for storage events to sync tabs
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'user') {
-        setUser(e.newValue ? JSON.parse(e.newValue) : null);
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+    if (session?.user) {
+      setUser({
+        id: session.user.id!,
+        email: session.user.email!,
+        fullName: session.user.name || 'User'
+      });
+    } else {
+      setUser(null);
+    }
+  }, [session, status]);
 
   const logout = async () => {
     try {
@@ -60,15 +42,20 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         method: 'POST',
         credentials: 'include',
       });
+      // Clear client-side storage
+      localStorage.clear();
+      sessionStorage.clear();
       setUser(null);
-      // Clear user data from localStorage
-      localStorage.removeItem('user');
-      // Force a full page reload to clear all state
-      window.location.href = '/';
+      // Redirect to signin page
+      window.location.href = '/auth/signin';
     } catch (error) {
-      console.error('Logout failed', error);
+      console.error('Logout failed:', error);
+      setUser(null);
+      window.location.href = '/auth/signin';
     }
   };
+
+  const loading = status === 'loading';
 
   return (
     <UserContext.Provider value={{ user, loading, logout }}>

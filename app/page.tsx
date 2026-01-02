@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { ArrowRightIcon, ArrowPathIcon, HeartIcon, ShieldCheckIcon, UserIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import { useUser } from './context/UserContext';
+import { getPhysicians } from './data/physicians';
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -52,7 +53,7 @@ export default function Home() {
   const { user } = useUser();
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-white">
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 md:py-20">
@@ -103,15 +104,16 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="relative"
             >
-              <div className="relative w-full h-96 lg:h-[500px] rounded-3xl overflow-hidden shadow-2xl">
+              <div className="relative w-full h-96 lg:h-125 rounded-3xl overflow-hidden shadow-2xl">
                 <Image
                   src="/hero-image.avif"
                   alt="Happy person after weight loss"
                   fill
+                  sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover"
                   priority
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-primary-500/10 to-primary-700/20" />
+                <div className="absolute inset-0 bg-linear-to-r from-primary-500/10 to-primary-700/20" />
               </div>
             </motion.div>
 
@@ -140,7 +142,7 @@ export default function Home() {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-20 bg-gradient-to-b from-white to-gray-50">
+      <section className="py-20 bg-linear-to-b from-white to-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <motion.h2 
@@ -164,7 +166,7 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
             {/* Connecting line */}
-            <div className="hidden md:block absolute top-16 left-1/4 right-1/4 h-1 bg-gradient-to-r from-indigo-100 via-purple-100 to-pink-100"></div>
+            <div className="hidden md:block absolute top-16 left-1/4 right-1/4 h-1 bg-linear-to-r from-indigo-100 via-purple-100 to-pink-100"></div>
             
             {[
               {
@@ -206,7 +208,7 @@ export default function Home() {
                 transition={{ delay: 0.1 * index }}
                 className="relative group"
               >
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-400 to-purple-600 rounded-2xl opacity-0 group-hover:opacity-100 blur transition duration-300"></div>
+                <div className="absolute -inset-0.5 bg-linear-to-r from-indigo-400 to-purple-600 rounded-2xl opacity-0 group-hover:opacity-100 blur transition duration-300"></div>
                 <div className="relative bg-white p-8 rounded-2xl h-full flex flex-col items-center text-center hover:shadow-xl transition-all duration-300">
                   <div className="w-20 h-20 rounded-full bg-indigo-50 flex items-center justify-center mb-6 group-hover:bg-indigo-100 transition-colors duration-300">
                     <div className="absolute w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xl">
@@ -269,8 +271,80 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Team Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-3xl font-bold text-gray-900 sm:text-4xl mb-4"
+            >
+              Meet Our Medical Team
+            </motion.h2>
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="text-xl text-gray-600 max-w-3xl mx-auto"
+            >
+              Experienced professionals dedicated to your health and wellness journey
+            </motion.p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {getPhysicians(1, 3).members.map((member, index) => (
+              <motion.div
+                key={member.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 * index }}
+                className="bg-gray-50 rounded-2xl overflow-hidden hover:shadow-xl transition-shadow duration-300"
+              >
+                <div className="relative h-48 bg-linear-to-br from-indigo-500 to-purple-600 overflow-hidden">
+                  <div className="absolute inset-0 bg-white/20 backdrop-blur-sm"></div>
+                  <div className="relative h-full flex items-center justify-center">
+                    <div className="w-24 h-24 rounded-full bg-white/90 flex items-center justify-center shadow-xl">
+                      <UserIcon className="h-12 w-12 text-indigo-600" />
+                    </div>
+                  </div>
+                  <div className="absolute top-4 right-4 bg-white/90 rounded-full px-3 py-1">
+                    <span className="text-xs font-medium text-indigo-600">Expert</span>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{member.name}</h3>
+                  <p className="text-indigo-600 font-medium mb-3">{member.role}</p>
+                  <p className="text-gray-600 text-sm leading-relaxed">{member.bio}</p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {member.specialties.slice(0, 2).map((specialty, idx) => (
+                      <span key={idx} className="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs rounded-full">
+                        {specialty}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <Link
+              href="/physicians"
+              className="inline-flex items-center px-8 py-4 bg-linear-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+            >
+              View All Physicians
+              <ArrowRightIcon className="ml-2 h-5 w-5" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600">
+      <div className="bg-linear-to-r from-indigo-600 to-purple-600">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

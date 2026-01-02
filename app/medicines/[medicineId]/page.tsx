@@ -126,7 +126,7 @@ export default function MedicineDetailsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+      <div className="bg-linear-to-r from-indigo-600 to-purple-600 text-white">
         <div className="max-w-7xl mx-auto px-4 py-12">
           <Link
             href={`/${treatmentCategory}`}
@@ -136,7 +136,7 @@ export default function MedicineDetailsPage() {
             Back to {treatmentCategory.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
           </Link>
           <div className="flex flex-col md:flex-row items-center gap-8">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div className="w-48 h-48 rounded-2xl overflow-hidden bg-white/10 backdrop-blur-sm border border-white/20">
                 <Image
                   src={medicine.image}
@@ -212,7 +212,7 @@ export default function MedicineDetailsPage() {
               <div className="grid md:grid-cols-2 gap-4">
                 {medicine.benefits.map((benefit, index) => (
                   <div key={index} className="flex items-start">
-                    <CheckCircleIcon className="h-6 w-6 text-green-500 mr-3 mt-0.5 flex-shrink-0" />
+                    <CheckCircleIcon className="h-6 w-6 text-green-500 mr-3 mt-0.5 shrink-0" />
                     <span className="text-gray-700">{benefit}</span>
                   </div>
                 ))}
@@ -230,7 +230,7 @@ export default function MedicineDetailsPage() {
               <ul className="space-y-3">
                 {medicine.usageInstructions.map((instruction, index) => (
                   <li key={index} className="flex items-start">
-                    <span className="flex-shrink-0 w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">
+                    <span className="shrink-0 w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5">
                       {index + 1}
                     </span>
                     <span className="text-gray-700">{instruction}</span>
@@ -278,7 +278,7 @@ export default function MedicineDetailsPage() {
               <ul className="space-y-2">
                 {medicine.precautions.map((precaution, index) => (
                   <li key={index} className="flex items-start">
-                    <ShieldCheckIcon className="h-5 w-5 text-red-500 mr-2 mt-0.5 flex-shrink-0" />
+                    <ShieldCheckIcon className="h-5 w-5 text-red-500 mr-2 mt-0.5 shrink-0" />
                     <span className="text-gray-700">{precaution}</span>
                   </li>
                 ))}
@@ -298,7 +298,7 @@ export default function MedicineDetailsPage() {
               <ul className="space-y-3">
                 {medicine.features.map((feature, index) => (
                   <li key={index} className="flex items-start">
-                    <CheckCircleIcon className="h-5 w-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                    <CheckCircleIcon className="h-5 w-5 text-green-500 mr-2 mt-0.5 shrink-0" />
                     <span className="text-gray-700 text-sm">{feature}</span>
                   </li>
                 ))}
@@ -315,21 +315,21 @@ export default function MedicineDetailsPage() {
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Support & Shipping</h3>
               <div className="space-y-4">
                 <div className="flex items-start">
-                  <TruckIcon className="h-5 w-5 text-indigo-600 mr-3 mt-0.5 flex-shrink-0" />
+                  <TruckIcon className="h-5 w-5 text-indigo-600 mr-3 mt-0.5 shrink-0" />
                   <div>
                     <p className="font-medium text-gray-900">Free Shipping</p>
                     <p className="text-sm text-gray-600">{medicine.shipping}</p>
                   </div>
                 </div>
                 <div className="flex items-start">
-                  <UserIcon className="h-5 w-5 text-indigo-600 mr-3 mt-0.5 flex-shrink-0" />
+                  <UserIcon className="h-5 w-5 text-indigo-600 mr-3 mt-0.5 shrink-0" />
                   <div>
                     <p className="font-medium text-gray-900">Medical Support</p>
                     <p className="text-sm text-gray-600">{medicine.support}</p>
                   </div>
                 </div>
                 <div className="flex items-start">
-                  <ClockIcon className="h-5 w-5 text-indigo-600 mr-3 mt-0.5 flex-shrink-0" />
+                  <ClockIcon className="h-5 w-5 text-indigo-600 mr-3 mt-0.5 shrink-0" />
                   <div>
                     <p className="font-medium text-gray-900">24/7 Availability</p>
                     <p className="text-sm text-gray-600">Round-the-clock customer service</p>
@@ -343,7 +343,7 @@ export default function MedicineDetailsPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg shadow-lg p-6"
+              className="bg-linear-to-r from-indigo-600 to-purple-600 rounded-lg shadow-lg p-6"
             >
               <div className="text-center">
                 <h3 className="text-xl font-bold text-white mb-2">Ready to Start?</h3>

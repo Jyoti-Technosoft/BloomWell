@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '../../lib/db';
+import { postgresDb } from '../../lib/postgres-db';
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     }
 
     // Get user from database
-    const user = await db.users.findByEmail(decoded.email);
+    const user = await postgresDb.users.findByEmail(decoded.email);
     
     if (!user) {
       return NextResponse.json(
@@ -49,12 +49,12 @@ export async function POST(request: Request) {
     }
 
     // Create consultation booking
-    const booking = await db.consultations.create({
-      userId: user.id,
-      doctorName,
-      doctorSpecialty,
-      date,
-      time,
+    const booking = await postgresDb.consultations.create({
+      user_id: user.id,
+      doctor_name: doctorName,
+      doctor_specialty: doctorSpecialty,
+      consultation_date: date,
+      consultation_time: time,
       reason,
       status: 'pending'
     });
@@ -100,7 +100,7 @@ export async function GET(request: Request) {
     }
 
     // Get user from database
-    const user = await db.users.findByEmail(decoded.email);
+    const user = await postgresDb.users.findByEmail(decoded.email);
     
     if (!user) {
       return NextResponse.json(
@@ -110,7 +110,7 @@ export async function GET(request: Request) {
     }
 
     // Get user's consultations
-    const consultations = await db.consultations.findMany({ userId: user.id });
+    const consultations = await postgresDb.consultations.findMany({ user_id: user.id });
 
     return NextResponse.json({ consultations });
 

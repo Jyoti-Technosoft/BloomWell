@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { ArrowRightIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
+import { validatePhoneNumber, getCountryPhoneConfig, getSupportedCountries } from '../../lib/phoneValidation';
 
 type FormData = {
   // Personal Information
@@ -31,13 +33,28 @@ const SignUp = () => {
   const [passwordStrength, setPasswordStrength] = useState({ strength: 0, color: 'bg-gray-200' });
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [phone, setPhone] = useState<string>('');
+  const [selectedCountry, setSelectedCountry] = useState<string>('US');
+  const [phoneError, setPhoneError] = useState<string>('');
 
   const onSubmit = async (data: FormData) => {
     try {
       setError(null);
       
+      // Validate phone number based on selected country
+      const phoneValidation = validatePhoneNumber(phone, selectedCountry);
+      if (!phoneValidation.isValid) {
+        setPhoneError(phoneValidation.error || 'Invalid phone number');
+        return;
+      }
+      
+      const submitData = {
+        ...data,
+        phoneNumber: phone || '',
+      };
+      
       // Remove confirmPassword from the data before sending to the server
-      const { confirmPassword, ...userData } = data;
+      const { confirmPassword, ...userData } = submitData;
       
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
@@ -84,14 +101,6 @@ const SignUp = () => {
     if (!/[a-z]/.test(value))
       return "Must contain at least one lowercase letter";
     if (!/[0-9]/.test(value)) return "Must contain at least one number";
-    return true;
-  };
-
-  const validatePhone = (value: string) => {
-    const phoneRegex = /^[0-9]{10}$/;
-    if (!value) return "Phone number is required";
-    if (!phoneRegex.test(value))
-      return "Please enter a valid 10-digit phone number";
     return true;
   };
 
@@ -212,26 +221,50 @@ const SignUp = () => {
                   >
                     Phone Number
                   </label>
-                  <div className="mt-1 relative rounded-md shadow-sm">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <span className="text-gray-500 sm:text-sm">+1</span>
+                  <div className="mt-1">
+                    <div className="flex gap-2 mb-2">
+                      <select
+                        value={selectedCountry}
+                        onChange={(e) => {
+                          const country = e.target.value as string;
+                          setSelectedCountry(country);
+                          setPhoneError(''); // Clear error when country changes
+                          setPhone('');
+                        }}
+                        className="block rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                      >
+                        {getSupportedCountries().map((country) => (
+                          <option key={country.code} value={country.code}>
+                            {country.name} ({country.code})
+                          </option>
+                        ))}
+                      </select>
+                      <div className="flex-1">
+                        <PhoneInput
+                          international
+                          countryCallingCodeEditable={false}
+                          defaultCountry={selectedCountry as any}
+                          value={phone}
+                          onChange={(value) => {
+                            setPhone(value || '');
+                            setPhoneError('');
+                          }}
+                          className="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                          placeholder={`Enter phone number for ${getCountryPhoneConfig(selectedCountry)?.name || 'your country'}`}
+                        />
+                      </div>
                     </div>
-                    <input
-                      type="tel"
-                      id="phoneNumber"
-                      {...register("phoneNumber", {
-                        required: "Phone number is required",
-                        validate: validatePhone,
-                      })}
-                      className={`${inputClassName} pl-10`}
-                      placeholder="(555) 123-4567"
-                    />
+                    {phoneError && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {phoneError}
+                      </p>
+                    )}
+                    {!phoneError && selectedCountry && (
+                      <p className="mt-1 text-xs text-gray-500">
+                        Expected format: {getCountryPhoneConfig(selectedCountry)?.format || 'International format (+XX XXX...)'}
+                      </p>
+                    )}
                   </div>
-                  {errors.phoneNumber && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.phoneNumber.message}
-                    </p>
-                  )}
                 </div>
                 <div>
                   <label
@@ -429,7 +462,7 @@ const SignUp = () => {
             {error && (
               <div className="mt-4 bg-red-50 border-l-4 border-red-400 p-4">
                 <div className="flex">
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                     </svg>
@@ -445,7 +478,7 @@ const SignUp = () => {
           {isSuccess && (
             <div className="mb-6 bg-green-50 border-l-4 border-green-400 p-4">
               <div className="flex">
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <svg className="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>

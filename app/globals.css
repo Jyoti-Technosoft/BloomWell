@@ -44,6 +44,12 @@ body {
   background: #555;
 }
 
+.PhoneInputInput {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
 /* Custom animations */
 @layer utilities {
   .animate-float {

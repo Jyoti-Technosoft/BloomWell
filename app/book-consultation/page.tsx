@@ -39,7 +39,7 @@ export default function BookConsultation() {
         },
         body: JSON.stringify({
           doctorName: selectedPhysician,
-          doctorSpecialty: selectedDoctor?.specialty,
+          doctorSpecialty: selectedDoctor?.specialties?.join(', ') || '',
           date: selectedDate,
           time: selectedTime,
           reason,
@@ -81,7 +81,7 @@ export default function BookConsultation() {
   return (
     <div className="pt-20 min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+      <div className="bg-linear-to-r from-indigo-600 to-purple-600 text-white">
         <div className="max-w-4xl mx-auto px-4 py-12">
           <Link 
             href="/physicians" 
@@ -122,7 +122,7 @@ export default function BookConsultation() {
                       <option value="">Choose a physician</option>
                       {physicians.map((physician: Physician) => (
                         <option key={physician.name} value={physician.name}>
-                          {physician.name} - {physician.specialty}
+                          {physician.name} - {physician.specialties.join(', ')}
                         </option>
                       ))}
                     </select>
@@ -209,7 +209,7 @@ export default function BookConsultation() {
                       onClick={() => setSelectedPhysician(physician.name)}
                     >
                       <div className="flex items-start space-x-4">
-                        <div className="flex-shrink-0">
+                        <div className="shrink-0">
                           <div className="h-12 w-12 rounded-full bg-gray-200 overflow-hidden">
                             <img
                               src={physician.image}
@@ -220,7 +220,7 @@ export default function BookConsultation() {
                         </div>
                         <div className="flex-1">
                           <h4 className="font-semibold text-gray-900">{physician.name}</h4>
-                          <p className="text-sm text-indigo-600 font-medium">{physician.specialty}</p>
+                          <p className="text-sm text-indigo-600 font-medium">{physician.specialties.join(', ')}</p>
                           <p className="text-sm text-gray-600 mt-1">{physician.education}</p>
                           <p className="text-sm text-gray-500 mt-2 line-clamp-2">{physician.bio}</p>
                         </div>
