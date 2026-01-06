@@ -198,7 +198,7 @@ export default function BookConsultation() {
                   <div className="flex gap-4 pt-4">
                     <button
                       type="submit"
-                      className="flex-1 bg-indigo-600 text-white py-3 px-6 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors font-medium"
+                      className="cursor-pointer flex-1 bg-indigo-600 text-white py-3 px-6 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors font-medium"
                     >
                       Submit Booking
                     </button>
@@ -210,7 +210,7 @@ export default function BookConsultation() {
                         setSelectedTime('');
                         setReason('');
                       }}
-                      className="flex-1 bg-gray-200 text-gray-800 py-3 px-6 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors font-medium"
+                      className="cursor-pointer flex-1 bg-gray-200 text-gray-800 py-3 px-6 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors font-medium"
                     >
                       Clear Form
                     </button>
