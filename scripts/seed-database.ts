@@ -1121,8 +1121,8 @@ async function seedPhysicians() {
     for (const physician of physicians) {
         await query(
             `
-        INSERT INTO physicians (id, name, role, bio, image, education, experience)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        INSERT INTO physicians (id, name, role, bio, image, education, experience, specialties)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         ON CONFLICT (id) DO UPDATE SET
           name = excluded.name,
           role = excluded.role,
@@ -1130,6 +1130,7 @@ async function seedPhysicians() {
           image = excluded.image,
           education = excluded.education,
           experience = excluded.experience,
+          specialties = excluded.specialties,
           updated_at = CURRENT_TIMESTAMP
       `,
             [
@@ -1139,7 +1140,8 @@ async function seedPhysicians() {
                 physician.bio,
                 physician.image,
                 physician.education,
-                physician.experience
+                physician.experience,
+                physician.specialties ? physician.specialties.join(', ') : null
             ]
         );
     }

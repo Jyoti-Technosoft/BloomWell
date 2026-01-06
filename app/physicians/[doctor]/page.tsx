@@ -4,6 +4,7 @@ import { notFound, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import Toast from '../../components/Toast';
+import VideoConsultation from '../../../components/VideoConsultation';
 import { useUser } from '../../context/UserContext';
 
 interface DoctorProfileProps {
@@ -23,6 +24,7 @@ interface Physician {
 
 export default function DoctorProfile({ params }: DoctorProfileProps) {
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [showVideoConsultation, setShowVideoConsultation] = useState(false);
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [reason, setReason] = useState('');
@@ -44,7 +46,7 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
   useEffect(() => {
     const fetchPhysicians = async () => {
       try {
-        const response = await fetch('/api/physicians');
+        const response = await fetch('/api/physicians?limit=100'); // Fetch all physicians
         const data = await response.json();
         const physiciansList = data.members || [];
         setPhysicians(physiciansList);
@@ -70,7 +72,7 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
 
   if (loading) {
     return (
-      <div className="pt-20 min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 py-12">
           <div className="animate-pulse">
             <div className="h-64 bg-gray-200 rounded-lg mb-8"></div>
@@ -96,6 +98,28 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
     setShowBookingModal(true);
   };
 
+  const handleStartVideoCall = () => {
+    if (!user) {
+      router.push(`/auth/signin?callbackUrl=${encodeURIComponent(`/physicians/${slug}`)}`);
+      return;
+    }
+    setShowVideoConsultation(true);
+  };
+
+  const handleBackToProfile = () => {
+    setShowVideoConsultation(false);
+  };
+
+  // Show video consultation if active
+  if (showVideoConsultation && doctorData) {
+    return (
+      <VideoConsultation
+        physician={doctorData}
+        onBack={handleBackToProfile}
+      />
+    );
+  }
+
   const handleSubmitBooking = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -105,6 +129,7 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           doctorName: doctorData.name,
           doctorSpecialty: doctorData.specialties?.join(', ') || '',
@@ -144,7 +169,7 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
   ];
 
   return (
-    <div className="pt-20 min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
       <div className="bg-linear-to-r from-indigo-600 to-purple-600 text-white">
         <div className="max-w-4xl mx-auto px-4 py-12">
@@ -226,13 +251,40 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
           <div className="p-8">
             <div className="text-center">
               <h3 className="text-2xl font-semibold text-gray-900 mb-4">Ready to Consult?</h3>
-              <p className="text-gray-600 mb-6">Book a consultation with Dr. {doctorData.name.split(' ').slice(1).join(' ')} and take the first step towards better health.</p>
-              <button
-                onClick={handleBookConsultation}
-                className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-full text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
-              >
-                Book Consultation
-              </button>
+              <p className="text-gray-600 mb-6">Choose how you'd like to connect with Dr. {doctorData.name.split(' ').slice(1).join(' ')} and take the first step towards better health.</p>
+              
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button
+                  onClick={handleBookConsultation}
+                  className="cursor-pointer inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Book Consultation
+                </button>
+                
+                <button
+                  onClick={handleStartVideoCall}
+                  className="cursor-pointer inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                  Start Video Call
+                </button>
+              </div>
+              
+              <div className="mt-6 flex flex-col sm:flex-row gap-6 justify-center text-sm text-gray-500">
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-indigo-500 rounded-full mr-2"></div>
+                  <span>In-person consultation available</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                  <span>Instant video consultation</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

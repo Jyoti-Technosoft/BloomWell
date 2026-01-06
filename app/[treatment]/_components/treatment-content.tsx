@@ -104,7 +104,7 @@ function MedicineCard({ medicine }: { medicine: Medicine }) {
         <button
           onClick={handleViewDetails}
           disabled={!medicine.inStock}
-          className={`w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+          className={`w-full cursor-pointer flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
             medicine.inStock
               ? "bg-indigo-600 hover:bg-indigo-700"
               : "bg-gray-400 cursor-not-allowed"

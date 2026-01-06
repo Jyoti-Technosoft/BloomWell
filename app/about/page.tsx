@@ -8,12 +8,12 @@ export default function AboutPage() {
       <div className="relative">
         <div className="absolute inset-0">
           <img
-            className="w-full h-full object-cover transform scale-105"
+            className="w-full h-full object-cover"
             src="/medical-team.jpg"
             alt="Medical Team"
           />
         </div>
-        <div className="relative max-w-7xl mx-auto py-24 px-4 sm:py-32 sm:px-6 lg:px-8">
+        <div className="relative max-w-7xl mx-auto py-16 px-4 sm:py-32 sm:px-6 lg:px-8">
             <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl drop-shadow-xl">
               About Our Clinic
             </h1>

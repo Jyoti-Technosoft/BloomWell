@@ -64,6 +64,7 @@ export default function BookConsultation() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           doctorName: selectedPhysician,
           doctorSpecialty: selectedDoctor?.specialties?.join(', ') || '',
@@ -106,7 +107,7 @@ export default function BookConsultation() {
   const today = new Date().toISOString().split('T')[0];
 
   return (
-    <div className="pt-20 min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-linear-to-r from-indigo-600 to-purple-600 text-white">
         <div className="max-w-4xl mx-auto px-4 py-12">
