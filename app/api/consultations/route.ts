@@ -1,14 +1,15 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 import { postgresDb } from '../../lib/postgres-db';
-import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
+    // Get NextAuth token from cookies
+    const token = await getToken({ 
+      req: request,
+      secret: process.env.JWT_SECRET,
+      secureCookie: process.env.NODE_ENV === 'production'
+    });
 
     if (!token) {
       return NextResponse.json(
@@ -17,19 +18,18 @@ export async function POST(request: Request) {
       );
     }
 
-    // Verify and decode token
-    let decoded;
-    try {
-      decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string };
-    } catch (error) {
+    // Get email from NextAuth token
+    const userEmail = token.email as string;
+
+    if (!userEmail) {
       return NextResponse.json(
-        { error: 'Invalid or expired token' },
+        { error: 'Invalid token - no email found' },
         { status: 401 }
       );
     }
 
     // Get user from database
-    const user = await postgresDb.users.findByEmail(decoded.email);
+    const user = await postgresDb.users.findByEmail(userEmail);
     
     if (!user) {
       return NextResponse.json(
@@ -76,10 +76,14 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('auth_token')?.value;
+    // Get NextAuth token from cookies
+    const token = await getToken({ 
+      req: request,
+      secret: process.env.JWT_SECRET,
+      secureCookie: process.env.NODE_ENV === 'production'
+    });
 
     if (!token) {
       return NextResponse.json(
@@ -88,19 +92,18 @@ export async function GET(request: Request) {
       );
     }
 
-    // Verify and decode token
-    let decoded;
-    try {
-      decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string };
-    } catch (error) {
+    // Get email from NextAuth token
+    const userEmail = token.email as string;
+
+    if (!userEmail) {
       return NextResponse.json(
-        { error: 'Invalid or expired token' },
+        { error: 'Invalid token - no email found' },
         { status: 401 }
       );
     }
 
     // Get user from database
-    const user = await postgresDb.users.findByEmail(decoded.email);
+    const user = await postgresDb.users.findByEmail(userEmail);
     
     if (!user) {
       return NextResponse.json(

@@ -21,7 +21,7 @@ declare module 'next-auth/jwt' {
 }
 
 const handler = NextAuth({
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.JWT_SECRET,
   providers: [
     CredentialsProvider({
       name: 'Credentials',

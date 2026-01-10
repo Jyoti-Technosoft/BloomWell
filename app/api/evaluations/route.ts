@@ -1,5 +1,6 @@
 // app/api/evaluations/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 import { postgresDb } from '../../lib/postgres-db';
 
 interface EvaluationData {
@@ -30,6 +31,40 @@ interface EvaluationData {
 
 export async function POST(request: NextRequest) {
   try {
+    // Get NextAuth token from cookies
+    const token = await getToken({ 
+      req: request,
+      secret: process.env.JWT_SECRET,
+      secureCookie: process.env.NODE_ENV === 'production'
+    });
+
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    // Get email from NextAuth token
+    const userEmail = token.email as string;
+
+    if (!userEmail) {
+      return NextResponse.json(
+        { error: 'Invalid token - no email found' },
+        { status: 401 }
+      );
+    }
+
+    // Get user from database
+    const user = await postgresDb.users.findByEmail(userEmail);
+    
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
     const evaluationData: EvaluationData = await request.json();
 
     // Validate required fields
@@ -94,12 +129,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get user from session (you'll need to implement session management)
-    const userId = request.headers.get('x-user-id') || 'anonymous';
+    // Get user from authenticated session
+    const userId = user.id;
 
     // Create evaluation record in PostgreSQL
     const evaluationRecord = await postgresDb.evaluations.create({
-      user_id: userId === 'anonymous' ? null : userId,
+      user_id: userId,
       medicine_id: evaluationData.medicineId,
       medicine_name: evaluationData.medicineName,
       responses: {
@@ -150,18 +185,43 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    // Get user from session or query parameter
-    const userId = request.headers.get('x-user-id');
-    
-    if (userId) {
-      // Get evaluations for specific user
-      const evaluations = await postgresDb.evaluations.findByUserId(userId);
-      return NextResponse.json({ evaluations });
-    } else {
-      // Get all evaluations with pending_review status
-      const evaluations = await postgresDb.evaluations.findByStatus('pending_review');
-      return NextResponse.json({ evaluations });
+    // Get NextAuth token from cookies
+    const token = await getToken({ 
+      req: request,
+      secret: process.env.JWT_SECRET,
+      secureCookie: process.env.NODE_ENV === 'production'
+    });
+
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Not authenticated' },
+        { status: 401 }
+      );
     }
+
+    // Get email from NextAuth token
+    const userEmail = token.email as string;
+
+    if (!userEmail) {
+      return NextResponse.json(
+        { error: 'Invalid token - no email found' },
+        { status: 401 }
+      );
+    }
+
+    // Get user from database
+    const user = await postgresDb.users.findByEmail(userEmail);
+    
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+    
+    // Get evaluations for authenticated user
+    const evaluations = await postgresDb.evaluations.findByUserId(user.id);
+    return NextResponse.json({ evaluations });
 
   } catch (error) {
     console.error('Error fetching evaluations:', error);

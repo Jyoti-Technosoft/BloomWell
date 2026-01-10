@@ -52,6 +52,77 @@ CREATE TABLE IF NOT EXISTS evaluations (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
+-- Medicines table
+CREATE TABLE IF NOT EXISTS medicines (
+    id VARCHAR(255) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    price DECIMAL(10,2),
+    dosage VARCHAR(255),
+    in_stock BOOLEAN DEFAULT true,
+    image VARCHAR(500),
+    category VARCHAR(255),
+    overview TEXT,
+    how_it_works TEXT,
+    shipping TEXT,
+    support TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Treatments table
+CREATE TABLE IF NOT EXISTS treatments (
+    id VARCHAR(255) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    overview TEXT,
+    how_it_works TEXT,
+    category VARCHAR(255),
+    benefits JSONB,
+    faqs JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Physicians table
+CREATE TABLE IF NOT EXISTS physicians (
+    id VARCHAR(255) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    role VARCHAR(255) NOT NULL,
+    bio TEXT NOT NULL,
+    image VARCHAR(500) NOT NULL,
+    education VARCHAR(255) NOT NULL,
+    experience VARCHAR(255) NOT NULL,
+    specialties TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Reviews table
+CREATE TABLE IF NOT EXISTS reviews (
+    id VARCHAR(255) PRIMARY KEY,
+    user_id VARCHAR(255),
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255),
+    rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    content TEXT NOT NULL,
+    status VARCHAR(50) DEFAULT 'approved',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+-- Password reset tokens table
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id VARCHAR(255) PRIMARY KEY,
+    user_id VARCHAR(255) NOT NULL,
+    token VARCHAR(255) UNIQUE NOT NULL,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    used BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 -- Indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_consultations_user_id ON consultations(user_id);
@@ -60,3 +131,11 @@ CREATE INDEX IF NOT EXISTS idx_consultations_date ON consultations(consultation_
 CREATE INDEX IF NOT EXISTS idx_evaluations_user_id ON evaluations(user_id);
 CREATE INDEX IF NOT EXISTS idx_evaluations_status ON evaluations(status);
 CREATE INDEX IF NOT EXISTS idx_evaluations_medicine_id ON evaluations(medicine_id);
+CREATE INDEX IF NOT EXISTS idx_medicines_category ON medicines(category);
+CREATE INDEX IF NOT EXISTS idx_treatments_category ON treatments(category);
+CREATE INDEX IF NOT EXISTS idx_physicians_specialties ON physicians(specialties);
+CREATE INDEX IF NOT EXISTS idx_reviews_user_id ON reviews(user_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_status ON reviews(status);
+CREATE INDEX IF NOT EXISTS idx_reviews_rating ON reviews(rating);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_token ON password_reset_tokens(token);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user_id ON password_reset_tokens(user_id);

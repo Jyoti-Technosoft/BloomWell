@@ -144,6 +144,7 @@ export default function MedicineDetailsPage() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           medicineId,
           medicineName: medicine?.name || 'Unknown Medicine',

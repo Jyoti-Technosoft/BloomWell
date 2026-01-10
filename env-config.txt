@@ -1,9 +1,13 @@
 # PostgreSQL Database Configuration
-DATABASE_URL=postgresql://bloomwell_user:StrongPassword123@localhost:5432/bloomwell_db
+DATABASE_URL=postgress_database_url
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=bloomwell_db
 DB_USER=bloomwell_user
-DB_PASSWORD=StrongPassword123
-JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+DB_PASSWORD=db_password
+JWT_SECRET=secret-jwt-key
 NODE_ENV=development
+
+NEON_DATABASE_URL=neon_database_url
+
+DAILY_API_KEY=daily_api_key

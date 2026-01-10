@@ -1,40 +1,8 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import { StarIcon } from '@heroicons/react/24/solid';
 import { QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
-
-const reviews = [
-  {
-    id: 1,
-    name: 'John D.',
-    rating: 5,
-    content:
-      'Life-changing experience! The team was professional and caring throughout my weight loss journey.',
-    date: '2023-10-15',
-  },
-  {
-    id: 2,
-    name: 'Sarah M.',
-    rating: 5,
-    content:
-      'The hormone therapy has made a significant difference in my energy levels and overall well-being. Highly recommend!',
-    date: '2023-09-28',
-  },
-  {
-    id: 3,
-    name: 'Robert T.',
-    rating: 4,
-    content:
-      'Great service and knowledgeable staff. The treatment plan was tailored to my specific needs.',
-    date: '2023-09-10',
-  },
-  {
-    id: 4,
-    name: 'Emily R.',
-    rating: 5,
-    content:
-      'I feel like a new person after starting treatment here. The staff is amazing and very supportive.',
-    date: '2023-08-22',
-  },
-];
 
 const faqs = [
   {
@@ -69,23 +37,107 @@ const faqs = [
   },
 ];
 
-function ReviewStars({ rating }: { rating: number }) {
+function ReviewStars({ rating, interactive = false, onRatingChange }: { rating: number; interactive?: boolean; onRatingChange?: (rating: number) => void }) {
   return (
     <div className="flex">
       {[1, 2, 3, 4, 5].map((i) => (
-        <StarIcon
+        <button
           key={i}
-          className={`h-5 w-5 ${
-            i <= rating ? 'text-yellow-400' : 'text-gray-300'
-          }`}
-          aria-hidden="true"
-        />
+          type="button"
+          onClick={() => interactive && onRatingChange?.(i)}
+          className={`${interactive ? 'cursor-pointer hover:scale-110' : 'cursor-default'} transition-transform`}
+          disabled={!interactive}
+        >
+          <StarIcon
+            className={`h-5 w-5 ${
+              i <= rating ? 'text-yellow-400' : 'text-gray-300'
+            }`}
+            aria-hidden="true"
+          />
+        </button>
       ))}
     </div>
   );
 }
 
 export default function ReviewsPage() {
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 6,
+    total: 0,
+    totalPages: 0,
+    hasNext: false,
+    hasPrev: false
+  });
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    rating: 5,
+    content: '',
+  });
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetchReviews(1);
+  }, []);
+
+  const fetchReviews = async (page = 1) => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/reviews?page=${page}&limit=6`);
+      const data = await response.json();
+      if (data.success) {
+        setReviews(data.data);
+        setPagination(data.pagination);
+      }
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePageChange = (newPage: number) => {
+    fetchReviews(newPage);
+  };
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError('');
+    setMessage('');
+
+    try {
+      const response = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setMessage('Review submitted successfully!');
+        setFormData({ name: '', email: '', rating: 5, content: '' });
+        setShowForm(false);
+        fetchReviews(1);
+      } else {
+        setError(data.error || 'Failed to submit review');
+      }
+    } catch (error) {
+      setError('Failed to submit review. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="bg-white">
       {/* Hero Section */}
@@ -116,38 +168,189 @@ export default function ReviewsPage() {
           <div className="space-y-6">
             <div className="bg-white shadow overflow-hidden sm:rounded-lg">
               <div className="px-4 py-5 sm:p-6">
-                <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                  {reviews.map((review) => (
-                    <div
-                      key={review.id}
-                      className="pt-6 border-t border-gray-200"
-                    >
-                      <div className="flow-root bg-gray-50 rounded-lg px-6 pb-8">
-                        <div className="-mt-6">
-                          <div className="flex items-center justify-between">
-                            <ReviewStars rating={review.rating} />
-                            <p className="text-sm text-gray-500">
-                              {new Date(review.date).toLocaleDateString(
-                                'en-US',
-                                {
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric',
-                                }
-                              )}
-                            </p>
-                          </div>
-                          <p className="mt-4 text-base text-gray-700">
-                            {review.content}
-                          </p>
-                          <p className="mt-3 text-sm font-medium text-gray-900">
-                            {review.name}
-                          </p>
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-lg font-medium text-gray-900">Patient Reviews</h3>
+                  <button
+                    onClick={() => setShowForm(!showForm)}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    {showForm ? 'Cancel' : 'Write a Review'}
+                  </button>
+                </div>
+
+                {showForm && (
+                  <div className="mb-8 p-6 bg-gray-50 rounded-lg">
+                    <h4 className="text-lg font-medium text-gray-900 mb-4">Share Your Experience</h4>
+                    
+                    {message && (
+                      <div className="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-md">
+                        {message}
+                      </div>
+                    )}
+
+                    {error && (
+                      <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-md">
+                        {error}
+                      </div>
+                    )}
+
+                    <form onSubmit={handleSubmitReview} className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                            Name *
+                          </label>
+                          <input
+                            type="text"
+                            id="name"
+                            required
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            placeholder="Your name"
+                          />
+                        </div>
+                        <div>
+                          <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                            Email (optional)
+                          </label>
+                          <input
+                            type="email"
+                            id="email"
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            placeholder="your@email.com"
+                          />
                         </div>
                       </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Rating *
+                        </label>
+                        <ReviewStars
+                          rating={formData.rating}
+                          interactive
+                          onRatingChange={(rating) => setFormData({ ...formData, rating })}
+                        />
+                      </div>
+
+                      <div>
+                        <label htmlFor="content" className="block text-sm font-medium text-gray-700">
+                          Your Review *
+                        </label>
+                        <textarea
+                          id="content"
+                          required
+                          rows={4}
+                          value={formData.content}
+                          onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          placeholder="Share your experience with our treatments and care..."
+                        />
+                      </div>
+
+                      <div>
+                        <button
+                          type="submit"
+                          disabled={submitting}
+                          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                        >
+                          {submitting ? 'Submitting...' : 'Submit Review'}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                )}
+
+                {loading ? (
+                  <div className="text-center py-8">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                    <p className="mt-2 text-gray-500">Loading reviews...</p>
+                  </div>
+                ) : reviews.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">No reviews yet. Be the first to share your experience!</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                      {reviews.map((review) => (
+                        <div
+                          key={review.id}
+                          className="pt-6 border-t border-gray-200"
+                        >
+                          <div className="flow-root bg-gray-50 rounded-lg px-6 pb-8">
+                            <div className="-mt-6">
+                              <div className="flex items-center justify-between">
+                                <ReviewStars rating={review.rating} />
+                                <p className="text-sm text-gray-500">
+                                  {new Date(review.created_at).toLocaleDateString(
+                                    'en-US',
+                                    {
+                                      year: 'numeric',
+                                      month: 'long',
+                                      day: 'numeric',
+                                    }
+                                  )}
+                                </p>
+                              </div>
+                              <p className="mt-4 text-base text-gray-700">
+                                {review.content}
+                              </p>
+                              <p className="mt-3 text-sm font-medium text-gray-900">
+                                {review.name}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                    
+                    {/* Pagination Controls */}
+                    {pagination.totalPages > 1 && (
+                      <div className="mt-8 flex justify-center items-center space-x-2">
+                        <button
+                          onClick={() => handlePageChange(pagination.page - 1)}
+                          disabled={!pagination.hasPrev}
+                          className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Previous
+                        </button>
+                        
+                        <div className="flex space-x-1">
+                          {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((pageNum) => (
+                            <button
+                              key={pageNum}
+                              onClick={() => handlePageChange(pageNum)}
+                              className={`px-3 py-2 text-sm font-medium rounded-md ${
+                                pageNum === pagination.page
+                                  ? 'bg-indigo-600 text-white'
+                                  : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50'
+                              }`}
+                            >
+                              {pageNum}
+                            </button>
+                          ))}
+                        </div>
+                        
+                        <button
+                          onClick={() => handlePageChange(pagination.page + 1)}
+                          disabled={!pagination.hasNext}
+                          className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Next
+                        </button>
+                      </div>
+                    )}
+                    
+                    {/* Review Count */}
+                    <div className="mt-4 text-center text-sm text-gray-500">
+                      Showing {reviews.length} of {pagination.total} reviews
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
