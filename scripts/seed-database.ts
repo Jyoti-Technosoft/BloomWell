@@ -988,7 +988,7 @@ const dbData = {
     "evaluations": [
         {
             "id": "1766568715963",
-            "userId": "anonymous",
+            "userId": "1766490666414",
             "medicineId": "semaglutide-2mg",
             "medicineName": "Semaglutide 2.4mg",
             "responses": {
@@ -1017,7 +1017,7 @@ const dbData = {
         },
         {
             "id": "1766570333867",
-            "userId": "anonymous",
+            "userId": "1766556512106",
             "medicineId": "semaglutide-2mg",
             "medicineName": "Semaglutide 2.4mg",
             "responses": {
@@ -1043,6 +1043,44 @@ const dbData = {
             "status": "pending_review",
             "createdAt": "2025-12-24T09:58:53.867Z",
             "updatedAt": "2025-12-24T09:58:53.867Z"
+        }
+    ],
+    "reviews": [
+        {
+            "id": "review-1",
+            "name": "John D.",
+            "email": "john.doe@email.com",
+            "rating": 5,
+            "content": "Life-changing experience! The team was professional and caring throughout my weight loss journey.",
+            "status": "approved",
+            "createdAt": "2023-10-15T00:00:00.000Z"
+        },
+        {
+            "id": "review-2",
+            "name": "Sarah M.",
+            "email": "sarah.miller@email.com",
+            "rating": 5,
+            "content": "The hormone therapy has made a significant difference in my energy levels and overall well-being. Highly recommend!",
+            "status": "approved",
+            "createdAt": "2023-09-28T00:00:00.000Z"
+        },
+        {
+            "id": "review-3",
+            "name": "Robert T.",
+            "email": "robert.taylor@email.com",
+            "rating": 4,
+            "content": "Great service and knowledgeable staff. The treatment plan was tailored to my specific needs.",
+            "status": "approved",
+            "createdAt": "2023-09-10T00:00:00.000Z"
+        },
+        {
+            "id": "review-4",
+            "name": "Emily R.",
+            "email": "emily.rogers@email.com",
+            "rating": 5,
+            "content": "I feel like a new person after starting treatment here. The staff is amazing and very supportive.",
+            "status": "approved",
+            "createdAt": "2023-08-22T00:00:00.000Z"
         }
     ]
 };
@@ -1109,6 +1147,70 @@ async function createTables() {
       how_it_works TEXT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+    await query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id VARCHAR(255) PRIMARY KEY,
+      email VARCHAR(255) UNIQUE NOT NULL,
+      password_hash VARCHAR(255) NOT NULL,
+      full_name VARCHAR(255),
+      gender VARCHAR(50),
+      phone_number VARCHAR(50),
+      date_of_birth DATE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+    await query(`
+    CREATE TABLE IF NOT EXISTS contacts (
+      id VARCHAR(255) PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      email VARCHAR(255) NOT NULL,
+      message TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+    await query(`
+    CREATE TABLE IF NOT EXISTS consultations (
+      id VARCHAR(255) PRIMARY KEY,
+      user_id VARCHAR(255) REFERENCES users(id) ON DELETE CASCADE,
+      doctor_name VARCHAR(255) NOT NULL,
+      doctor_specialty VARCHAR(255),
+      consultation_date DATE,
+      consultation_time VARCHAR(50),
+      reason TEXT,
+      status VARCHAR(50) DEFAULT 'pending',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+    await query(`
+    CREATE TABLE IF NOT EXISTS evaluations (
+      id VARCHAR(255) PRIMARY KEY,
+      user_id VARCHAR(255),
+      medicine_id VARCHAR(255),
+      medicine_name VARCHAR(255),
+      responses JSONB,
+      status VARCHAR(50) DEFAULT 'pending',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+    await query(`
+    CREATE TABLE IF NOT EXISTS reviews (
+      id VARCHAR(255) PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      email VARCHAR(255) NOT NULL,
+      rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+      content TEXT,
+      status VARCHAR(50) DEFAULT 'pending',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);
 
@@ -1243,11 +1345,13 @@ async function seedExistingData() {
           INSERT INTO users (id, email, password_hash, full_name, gender, phone_number, date_of_birth, created_at)
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
           ON CONFLICT (email) DO UPDATE SET
+            id = excluded.id,
             password_hash = excluded.password_hash,
             full_name = excluded.full_name,
             gender = excluded.gender,
             phone_number = excluded.phone_number,
-            date_of_birth = excluded.date_of_birth
+            date_of_birth = excluded.date_of_birth,
+            created_at = excluded.created_at
         `,
                 [
                     user.id,
@@ -1262,6 +1366,120 @@ async function seedExistingData() {
             );
         }
         console.log(`Seeded ${dbData.users.length} users`);
+    }
+
+    if (dbData.contacts && dbData.contacts.length > 0) {
+        for (const contact of dbData.contacts) {
+            await query(
+                `
+          INSERT INTO contacts (id, name, email, message, created_at)
+          VALUES ($1, $2, $3, $4, $5)
+          ON CONFLICT (id) DO UPDATE SET
+            name = excluded.name,
+            email = excluded.email,
+            message = excluded.message,
+            created_at = excluded.created_at
+        `,
+                [
+                    contact.id,
+                    contact.name,
+                    contact.email,
+                    contact.message,
+                    contact.createdAt
+                ]
+            );
+        }
+        console.log(`Seeded ${dbData.contacts.length} contacts`);
+    }
+
+    if (dbData.consultations && dbData.consultations.length > 0) {
+        for (const consultation of dbData.consultations) {
+            await query(
+                `
+          INSERT INTO consultations (id, user_id, doctor_name, doctor_specialty, consultation_date, consultation_time, reason, status, created_at)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          ON CONFLICT (id) DO UPDATE SET
+            user_id = excluded.user_id,
+            doctor_name = excluded.doctor_name,
+            doctor_specialty = excluded.doctor_specialty,
+            consultation_date = excluded.consultation_date,
+            consultation_time = excluded.consultation_time,
+            reason = excluded.reason,
+            status = excluded.status,
+            created_at = excluded.created_at
+        `,
+                [
+                    consultation.id,
+                    consultation.userId,
+                    consultation.doctorName,
+                    consultation.doctorSpecialty,
+                    consultation.date,
+                    consultation.time,
+                    consultation.reason,
+                    consultation.status,
+                    consultation.createdAt
+                ]
+            );
+        }
+        console.log(`Seeded ${dbData.consultations.length} consultations`);
+    }
+
+    if (dbData.evaluations && dbData.evaluations.length > 0) {
+        for (const evaluation of dbData.evaluations) {
+            await query(
+                `
+          INSERT INTO evaluations (id, user_id, medicine_id, medicine_name, responses, status, created_at, updated_at)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+          ON CONFLICT (id) DO UPDATE SET
+            user_id = excluded.user_id,
+            medicine_id = excluded.medicine_id,
+            medicine_name = excluded.medicine_name,
+            responses = excluded.responses,
+            status = excluded.status,
+            created_at = excluded.created_at,
+            updated_at = excluded.updated_at
+        `,
+                [
+                    evaluation.id,
+                    evaluation.userId,
+                    evaluation.medicineId,
+                    evaluation.medicineName,
+                    JSON.stringify(evaluation.responses),
+                    evaluation.status,
+                    evaluation.createdAt,
+                    evaluation.updatedAt
+                ]
+            );
+        }
+        console.log(`Seeded ${dbData.evaluations.length} evaluations`);
+    }
+
+    if (dbData.reviews && dbData.reviews.length > 0) {
+        for (const review of dbData.reviews) {
+            await query(
+                `
+          INSERT INTO reviews (id, name, email, rating, content, status, created_at)
+          VALUES ($1, $2, $3, $4, $5, $6, $7)
+          ON CONFLICT (id) DO UPDATE SET
+            name = excluded.name,
+            email = excluded.email,
+            rating = excluded.rating,
+            content = excluded.content,
+            status = excluded.status,
+            created_at = excluded.created_at
+        `,
+                [
+                    review.id,
+                    review.name,
+                    review.email,
+                    review.rating,
+                    review.content,
+                    review.status,
+                    review.createdAt
+                ]
+            );
+        }
+        console.log(`Seeded ${dbData.reviews.length} reviews`);
     }
 }
 

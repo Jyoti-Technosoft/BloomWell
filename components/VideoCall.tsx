@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { DailyProvider, useDaily } from '@daily-co/daily-react';
-// import '@daily-co/daily-js/dist/style.css';
 
 interface VideoCallProps {
   roomUrl: string;

@@ -11,9 +11,9 @@ export const metadata: Metadata = {
   title: 'BloomWell - Weight Management & Wellness',
   description: 'Personalized weight loss medication and wellness treatments made accessible and affordable.',
   icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/favicon.ico',
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
   },
 };
 
