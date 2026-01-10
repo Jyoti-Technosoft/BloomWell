@@ -1133,10 +1133,19 @@ async function createTables() {
       how_it_works TEXT,
       shipping TEXT,
       support TEXT,
+      benefits TEXT,
+      side_effects TEXT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);
+
+    // Add missing columns if they don't exist
+    await query(`
+      ALTER TABLE medicines 
+      ADD COLUMN IF NOT EXISTS benefits TEXT,
+      ADD COLUMN IF NOT EXISTS side_effects TEXT;
+    `);
 
     await query(`
     CREATE TABLE IF NOT EXISTS treatments (
@@ -1261,8 +1270,8 @@ async function seedMedicines() {
 
         await query(
             `
-        INSERT INTO medicines (id, name, description, price, dosage, in_stock, image, category, overview, how_it_works, shipping, support)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        INSERT INTO medicines (id, name, description, price, dosage, in_stock, image, category, overview, how_it_works, shipping, support, benefits, side_effects)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
         ON CONFLICT (id) DO UPDATE SET
           name = excluded.name,
           description = excluded.description,
@@ -1275,6 +1284,8 @@ async function seedMedicines() {
           how_it_works = excluded.how_it_works,
           shipping = excluded.shipping,
           support = excluded.support,
+          benefits = excluded.benefits,
+          side_effects = excluded.side_effects,
           updated_at = CURRENT_TIMESTAMP
       `,
             [
@@ -1289,7 +1300,9 @@ async function seedMedicines() {
                 medicine.overview,
                 medicine.howItWorks,
                 medicine.shipping,
-                medicine.support
+                medicine.support,
+                medicine.benefits ? medicine.benefits.join(', ') : null,
+                medicine.sideEffects ? medicine.sideEffects.join(', ') : null
             ]
         );
     }
