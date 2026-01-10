@@ -30,8 +30,12 @@ export async function GET(request: NextRequest) {
       image: row.image,
       price: row.price,
       dosage: row.dosage,
-      sideEffects: row.side_effects ? row.side_effects.split(',').map((s: string) => s.trim()) : [],
-      benefits: row.benefits ? row.benefits.split(',').map((b: string) => b.trim()) : [],
+      overview: row.overview,
+      howItWorks: row.how_it_works,
+      shipping: row.shipping,
+      support: row.support,
+      sideEffects: row.side_effects ? row.side_effects.split(',').map((s: string) => s.trim()).filter(Boolean) : [],
+      benefits: row.benefits ? row.benefits.split(',').map((b: string) => b.trim()).filter(Boolean) : [],
       inStock: row.in_stock,
     }));
 
@@ -48,16 +52,16 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, description, category, image, price, dosage, sideEffects, benefits, inStock } = body;
+    const { name, description, category, image, price, dosage, overview, howItWorks, shipping, support, sideEffects, benefits, inStock } = body;
 
-    const sideEffectsString = sideEffects ? sideEffects.join(', ') : '';
-    const benefitsString = benefits ? benefits.join(', ') : '';
+    const sideEffectsString = sideEffects ? sideEffects.join(', ') : null;
+    const benefitsString = benefits ? benefits.join(', ') : null;
 
     const result = await pool.query(
-      `INSERT INTO medicines (name, description, category, image, price, dosage, side_effects, benefits, in_stock) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+      `INSERT INTO medicines (name, description, category, image, price, dosage, overview, how_it_works, shipping, support, side_effects, benefits, in_stock) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) 
        RETURNING *`,
-      [name, description, category, image, price, dosage, sideEffectsString, benefitsString, inStock]
+      [name, description, category, image, price, dosage, overview, howItWorks, shipping, support, sideEffectsString, benefitsString, inStock]
     );
 
     const medicine = {
@@ -68,8 +72,12 @@ export async function POST(request: NextRequest) {
       image: result.rows[0].image,
       price: result.rows[0].price,
       dosage: result.rows[0].dosage,
-      sideEffects: result.rows[0].side_effects ? result.rows[0].side_effects.split(',').map((s: string) => s.trim()) : [],
-      benefits: result.rows[0].benefits ? result.rows[0].benefits.split(',').map((b: string) => b.trim()) : [],
+      overview: result.rows[0].overview,
+      howItWorks: result.rows[0].how_it_works,
+      shipping: result.rows[0].shipping,
+      support: result.rows[0].support,
+      sideEffects: result.rows[0].side_effects ? result.rows[0].side_effects.split(',').map((s: string) => s.trim()).filter(Boolean) : [],
+      benefits: result.rows[0].benefits ? result.rows[0].benefits.split(',').map((b: string) => b.trim()).filter(Boolean) : [],
       inStock: result.rows[0].in_stock,
     };
 
