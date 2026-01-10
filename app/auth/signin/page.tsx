@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 type FormData = {
   email: string;
@@ -28,6 +29,7 @@ function SignInContent() {
   
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/';
 
@@ -135,10 +137,10 @@ function SignInContent() {
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
-              <div className="mt-1">
+              <div className="mt-1 relative rounded-md shadow-sm">
                 <input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   required
                   {...register('password', { 
@@ -148,8 +150,19 @@ function SignInContent() {
                       message: 'Password must be at least 6 characters'
                     }
                   })}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm pr-10"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-500"
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="h-5 w-5" aria-hidden="true" />
+                  ) : (
+                    <EyeIcon className="h-5 w-5" aria-hidden="true" />
+                  )}
+                </button>
                 {errors.password && (
                   <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
                 )}
@@ -169,11 +182,11 @@ function SignInContent() {
                 </label>
               </div>
 
-              <div className="text-sm">
+              {/* <div className="text-sm">
                 <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
                   Forgot your password?
                 </a>
-              </div>
+              </div> */}
             </div>
 
             <div>
