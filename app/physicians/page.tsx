@@ -17,8 +17,8 @@ function PhysiciansContent() {
   const [selectedRating, setSelectedRating] = useState('');
 
   // Get all unique specialties for filter dropdown
-  const allSpecialties = physiciansData.members ? 
-    [...new Set(physiciansData.members.flatMap((doctor: any) => doctor.specialties || []))] : [];
+  const allSpecialties: string[] = physiciansData.members ? 
+    [...new Set(physiciansData.members.flatMap((doctor: any) => doctor.specialties || []))] as string[] : [];
 
   // Filter physicians based on search criteria
   const filteredPhysicians = physiciansData.members ? physiciansData.members.filter((doctor: any) => {
@@ -140,7 +140,9 @@ function PhysiciansContent() {
               >
                 <option value="">All Specialties</option>
                 {allSpecialties.map((specialty: string) => (
-                  <option key={specialty} value={specialty}>{specialty}</option>
+                  <option value={specialty}>
+                    {specialty}
+                  </option>
                 ))}
               </select>
             </div>
