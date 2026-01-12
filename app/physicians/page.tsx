@@ -193,10 +193,6 @@ function PhysiciansContent() {
                       <div className="text-lg font-bold text-green-600">4.9</div>
                       <div className="text-xs text-gray-500">Rating</div>
                     </div>
-                    <div className="text-center">
-                      <div className="text-lg font-bold text-purple-600">15+</div>
-                      <div className="text-xs text-gray-500">Years</div>
-                    </div>
                   </div>
 
                   {/* View Profile Button */}

@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -19,7 +19,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
-    name: 'Treatments',
+    name: 'Women\'s Health',
     href: '/treatments',
     dropdown: [
       { name: 'Semaglutide', href: '/semaglutide' },
@@ -31,7 +31,7 @@ const navItems: NavItem[] = [
     ],
   },
   { 
-    name: 'Physicians',
+    name: 'Women\'s Health Experts',
     href: '/physicians'
   },
   { name: 'About', href: '/about' },
@@ -41,6 +41,7 @@ const navItems: NavItem[] = [
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const { data: session, status } = useSession();
 
   const toggleMobileMenu = () => {
@@ -55,6 +56,23 @@ export default function Header() {
     setOpenDropdown(openDropdown === itemName ? null : itemName);
   };
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileDropdownOpen) {
+        const target = event.target as Element;
+        if (!target.closest('.profile-dropdown')) {
+          setProfileDropdownOpen(false);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [profileDropdownOpen]);
+
   return (
     <header className="fixed w-full bg-white z-50 shadow-sm">
       <nav className="border-b border-gray-200">
@@ -65,7 +83,7 @@ export default function Header() {
                 <Link href="/" className="text-xl font-bold text-gray-900">
                   <img
                     src="/bloomwell-logo.png"
-                    alt="BloomWell"
+                    alt="BloomWell - Women's Health"
                     height="200px"
                     width="200px"
                   />
@@ -160,14 +178,61 @@ export default function Header() {
 
             <div className="hidden md:flex items-center space-x-4">
             {status === 'authenticated' ? (
-              <div className="flex items-center space-x-4">
-                <div className="shrink-0 h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
-                  <UserIcon className="h-5 w-5 text-indigo-600" />
-                </div>
-                <span className="text-sm font-medium text-gray-700">
-                  Welcome, {session.user.name}
-                </span>
-                <LogoutButton />
+              <div className="relative profile-dropdown">
+                <button
+                  onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                  className="flex items-center space-x-3 text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  <span className="text-sm font-medium text-gray-700">
+                    {session.user?.name}
+                  </span>
+                  <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden">
+                    {session.user?.image ? (
+                      <img
+                        src={session.user.image}
+                        alt={session.user?.name || 'User'}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <UserIcon className="h-5 w-5 text-indigo-600" />
+                    )}
+                  </div>
+                </button>
+
+                <AnimatePresence>
+                  {profileDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50"
+                    >
+                      <div className="py-1">
+                        <Link
+                          href="/profile"
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          Profile
+                        </Link>
+                        <Link
+                          href="/bookings"
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          Booking Info
+                        </Link>
+                        <div className="border-t border-gray-100"></div>
+                        <div 
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                          onClick={() => setProfileDropdownOpen(false)}
+                        >
+                          <LogoutButton />
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             ) : (
               <>

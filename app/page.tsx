@@ -27,23 +27,23 @@ const staggerContainer = {
 
 const features = [
   {
-    name: 'Personalized Treatment',
-    description: 'Tailored weight loss plans designed specifically for your body and lifestyle.',
+    name: 'Personalized Women\'s Care',
+    description: 'Tailored wellness plans designed specifically for women\'s unique health needs and lifestyle.',
     icon: HeartIcon,
   },
   {
-    name: 'Expert Physicians',
-    description: 'Board-certified specialists with years of experience in weight management.',
+    name: 'Women\'s Health Experts',
+    description: 'Board-certified specialists with years of experience in women\'s health and wellness.',
     icon: UserIcon,
   },
   {
-    name: 'Proven Results',
-    description: 'Thousands of successful weight loss journeys with measurable outcomes.',
+    name: 'Proven Women\'s Results',
+    description: 'Thousands of successful women\'s wellness journeys with measurable health outcomes.',
     icon: ArrowPathIcon,
   },
   {
     name: 'Safe & Effective',
-    description: 'FDA-approved medications with minimal side effects.',
+    description: 'FDA-approved treatments specifically tested and proven safe for women.',
     icon: ShieldCheckIcon,
   },
 ];
@@ -85,14 +85,14 @@ export default function Home() {
                 variants={fadeInUp}
                 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6"
               >
-                Transform Your Health with <span className="text-primary-600">Personalized</span> Weight Loss
+                Transform Your <span className="text-primary-600">Women's Health</span> Journey
               </motion.h1>
               
               <motion.p 
                 variants={fadeInUp}
                 className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto lg:mx-0"
               >
-                Get started on your weight loss journey with our medically supervised programs and FDA-approved treatments.
+                Empowering women with personalized wellness solutions, from weight management to hormonal balance and overall vitality.
               </motion.p>
               
               <motion.div 
@@ -124,7 +124,7 @@ export default function Home() {
               <div className="relative w-full h-96 lg:h-125 rounded-3xl overflow-hidden shadow-2xl">
                 <Image
                   src="/hero-image.avif"
-                  alt="Happy person after weight loss"
+                  alt="Woman enjoying healthy lifestyle and wellness"
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
                   className="object-cover"
@@ -137,10 +137,10 @@ export default function Home() {
               {/* Stats Cards */}
               <div className="grid grid-cols-2 gap-4 -mt-12 px-4">
                 {[
-                  { number: '95%', text: 'Success Rate' },
-                  { number: '10K+', text: 'Patients Helped' },
+                  { number: '95%', text: 'Women Success Rate' },
+                  { number: '50K+', text: 'Women Helped' },
                   { number: '15+', text: 'Years Experience' },
-                  { number: '24/7', text: 'Support' }
+                  { number: '24/7', text: 'Women Support' }
                 ].map((stat, index) => (
                   <motion.div
                     key={stat.text}
@@ -177,7 +177,7 @@ export default function Home() {
               transition={{ delay: 0.1 }}
               className="text-xl text-gray-600 max-w-3xl mx-auto"
             >
-              Your journey to better health in three simple steps
+              Your women's health journey to better wellness in three simple steps
             </motion.p>
           </div>
 
@@ -188,8 +188,8 @@ export default function Home() {
             {[
               {
                 number: '01',
-                title: 'Complete Your Profile',
-                description: 'Answer a few questions about your health and goals in our secure online portal.',
+                title: 'Complete Your Health Profile',
+                description: 'Answer questions about your women\'s health, wellness goals, and lifestyle in our secure portal.',
                 icon: (
                   <svg className="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -198,8 +198,8 @@ export default function Home() {
               },
               {
                 number: '02',
-                title: 'Get Matched with a Doctor',
-                description: 'Our board-certified physicians will review your case and create a personalized plan.',
+                title: 'Get Matched with Women\'s Health Experts',
+                description: 'Our specialized physicians will review your case and create a personalized women\'s wellness plan.',
                 icon: (
                   <svg className="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -208,8 +208,8 @@ export default function Home() {
               },
               {
                 number: '03',
-                title: 'Start Your Treatment',
-                description: 'Receive FDA-approved medications and ongoing support from our medical team.',
+                title: 'Start Your Women\'s Wellness Journey',
+                description: 'Receive personalized treatments, hormonal support, and ongoing care from our women\'s health team.',
                 icon: (
                   <svg className="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -263,7 +263,7 @@ export default function Home() {
               transition={{ delay: 0.1 }}
               className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto"
             >
-              Our comprehensive approach to weight management combines medical expertise with personalized care.
+              Our comprehensive approach to women's wellness combines medical expertise with personalized care for your unique health journey.
             </motion.p>
           </div>
 
@@ -307,7 +307,7 @@ export default function Home() {
               transition={{ delay: 0.1 }}
               className="text-xl text-gray-600 max-w-3xl mx-auto"
             >
-              Experienced professionals dedicated to your health and wellness journey
+              Experienced women's health professionals dedicated to your wellness and vitality journey
             </motion.p>
           </div>
 
@@ -386,11 +386,11 @@ export default function Home() {
           className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8 text-center"
         >
           <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
-            <span className="block">Ready to transform your life?</span>
-            <span className="block">Start your journey today.</span>
+            <span className="block">Ready to transform your wellness?</span>
+            <span className="block">Start your women's health journey today.</span>
           </h2>
           <p className="mt-4 text-xl text-indigo-100 max-w-3xl mx-auto">
-            Join thousands of women who have achieved their weight loss goals with our personalized approach.
+            Join thousands of women who have achieved their health and wellness goals with our personalized approach.
           </p>
           <div className="mt-8">
             <Link

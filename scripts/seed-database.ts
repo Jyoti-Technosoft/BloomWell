@@ -1147,6 +1147,24 @@ async function createTables() {
       ADD COLUMN IF NOT EXISTS side_effects TEXT;
     `);
 
+    // Add profile columns to users table if they don't exist
+    await query(`
+      ALTER TABLE users 
+      ADD COLUMN IF NOT EXISTS first_name VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS last_name VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS phone VARCHAR(50),
+      ADD COLUMN IF NOT EXISTS date_of_birth DATE,
+      ADD COLUMN IF NOT EXISTS address TEXT,
+      ADD COLUMN IF NOT EXISTS city VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS state VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS zip_code VARCHAR(20),
+      ADD COLUMN IF NOT EXISTS emergency_contact VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS emergency_phone VARCHAR(50),
+      ADD COLUMN IF NOT EXISTS allergies TEXT,
+      ADD COLUMN IF NOT EXISTS medications TEXT,
+      ADD COLUMN IF NOT EXISTS medical_history TEXT;
+    `);
+
     await query(`
     CREATE TABLE IF NOT EXISTS treatments (
       id VARCHAR(255) PRIMARY KEY,
@@ -1163,11 +1181,23 @@ async function createTables() {
     CREATE TABLE IF NOT EXISTS users (
       id VARCHAR(255) PRIMARY KEY,
       email VARCHAR(255) UNIQUE NOT NULL,
-      password_hash VARCHAR(255) NOT NULL,
-      full_name VARCHAR(255),
-      gender VARCHAR(50),
-      phone_number VARCHAR(50),
+      password VARCHAR(255) NOT NULL,
+      name VARCHAR(255),
+      first_name VARCHAR(255),
+      last_name VARCHAR(255),
+      phone VARCHAR(50),
       date_of_birth DATE,
+      address TEXT,
+      city VARCHAR(255),
+      state VARCHAR(255),
+      zip_code VARCHAR(20),
+      emergency_contact VARCHAR(255),
+      emergency_phone VARCHAR(50),
+      allergies TEXT,
+      medications TEXT,
+      medical_history TEXT,
+      role VARCHAR(50) DEFAULT 'user',
+      email_verified BOOLEAN DEFAULT false,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
