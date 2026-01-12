@@ -224,8 +224,11 @@ export default function BookConsultation() {
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow-lg overflow-hidden">
               <div className="p-8">
-                <h3 className="text-xl font-bold text-gray-900 mb-6">Our Physicians</h3>
-                <div className="space-y-4">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-gray-900">Our Physicians</h3>
+                  <span className="text-sm text-gray-500">{physicians.length} physicians available</span>
+                </div>
+                <div className={`space-y-4 ${physicians.length > 5 ? 'max-h-96 overflow-y-auto pr-2' : ''}`}>
                   {physicians.map((physician: Physician) => (
                     <div 
                       key={physician.name}
@@ -256,6 +259,13 @@ export default function BookConsultation() {
                     </div>
                   ))}
                 </div>
+                {physicians.length > 5 && (
+                  <div className="mt-4 text-center">
+                    <p className="text-sm text-gray-500">
+                      Scroll to see all {physicians.length} physicians
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 

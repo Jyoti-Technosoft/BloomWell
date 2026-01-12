@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Toast from '../../components/Toast';
 import VideoConsultation from '../../../components/VideoConsultation';
+import StarRating from '../../components/StarRating';
 import { useUser } from '../../context/UserContext';
 
 interface DoctorProfileProps {
@@ -20,6 +21,10 @@ interface Physician {
   education: string;
   experience: string;
   specialties: string[];
+  rating?: number;
+  reviewCount?: number;
+  consultationCount?: number;
+  initialConsultation?: number;
 }
 
 export default function DoctorProfile({ params }: DoctorProfileProps) {
@@ -42,6 +47,13 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
   // For static generation compatibility
   const resolvedParams = React.use(params);
   const { doctor: slug } = resolvedParams;
+  
+  const formatSlugToTitle = (slug: string) => {
+    return slug
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
 
   useEffect(() => {
     const fetchPhysicians = async () => {
@@ -72,14 +84,18 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 py-12">
-          <div className="animate-pulse">
-            <div className="h-64 bg-gray-200 rounded-lg mb-8"></div>
+      <div className="bg-white">
+        <div className="animate-pulse">
+        <div className="bg-indigo-700">
+          <div className="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
+            <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl lg:text-5xl">
+              {formatSlugToTitle(slug)}
+            </h1>
+          </div>
+        </div>
+          <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
             <div className="h-8 bg-gray-200 rounded mb-4"></div>
-            <div className="h-32 bg-gray-200 rounded mb-8"></div>
-            <div className="h-8 bg-gray-200 rounded mb-4"></div>
-            <div className="h-48 bg-gray-200 rounded"></div>
+            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
           </div>
         </div>
       </div>
@@ -189,6 +205,22 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
               <h1 className="text-4xl font-bold mb-2">{doctorData.name}</h1>
               <p className="text-xl text-indigo-100 mb-1">{doctorData.specialties?.join(', ') || ''}</p>
               <p className="text-indigo-200">{doctorData.education}</p>
+              <div className="flex items-center justify-center md:justify-start mt-2 space-x-4">
+                <StarRating 
+                  rating={doctorData.rating || 0} 
+                  reviewCount={doctorData.reviewCount || 0}
+                  size="sm"
+                  className="text-white"
+                />
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-indigo-300 rounded-full mr-2"></div>
+                  <span className="text-indigo-200">{doctorData.experience} experience</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-green-300 rounded-full mr-2"></div>
+                  <span className="text-indigo-200">{doctorData.consultationCount || 0} consultations</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -233,7 +265,7 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
             <h3 className="text-xl font-semibold text-gray-900 mb-4">Consultation Information</h3>
             <div className="grid md:grid-cols-3 gap-6 text-center">
               <div className="bg-indigo-50 rounded-lg p-4">
-                <p className="text-3xl font-bold text-indigo-600 mb-2">$150</p>
+                <p className="text-3xl font-bold text-indigo-600 mb-2">${doctorData.initialConsultation || 150}</p>
                 <p className="text-gray-600">Initial Consultation</p>
               </div>
               <div className="bg-green-50 rounded-lg p-4">
@@ -241,8 +273,8 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
                 <p className="text-gray-600">Consultation Duration</p>
               </div>
               <div className="bg-purple-50 rounded-lg p-4">
-                <p className="text-3xl font-bold text-purple-600 mb-2">24-48 hrs</p>
-                <p className="text-gray-600">Response Time</p>
+                <p className="text-3xl font-bold text-purple-600 mb-2">12-24 hrs</p>
+                <p className="text-gray-60  0">Response Time</p>
               </div>
             </div>
           </div>

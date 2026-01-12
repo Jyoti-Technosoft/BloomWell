@@ -88,7 +88,7 @@ export default function PrivacyPage() {
               </p>
               <p className="text-gray-600 mb-6">
                 Email: privacy@bloomwell.com<br />
-                Phone: 1-800-BLOOMWELL
+                Phone: 1-800-800-8000
               </p>
             </div>
           </div>

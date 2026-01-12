@@ -48,7 +48,7 @@ export default function TermsPage() {
               </p>
               <p className="text-gray-600 mb-6">
                 Email: support@bloomwell.com<br />
-                Phone: 1-800-BLOOMWELL
+                Phone: 1-800-800-8000
               </p>
 
               <h2 className="text-2xl font-semibold text-gray-900 mt-8 mb-4">7. Changes to Terms</h2>

@@ -9,7 +9,11 @@ const physicians = [
         image: '/doctors/dr-sarah-johnson.jpg',
         education: 'MD, Harvard Medical School',
         experience: '15+ years',
-        specialties: ['Hormone Therapy', 'Weight Management', 'Preventive Care']
+        specialties: ['Hormone Therapy', 'Weight Management', 'Preventive Care'],
+        rating: 5,
+        review_count: 127,
+        consultations_count: 342,
+        initial_consultation: 150
     },
     {
         id: '2',
@@ -19,7 +23,11 @@ const physicians = [
         image: '/doctors/dr-michael-chen.jpg',
         education: 'MD, Johns Hopkins University',
         experience: '12+ years',
-        specialties: ['Endocrinology', 'Diabetes Care', 'Metabolic Health']
+        specialties: ['Endocrinology', 'Diabetes Care', 'Metabolic Health'],
+        rating: 5,
+        review_count: 89,
+        consultations_count: 256,
+        initial_consultation: 150
     },
     {
         id: '3',
@@ -29,7 +37,11 @@ const physicians = [
         image: '/doctors/dr-emily-rodriguez.jpg',
         education: 'MD, Stanford University',
         experience: '10+ years',
-        specialties: ['Primary Care', 'Preventive Medicine', 'Chronic Disease Management']
+        specialties: ['Primary Care', 'Preventive Medicine', 'Chronic Disease Management'],
+        rating: 5,
+        review_count: 156,
+        consultations_count: 412,
+        initial_consultation: 150
     },
     {
         id: '4',
@@ -39,7 +51,11 @@ const physicians = [
         image: '/default-profile.jpg',
         education: 'MD, Mayo Clinic College of Medicine',
         experience: '18+ years',
-        specialties: ['Cardiology', 'Preventive Cardiology', 'Heart Health']
+        specialties: ['Cardiology', 'Preventive Cardiology', 'Heart Health'],
+        rating: 4,
+        review_count: 203,
+        consultations_count: 523,
+        initial_consultation: 150
     },
     {
         id: '5',
@@ -49,7 +65,11 @@ const physicians = [
         image: '/default-profile.jpg',
         education: 'MD, Columbia University',
         experience: '8+ years',
-        specialties: ['Dermatology', 'Cosmetic Procedures', 'Skin Health']
+        specialties: ['Dermatology', 'Cosmetic Procedures', 'Skin Health'],
+        rating: 4,
+        review_count: 78,
+        consultations_count: 189,
+        initial_consultation: 150
     },
     {
         id: '6',
@@ -59,7 +79,11 @@ const physicians = [
         image: '/default-profile.jpg',
         education: 'MD, UCLA School of Medicine',
         experience: '20+ years',
-        specialties: ['Orthopedic Surgery', 'Sports Medicine', 'Joint Replacement']
+        specialties: ['Orthopedic Surgery', 'Sports Medicine', 'Joint Replacement'],
+        rating: 4,
+        review_count: 145,
+        consultations_count: 387,
+        initial_consultation: 150
     },
     {
         id: '7',
@@ -69,7 +93,11 @@ const physicians = [
         image: '/default-profile.jpg',
         education: 'MD, Children\'s Hospital of Philadelphia',
         experience: '7+ years',
-        specialties: ['Pediatrics', 'Developmental Health', 'Child Wellness']
+        specialties: ['Pediatrics', 'Developmental Health', 'Child Wellness'],
+        rating: 4,
+        review_count: 92,
+        consultations_count: 267,
+        initial_consultation: 150
     },
     {
         id: '8',
@@ -79,7 +107,11 @@ const physicians = [
         image: '/default-profile.jpg',
         education: 'MD, Yale School of Medicine',
         experience: '14+ years',
-        specialties: ['Neurology', 'Epilepsy', 'Headache Management']
+        specialties: ['Neurology', 'Epilepsy', 'Headache Management'],
+        rating: 4,
+        review_count: 118,
+        consultations_count: 298,
+        initial_consultation: 150
     },
     {
         id: '9',
@@ -89,7 +121,11 @@ const physicians = [
         image: '/default-profile.jpg',
         education: 'MD, NYU School of Medicine',
         experience: '11+ years',
-        specialties: ['Psychiatry', 'Mental Health', 'Mood Disorders']
+        specialties: ['Psychiatry', 'Mental Health', 'Mood Disorders'],
+        rating: 4,
+        review_count: 167,
+        consultations_count: 445,
+        initial_consultation: 150
     },
     {
         id: '10',
@@ -99,7 +135,11 @@ const physicians = [
         image: '/default-profile.jpg',
         education: 'MD, University of Pennsylvania',
         experience: '13+ years',
-        specialties: ['Gastroenterology', 'Endoscopy', 'Digestive Health']
+        specialties: ['Gastroenterology', 'Endoscopy', 'Digestive Health'],
+        rating: 4,
+        review_count: 134,
+        consultations_count: 312,
+        initial_consultation: 150
     },
     {
         id: '11',
@@ -109,7 +149,11 @@ const physicians = [
         image: '/default-profile.jpg',
         education: 'MD, Northwestern University',
         experience: '9+ years',
-        specialties: ['Rheumatology', 'Autoimmune Diseases', 'Arthritis']
+        specialties: ['Rheumatology', 'Autoimmune Diseases', 'Arthritis'],
+        rating: 4,
+        review_count: 81,
+        consultations_count: 198,
+        initial_consultation: 150
     },
     {
         id: '12',
@@ -119,7 +163,11 @@ const physicians = [
         image: '/default-profile.jpg',
         education: 'MD, Duke University School of Medicine',
         experience: '16+ years',
-        specialties: ['Pulmonology', 'Sleep Medicine', 'Respiratory Health']
+        specialties: ['Pulmonology', 'Sleep Medicine', 'Respiratory Health'],
+        rating: 4,
+        review_count: 109,
+        consultations_count: 276,
+        initial_consultation: 150
     }
 ];
 
@@ -1147,6 +1195,24 @@ async function createTables() {
       ADD COLUMN IF NOT EXISTS side_effects TEXT;
     `);
 
+    // Add profile columns to users table if they don't exist
+    await query(`
+      ALTER TABLE users 
+      ADD COLUMN IF NOT EXISTS first_name VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS last_name VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS phone VARCHAR(50),
+      ADD COLUMN IF NOT EXISTS date_of_birth DATE,
+      ADD COLUMN IF NOT EXISTS address TEXT,
+      ADD COLUMN IF NOT EXISTS city VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS state VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS zip_code VARCHAR(20),
+      ADD COLUMN IF NOT EXISTS emergency_contact VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS emergency_phone VARCHAR(50),
+      ADD COLUMN IF NOT EXISTS allergies TEXT,
+      ADD COLUMN IF NOT EXISTS medications TEXT,
+      ADD COLUMN IF NOT EXISTS medical_history TEXT;
+    `);
+
     await query(`
     CREATE TABLE IF NOT EXISTS treatments (
       id VARCHAR(255) PRIMARY KEY,
@@ -1163,11 +1229,23 @@ async function createTables() {
     CREATE TABLE IF NOT EXISTS users (
       id VARCHAR(255) PRIMARY KEY,
       email VARCHAR(255) UNIQUE NOT NULL,
-      password_hash VARCHAR(255) NOT NULL,
-      full_name VARCHAR(255),
-      gender VARCHAR(50),
-      phone_number VARCHAR(50),
+      password VARCHAR(255) NOT NULL,
+      name VARCHAR(255),
+      first_name VARCHAR(255),
+      last_name VARCHAR(255),
+      phone VARCHAR(50),
       date_of_birth DATE,
+      address TEXT,
+      city VARCHAR(255),
+      state VARCHAR(255),
+      zip_code VARCHAR(20),
+      emergency_contact VARCHAR(255),
+      emergency_phone VARCHAR(50),
+      allergies TEXT,
+      medications TEXT,
+      medical_history TEXT,
+      role VARCHAR(50) DEFAULT 'user',
+      email_verified BOOLEAN DEFAULT false,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
@@ -1232,8 +1310,8 @@ async function seedPhysicians() {
     for (const physician of physicians) {
         await query(
             `
-        INSERT INTO physicians (id, name, role, bio, image, education, experience, specialties)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        INSERT INTO physicians (id, name, role, bio, image, education, experience, specialties, rating, review_count, consultations_count, initial_consultation)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
         ON CONFLICT (id) DO UPDATE SET
           name = excluded.name,
           role = excluded.role,
@@ -1242,6 +1320,10 @@ async function seedPhysicians() {
           education = excluded.education,
           experience = excluded.experience,
           specialties = excluded.specialties,
+          rating = excluded.rating,
+          review_count = excluded.review_count,
+          consultations_count = excluded.consultations_count,
+          initial_consultation = excluded.initial_consultation,
           updated_at = CURRENT_TIMESTAMP
       `,
             [
@@ -1252,7 +1334,11 @@ async function seedPhysicians() {
                 physician.image,
                 physician.education,
                 physician.experience,
-                physician.specialties ? physician.specialties.join(', ') : null
+                physician.specialties ? physician.specialties.join(', ') : null,
+                physician.rating,
+                physician.review_count,
+                physician.consultations_count,
+                physician.initial_consultation
             ]
         );
     }

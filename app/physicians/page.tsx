@@ -12,6 +12,30 @@ function PhysiciansContent() {
   const [physiciansData, setPhysiciansData] = useState<any>({ members: [], currentPage: 1, totalPages: 1, hasNext: false, hasPrev: false });
   const [loading, setLoading] = useState(true);
   const [expandedBios, setExpandedBios] = useState<Set<string>>(new Set());
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedSpecialty, setSelectedSpecialty] = useState('');
+  const [selectedRating, setSelectedRating] = useState('');
+
+  // Get all unique specialties for filter dropdown
+  const allSpecialties: string[] = physiciansData.members ? 
+    [...new Set(physiciansData.members.flatMap((doctor: any) => doctor.specialties || []))] as string[] : [];
+
+  // Filter physicians based on search criteria
+  const filteredPhysicians = physiciansData.members ? physiciansData.members.filter((doctor: any) => {
+    const matchesSearch = !searchTerm || 
+      doctor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      doctor.specialties?.some((spec: string) => spec.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      doctor.bio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      doctor.role?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesSpecialty = !selectedSpecialty || 
+      doctor.specialties?.some((spec: string) => spec === selectedSpecialty);
+    
+    const matchesRating = !selectedRating || 
+      doctor.rating >= parseFloat(selectedRating);
+    
+    return matchesSearch && matchesSpecialty && matchesRating;
+  }) : [];
 
   useEffect(() => {
     const fetchPhysicians = async () => {
@@ -78,7 +102,84 @@ function PhysiciansContent() {
           <h2 className="text-3xl font-bold text-gray-900 mb-4">Meet Our Specialists</h2>
           <div className="w-24 h-1 bg-linear-to-r from-blue-600 to-indigo-600 mx-auto rounded-full"></div>
         </div>
-        
+
+        {/* Search and Filter Section */}
+        <div className="mb-8 bg-white rounded-lg shadow-md p-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Search Input */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Search Physicians</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search by name, specialty, or bio..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="absolute right-2 top-2.5 text-gray-400 hover:text-gray-600"
+                  >
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Specialty Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Specialty</label>
+              <select
+                value={selectedSpecialty}
+                onChange={(e) => setSelectedSpecialty(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+              >
+                <option value="">All Specialties</option>
+                {allSpecialties.map((specialty: string) => (
+                  <option value={specialty}>
+                    {specialty}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Rating Filter */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Rating</label>
+              <select
+                value={selectedRating}
+                onChange={(e) => setSelectedRating(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+              >
+                <option value="">All Ratings</option>
+                <option value="5">5 Stars</option>
+                <option value="4">4+ Stars</option>
+                <option value="3">3+ Stars</option>
+                <option value="2">2+ Stars</option>
+                <option value="1">1+ Stars</option>
+              </select>
+            </div>
+
+            {/* Clear Filters Button */}
+            <div className="flex items-end">
+              <button
+                onClick={() => {
+                  setSearchTerm('');
+                  setSelectedSpecialty('');
+                  setSelectedRating('');
+                }}
+                className="w-full px-4 py-2 bg-gray-600 text-white font-medium rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                Clear Filters
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {loading ? (
             Array.from({ length: 9 }, (_, i) => (
@@ -96,7 +197,7 @@ function PhysiciansContent() {
               </div>
             ))
           ) : (
-            physiciansData.members.map((doctor: any, index: number) => (
+            filteredPhysicians.map((doctor: any, index: number) => (
               <div
                 key={doctor.id}
                 className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-100 hover:border-blue-300 flex flex-col"
@@ -186,16 +287,16 @@ function PhysiciansContent() {
                   {/* Stats Row */}
                   <div className="flex justify-around mb-4 py-2 bg-gray-50 rounded-lg">
                     <div className="text-center">
-                      <div className="text-lg font-bold text-blue-600">100+</div>
+                      <div className="text-lg font-bold text-blue-600">{doctor.consultationCount || 0}</div>
                       <div className="text-xs text-gray-500">Consultations</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-bold text-green-600">4.9</div>
+                      <div className="text-lg font-bold text-green-600">{doctor.rating || 0}</div>
                       <div className="text-xs text-gray-500">Rating</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg font-bold text-purple-600">15+</div>
-                      <div className="text-xs text-gray-500">Years</div>
+                      <div className="text-lg font-bold text-indigo-600">${doctor.initialConsultation || 150}</div>
+                      <div className="text-xs text-gray-500">Initial Fee</div>
                     </div>
                   </div>
 

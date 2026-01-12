@@ -14,10 +14,22 @@ type FormData = {
   phoneNumber: string;
   dateOfBirth: string;
   gender: string;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   password: string;
   confirmPassword: string;
   agreeTerms: boolean;
+  // Address Information
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  // Medical Information
+  emergencyContact: string;
+  emergencyPhone: string;
+  allergies: string;
+  medications: string;
+  medicalHistory: string;
 };
 
 const SignUp = () => {
@@ -170,22 +182,43 @@ const SignUp = () => {
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
                   <label
-                    htmlFor="fullName"
+                    htmlFor="firstName"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Full Name
+                    First Name
                   </label>
                   <input
                     type="text"
-                    id="fullName"
-                    {...register("fullName", {
-                      required: "Full name is required",
+                    id="firstName"
+                    {...register("firstName", {
+                      required: "First name is required",
                     })}
                     className={inputClassName}
                   />
-                  {errors.fullName && (
+                  {errors.firstName && (
                     <p className="mt-1 text-sm text-red-600">
-                      {errors.fullName.message}
+                      {errors.firstName.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label
+                    htmlFor="lastName"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    id="lastName"
+                    {...register("lastName", {
+                      required: "Last name is required",
+                    })}
+                    className={inputClassName}
+                  />
+                  {errors.lastName && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.lastName.message}
                     </p>
                   )}
                 </div>
@@ -312,7 +345,156 @@ const SignUp = () => {
                     </p>
                   )}
                 </div>
+              </div>
 
+              {/* Address Information */}
+              <h2 className="text-2xl font-bold text-gray-900">
+                Address Information
+              </h2>
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                  <label
+                    htmlFor="address"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Street Address
+                  </label>
+                  <input
+                    type="text"
+                    id="address"
+                    {...register("address")}
+                    className={inputClassName}
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="city"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    City
+                  </label>
+                  <input
+                    type="text"
+                    id="city"
+                    {...register("city")}
+                    className={inputClassName}
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="state"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    State
+                  </label>
+                  <input
+                    type="text"
+                    id="state"
+                    {...register("state")}
+                    className={inputClassName}
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="zipCode"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    ZIP Code
+                  </label>
+                  <input
+                    type="text"
+                    id="zipCode"
+                    {...register("zipCode")}
+                    className={inputClassName}
+                  />
+                </div>
+              </div>
+
+              {/* Medical Information */}
+              <h2 className="text-2xl font-bold text-gray-900">
+                Medical Information
+              </h2>
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                  <label
+                    htmlFor="emergencyContact"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Emergency Contact Name
+                  </label>
+                  <input
+                    type="text"
+                    id="emergencyContact"
+                    {...register("emergencyContact")}
+                    className={inputClassName}
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="emergencyPhone"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Emergency Contact Phone
+                  </label>
+                  <input
+                    type="tel"
+                    id="emergencyPhone"
+                    {...register("emergencyPhone")}
+                    className={inputClassName}
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label
+                    htmlFor="allergies"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Allergies
+                  </label>
+                  <textarea
+                    id="allergies"
+                    rows={3}
+                    {...register("allergies")}
+                    className={inputClassName}
+                    placeholder="List any known allergies..."
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label
+                    htmlFor="medications"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Current Medications
+                  </label>
+                  <textarea
+                    id="medications"
+                    rows={3}
+                    {...register("medications")}
+                    className={inputClassName}
+                    placeholder="List current medications..."
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label
+                    htmlFor="medicalHistory"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Medical History
+                  </label>
+                  <textarea
+                    id="medicalHistory"
+                    rows={4}
+                    {...register("medicalHistory")}
+                    className={inputClassName}
+                    placeholder="Relevant medical history..."
+                  />
+                </div>
+              </div>
+
+              {/* Password Section */}
+              <h2 className="text-2xl font-bold text-gray-900">
+                Security
+              </h2>
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
                   <label
                     htmlFor="password"

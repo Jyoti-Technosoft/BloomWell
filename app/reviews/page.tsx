@@ -170,12 +170,13 @@ export default function ReviewsPage() {
               <div className="px-4 py-5 sm:p-6">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-lg font-medium text-gray-900">Patient Reviews</h3>
-                  <button
-                    onClick={() => setShowForm(!showForm)}
+                  {!showForm &&
+                    <button
+                    onClick={() => setShowForm(true)}
                     className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                   >
-                    {showForm ? 'Cancel' : 'Write a Review'}
-                  </button>
+                    Write a Review
+                  </button>}
                 </div>
 
                 {showForm && (
@@ -259,6 +260,12 @@ export default function ReviewsPage() {
                         >
                           {submitting ? 'Submitting...' : 'Submit Review'}
                         </button>
+                        <button
+                          onClick={() => setShowForm(false)}
+                          className="inline-flex items-center px-4 py-2 mx-2 border border-transparent text-sm font-medium rounded-md bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
+                        >
+                          Cancel
+                        </button>
                       </div>
                     </form>
                   </div>
@@ -281,28 +288,26 @@ export default function ReviewsPage() {
                           key={review.id}
                           className="pt-6 border-t border-gray-200"
                         >
-                          <div className="flow-root bg-gray-50 rounded-lg px-6 pb-8">
-                            <div className="-mt-6">
-                              <div className="flex items-center justify-between">
-                                <ReviewStars rating={review.rating} />
-                                <p className="text-sm text-gray-500">
-                                  {new Date(review.created_at).toLocaleDateString(
-                                    'en-US',
-                                    {
-                                      year: 'numeric',
-                                      month: 'long',
-                                      day: 'numeric',
-                                    }
-                                  )}
-                                </p>
-                              </div>
-                              <p className="mt-4 text-base text-gray-700">
-                                {review.content}
-                              </p>
-                              <p className="mt-3 text-sm font-medium text-gray-900">
-                                {review.name}
+                          <div className="flow-root bg-gray-50 rounded-lg p-4">
+                            <div className="flex items-center justify-between">
+                              <ReviewStars rating={review.rating} />
+                              <p className="text-sm text-gray-500">
+                                {new Date(review.created_at).toLocaleDateString(
+                                  'en-US',
+                                  {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                  }
+                                )}
                               </p>
                             </div>
+                            <p className="mt-4 text-base text-gray-700">
+                              {review.content}
+                            </p>
+                            <p className="mt-3 text-sm font-medium text-gray-900">
+                              {review.name}
+                            </p>
                           </div>
                         </div>
                       ))}

@@ -122,6 +122,13 @@ export function TreatmentContent({ treatment }: { treatment: string }) {
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const formatSlugToTitle = (slug: string) => {
+    return slug
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -155,7 +162,13 @@ export function TreatmentContent({ treatment }: { treatment: string }) {
     return (
       <div className="bg-white">
         <div className="animate-pulse">
-          <div className="bg-indigo-700 h-64"></div>
+        <div className="bg-indigo-700">
+          <div className="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
+            <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl lg:text-5xl">
+              {formatSlugToTitle(treatment)}
+            </h1>
+          </div>
+        </div>
           <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
             <div className="h-8 bg-gray-200 rounded mb-4"></div>
             <div className="h-4 bg-gray-200 rounded w-3/4"></div>
