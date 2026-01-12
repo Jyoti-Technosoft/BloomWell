@@ -32,6 +32,10 @@ export async function GET(request: NextRequest) {
       education: row.education,
       experience: row.experience,
       specialties: row.specialties ? row.specialties.split(',').map((s: string) => s.trim()) : [],
+      rating: parseFloat(row.rating) || 0,
+      reviewCount: parseInt(row.review_count) || 0,
+      consultationCount: parseInt(row.consultations_count) || 0,
+      initialConsultation: parseFloat(row.initial_consultation) || 150,
     }));
 
     return NextResponse.json({
@@ -74,6 +78,10 @@ export async function POST(request: NextRequest) {
       education: result.rows[0].education,
       experience: result.rows[0].experience,
       specialties: result.rows[0].specialties ? result.rows[0].specialties.split(',').map((s: string) => s.trim()) : [],
+      rating: parseFloat(result.rows[0].rating) || 0,
+      reviewCount: parseInt(result.rows[0].review_count) || 0,
+      consultationCount: parseInt(result.rows[0].consultations_count) || 0,
+      initialConsultation: parseFloat(result.rows[0].initial_consultation) || 150,
     };
 
     return NextResponse.json(physician, { status: 201 });

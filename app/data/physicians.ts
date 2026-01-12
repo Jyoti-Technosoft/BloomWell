@@ -8,6 +8,10 @@ export interface Physician {
   education: string;
   experience: string;
   specialties: string[];
+  rating?: number;
+  reviewCount?: number;
+  consultationCount?: number;
+  initialConsultation?: number;
 }
 
 export const physicians: Physician[] = [
@@ -19,7 +23,11 @@ export const physicians: Physician[] = [
     image: '/doctors/dr-sarah-johnson.jpg',
     education: 'MD, Harvard Medical School',
     experience: '15+ years',
-    specialties: ['Hormone Therapy', 'Weight Management', 'Preventive Care']
+    specialties: ['Hormone Therapy', 'Weight Management', 'Preventive Care'],
+    rating: 5,
+    reviewCount: 127,
+    consultationCount: 342,
+    initialConsultation: 150
   },
   {
     id: '2',
@@ -29,7 +37,11 @@ export const physicians: Physician[] = [
     image: '/doctors/dr-michael-chen.jpg',
     education: 'MD, Johns Hopkins University',
     experience: '12+ years',
-    specialties: ['Endocrinology', 'Diabetes Care', 'Metabolic Health']
+    specialties: ['Endocrinology', 'Diabetes Care', 'Metabolic Health'],
+    rating: 5,
+    reviewCount: 89,
+    consultationCount: 256,
+    initialConsultation: 150
   },
   {
     id: '3',
@@ -39,7 +51,11 @@ export const physicians: Physician[] = [
     image: '/doctors/dr-emily-rodriguez.jpg',
     education: 'MD, Stanford University',
     experience: '10+ years',
-    specialties: ['Primary Care', 'Preventive Medicine', 'Chronic Disease Management']
+    specialties: ['Primary Care', 'Preventive Medicine', 'Chronic Disease Management'],
+    rating: 5,
+    reviewCount: 156,
+    consultationCount: 412,
+    initialConsultation: 150
   },
   {
     id: '4',
@@ -49,7 +65,11 @@ export const physicians: Physician[] = [
     image: '/default-profile.jpg',
     education: 'MD, Mayo Clinic College of Medicine',
     experience: '18+ years',
-    specialties: ['Cardiology', 'Preventive Cardiology', 'Heart Health']
+    specialties: ['Cardiology', 'Preventive Cardiology', 'Heart Health'],
+    rating: 4,
+    reviewCount: 203,
+    consultationCount: 523,
+    initialConsultation: 150
   },
   {
     id: '5',
@@ -59,7 +79,11 @@ export const physicians: Physician[] = [
     image: '/default-profile.jpg',
     education: 'MD, Columbia University',
     experience: '8+ years',
-    specialties: ['Dermatology', 'Cosmetic Procedures', 'Skin Health']
+    specialties: ['Dermatology', 'Cosmetic Procedures', 'Skin Health'],
+    rating: 4,
+    reviewCount: 78,
+    consultationCount: 189,
+    initialConsultation: 150
   },
   {
     id: '6',
@@ -69,7 +93,11 @@ export const physicians: Physician[] = [
     image: '/default-profile.jpg',
     education: 'MD, UCLA School of Medicine',
     experience: '20+ years',
-    specialties: ['Orthopedic Surgery', 'Sports Medicine', 'Joint Replacement']
+    specialties: ['Orthopedic Surgery', 'Sports Medicine', 'Joint Replacement'],
+    rating: 4,
+    reviewCount: 145,
+    consultationCount: 387,
+    initialConsultation: 150
   },
   {
     id: '7',
@@ -79,7 +107,11 @@ export const physicians: Physician[] = [
     image: '/default-profile.jpg',
     education: 'MD, Children\'s Hospital of Philadelphia',
     experience: '7+ years',
-    specialties: ['Pediatrics', 'Developmental Health', 'Child Wellness']
+    specialties: ['Pediatrics', 'Developmental Health', 'Child Wellness'],
+    rating: 4,
+    reviewCount: 92,
+    consultationCount: 267,
+    initialConsultation: 150
   },
   {
     id: '8',
@@ -89,7 +121,11 @@ export const physicians: Physician[] = [
     image: '/default-profile.jpg',
     education: 'MD, Yale School of Medicine',
     experience: '14+ years',
-    specialties: ['Neurology', 'Epilepsy', 'Headache Management']
+    specialties: ['Neurology', 'Epilepsy', 'Headache Management'],
+    rating: 4,
+    reviewCount: 118,
+    consultationCount: 298,
+    initialConsultation: 150
   },
   {
     id: '9',
@@ -99,7 +135,11 @@ export const physicians: Physician[] = [
     image: '/default-profile.jpg',
     education: 'MD, NYU School of Medicine',
     experience: '11+ years',
-    specialties: ['Psychiatry', 'Mental Health', 'Mood Disorders']
+    specialties: ['Psychiatry', 'Mental Health', 'Mood Disorders'],
+    rating: 4,
+    reviewCount: 167,
+    consultationCount: 445,
+    initialConsultation: 150
   },
   {
     id: '10',
@@ -109,7 +149,11 @@ export const physicians: Physician[] = [
     image: '/default-profile.jpg',
     education: 'MD, University of Pennsylvania',
     experience: '13+ years',
-    specialties: ['Gastroenterology', 'Endoscopy', 'Digestive Health']
+    specialties: ['Gastroenterology', 'Endoscopy', 'Digestive Health'],
+    rating: 4,
+    reviewCount: 134,
+    consultationCount: 312,
+    initialConsultation: 150
   },
   {
     id: '11',
@@ -119,7 +163,11 @@ export const physicians: Physician[] = [
     image: '/default-profile.jpg',
     education: 'MD, Northwestern University',
     experience: '9+ years',
-    specialties: ['Rheumatology', 'Autoimmune Diseases', 'Arthritis']
+    specialties: ['Rheumatology', 'Autoimmune Diseases', 'Arthritis'],
+    rating: 4,
+    reviewCount: 81,
+    consultationCount: 198,
+    initialConsultation: 150
   },
   {
     id: '12',
@@ -129,7 +177,11 @@ export const physicians: Physician[] = [
     image: '/default-profile.jpg',
     education: 'MD, Duke University School of Medicine',
     experience: '16+ years',
-    specialties: ['Pulmonology', 'Sleep Medicine', 'Respiratory Health']
+    specialties: ['Pulmonology', 'Sleep Medicine', 'Respiratory Health'],
+    rating: 4,
+    reviewCount: 109,
+    consultationCount: 276,
+    initialConsultation: 150
   }
 ];
 
