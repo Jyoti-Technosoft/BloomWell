@@ -12,6 +12,7 @@ export interface Physician {
   reviewCount?: number;
   consultationCount?: number;
   initialConsultation?: number;
+  availableTimeSlots?: string[];
 }
 
 export const physicians: Physician[] = [
@@ -27,7 +28,8 @@ export const physicians: Physician[] = [
     rating: 5,
     reviewCount: 127,
     consultationCount: 342,
-    initialConsultation: 150
+    initialConsultation: 150,
+    availableTimeSlots: ['9:00 AM', '10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM', '4:00 PM']
   },
   {
     id: '2',
@@ -41,7 +43,8 @@ export const physicians: Physician[] = [
     rating: 5,
     reviewCount: 89,
     consultationCount: 256,
-    initialConsultation: 150
+    initialConsultation: 150,
+    availableTimeSlots: ['8:30 AM', '9:30 AM', '10:30 AM', '11:30 AM', '1:30 PM', '2:30 PM', '3:30 PM']
   },
   {
     id: '3',
@@ -55,7 +58,8 @@ export const physicians: Physician[] = [
     rating: 5,
     reviewCount: 156,
     consultationCount: 412,
-    initialConsultation: 150
+    initialConsultation: 150,
+    availableTimeSlots: ['8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM']
   },
   {
     id: '4',
@@ -69,7 +73,8 @@ export const physicians: Physician[] = [
     rating: 4,
     reviewCount: 203,
     consultationCount: 523,
-    initialConsultation: 150
+    initialConsultation: 150,
+    availableTimeSlots: ['9:00 AM', '10:30 AM', '12:00 PM', '2:30 PM', '4:00 PM']
   },
   {
     id: '5',
@@ -83,7 +88,8 @@ export const physicians: Physician[] = [
     rating: 4,
     reviewCount: 78,
     consultationCount: 189,
-    initialConsultation: 150
+    initialConsultation: 150,
+    availableTimeSlots: ['10:00 AM', '11:30 AM', '1:00 PM', '2:30 PM', '4:00 PM']
   },
   {
     id: '6',
@@ -97,7 +103,8 @@ export const physicians: Physician[] = [
     rating: 4,
     reviewCount: 145,
     consultationCount: 387,
-    initialConsultation: 150
+    initialConsultation: 150,
+    availableTimeSlots: ['8:00 AM', '9:30 AM', '11:00 AM', '1:30 PM', '3:00 PM', '4:30 PM']
   },
   {
     id: '7',
@@ -111,7 +118,8 @@ export const physicians: Physician[] = [
     rating: 4,
     reviewCount: 92,
     consultationCount: 267,
-    initialConsultation: 150
+    initialConsultation: 150,
+    availableTimeSlots: ['9:00 AM', '10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM', '4:00 PM']
   },
   {
     id: '8',
@@ -125,7 +133,8 @@ export const physicians: Physician[] = [
     rating: 4,
     reviewCount: 118,
     consultationCount: 298,
-    initialConsultation: 150
+    initialConsultation: 150,
+    availableTimeSlots: ['10:30 AM', '12:00 PM', '2:00 PM', '3:30 PM', '5:00 PM']
   },
   {
     id: '9',
@@ -139,7 +148,8 @@ export const physicians: Physician[] = [
     rating: 4,
     reviewCount: 167,
     consultationCount: 445,
-    initialConsultation: 150
+    initialConsultation: 150,
+    availableTimeSlots: ['11:00 AM', '1:00 PM', '2:30 PM', '4:00 PM']
   },
   {
     id: '10',
@@ -153,7 +163,8 @@ export const physicians: Physician[] = [
     rating: 4,
     reviewCount: 134,
     consultationCount: 312,
-    initialConsultation: 150
+    initialConsultation: 150,
+    availableTimeSlots: ['8:30 AM', '10:00 AM', '11:30 AM', '1:30 PM', '3:00 PM']
   },
   {
     id: '11',
@@ -167,7 +178,8 @@ export const physicians: Physician[] = [
     rating: 4,
     reviewCount: 81,
     consultationCount: 198,
-    initialConsultation: 150
+    initialConsultation: 150,
+    availableTimeSlots: ['9:30 AM', '11:00 AM', '12:30 PM', '2:30 PM', '4:30 PM']
   },
   {
     id: '12',
@@ -181,7 +193,8 @@ export const physicians: Physician[] = [
     rating: 4,
     reviewCount: 109,
     consultationCount: 276,
-    initialConsultation: 150
+    initialConsultation: 150,
+    availableTimeSlots: ['10:00 AM', '11:30 AM', '1:00 PM', '2:30 PM', '4:00 PM', '5:30 PM']
   }
 ];
 

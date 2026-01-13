@@ -13,7 +13,8 @@ const physicians = [
         rating: 5,
         review_count: 127,
         consultations_count: 342,
-        initial_consultation: 150
+        initial_consultation: 150,
+        available_time_slots: ['9:00 AM', '10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM', '4:00 PM']
     },
     {
         id: '2',
@@ -27,7 +28,8 @@ const physicians = [
         rating: 5,
         review_count: 89,
         consultations_count: 256,
-        initial_consultation: 150
+        initial_consultation: 150,
+        available_time_slots: ['8:30 AM', '9:30 AM', '10:30 AM', '11:30 AM', '1:30 PM', '2:30 PM', '3:30 PM']
     },
     {
         id: '3',
@@ -41,7 +43,8 @@ const physicians = [
         rating: 5,
         review_count: 156,
         consultations_count: 412,
-        initial_consultation: 150
+        initial_consultation: 150,
+        available_time_slots: ['8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM']
     },
     {
         id: '4',
@@ -55,7 +58,8 @@ const physicians = [
         rating: 4,
         review_count: 203,
         consultations_count: 523,
-        initial_consultation: 150
+        initial_consultation: 150,
+        available_time_slots: ['9:00 AM', '10:30 AM', '12:00 PM', '2:30 PM', '4:00 PM']
     },
     {
         id: '5',
@@ -69,7 +73,8 @@ const physicians = [
         rating: 4,
         review_count: 78,
         consultations_count: 189,
-        initial_consultation: 150
+        initial_consultation: 150,
+        available_time_slots: ['10:00 AM', '11:30 AM', '1:00 PM', '2:30 PM', '4:00 PM']
     },
     {
         id: '6',
@@ -83,7 +88,8 @@ const physicians = [
         rating: 4,
         review_count: 145,
         consultations_count: 387,
-        initial_consultation: 150
+        initial_consultation: 150,
+        available_time_slots: ['8:00 AM', '9:30 AM', '11:00 AM', '1:30 PM', '3:00 PM', '4:30 PM']
     },
     {
         id: '7',
@@ -97,7 +103,8 @@ const physicians = [
         rating: 4,
         review_count: 92,
         consultations_count: 267,
-        initial_consultation: 150
+        initial_consultation: 150,
+        available_time_slots: ['9:00 AM', '10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM', '4:00 PM']
     },
     {
         id: '8',
@@ -111,7 +118,8 @@ const physicians = [
         rating: 4,
         review_count: 118,
         consultations_count: 298,
-        initial_consultation: 150
+        initial_consultation: 150,
+        available_time_slots: ['10:30 AM', '12:00 PM', '2:00 PM', '3:30 PM', '5:00 PM']
     },
     {
         id: '9',
@@ -125,7 +133,8 @@ const physicians = [
         rating: 4,
         review_count: 167,
         consultations_count: 445,
-        initial_consultation: 150
+        initial_consultation: 150,
+        available_time_slots: ['11:00 AM', '1:00 PM', '2:30 PM', '4:00 PM']
     },
     {
         id: '10',
@@ -139,7 +148,8 @@ const physicians = [
         rating: 4,
         review_count: 134,
         consultations_count: 312,
-        initial_consultation: 150
+        initial_consultation: 150,
+        available_time_slots: ['8:30 AM', '10:00 AM', '11:30 AM', '1:30 PM', '3:00 PM']
     },
     {
         id: '11',
@@ -153,7 +163,8 @@ const physicians = [
         rating: 4,
         review_count: 81,
         consultations_count: 198,
-        initial_consultation: 150
+        initial_consultation: 150,
+        available_time_slots: ['9:30 AM', '11:00 AM', '12:30 PM', '2:30 PM', '4:30 PM']
     },
     {
         id: '12',
@@ -167,7 +178,8 @@ const physicians = [
         rating: 4,
         review_count: 109,
         consultations_count: 276,
-        initial_consultation: 150
+        initial_consultation: 150,
+        available_time_slots: ['10:00 AM', '11:30 AM', '1:00 PM', '2:30 PM', '4:00 PM', '5:30 PM']
     }
 ];
 

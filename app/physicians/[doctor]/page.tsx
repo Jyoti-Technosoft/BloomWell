@@ -25,6 +25,7 @@ interface Physician {
   reviewCount?: number;
   consultationCount?: number;
   initialConsultation?: number;
+  availableTimeSlots?: string[];
 }
 
 export default function DoctorProfile({ params }: DoctorProfileProps) {
@@ -37,6 +38,7 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
   const [doctorData, setDoctorData] = useState<Physician | null>(null);
   const [physicians, setPhysicians] = useState<Physician[]>([]);
   const [loading, setLoading] = useState(true);
+  const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
   const { user } = useUser();
   const router = useRouter();
 
@@ -82,21 +84,34 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
     fetchPhysicians();
   }, [slug]);
 
+  useEffect(() => {
+    if (doctorData) {
+      // Use the doctor's specific time slots
+      if (doctorData.availableTimeSlots) {
+        setAvailableTimeSlots(doctorData.availableTimeSlots);
+      } else {
+        // Fallback to default time slots if doctor doesn't have specific ones
+        setAvailableTimeSlots(['9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM', '4:00 PM', '4:30 PM']);
+      }
+    } else {
+      setAvailableTimeSlots([]);
+    }
+  }, [doctorData]);
+
   if (loading) {
     return (
       <div className="bg-white">
-        <div className="animate-pulse">
-        <div className="bg-indigo-700">
-          <div className="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
-            <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl lg:text-5xl">
+        <div className="bg-linear-to-r from-indigo-600 to-purple-600 text-white">
+          <div className="max-w-4xl mx-auto px-12 py-12">
+            <h1 className="text-4xl font-bold mb-2">
               {formatSlugToTitle(slug)}
             </h1>
+            <div className="mt-6 h-8 max-w-3xl bg-linear-to-r from-indigo-500 to-purple-500"></div>
           </div>
         </div>
-          <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
-            <div className="h-8 bg-gray-200 rounded mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-          </div>
+        <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+          <div className="h-8 bg-gray-200 rounded mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
         </div>
       </div>
     );
@@ -177,12 +192,6 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
       });
     }
   };
-
-  const timeSlots = [
-    '9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM',
-    '11:00 AM', '11:30 AM', '2:00 PM', '2:30 PM',
-    '3:00 PM', '3:30 PM', '4:00 PM', '4:30 PM'
-  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -399,7 +408,7 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="">Select a time</option>
-                  {timeSlots.map(time => (
+                  {availableTimeSlots.map((time: string) => (
                     <option key={time} value={time}>{time}</option>
                   ))}
                 </select>

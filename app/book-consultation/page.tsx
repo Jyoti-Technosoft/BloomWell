@@ -15,6 +15,11 @@ interface Physician {
   education: string;
   experience: string;
   specialties: string[];
+  rating?: number;
+  reviewCount?: number;
+  consultationCount?: number;
+  initialConsultation?: number;
+  availableTimeSlots?: string[];
 }
 
 export default function BookConsultation() {
@@ -97,11 +102,25 @@ export default function BookConsultation() {
     }
   };
 
-  const timeSlots = [
-    '9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM',
-    '11:00 AM', '11:30 AM', '2:00 PM', '2:30 PM',
-    '3:00 PM', '3:30 PM', '4:00 PM', '4:30 PM'
-  ];
+  const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (selectedPhysician) {
+      // Find the selected physician and get their time slots
+      const physician = physicians.find(p => p.name === selectedPhysician);
+      if (physician && physician.availableTimeSlots) {
+        setAvailableTimeSlots(physician.availableTimeSlots);
+      } else {
+        // Fallback to default time slots if physician doesn't have specific ones
+        setAvailableTimeSlots(['9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM', '4:00 PM', '4:30 PM']);
+      }
+      // Clear selected time when physician changes
+      setSelectedTime('');
+    } else {
+      setAvailableTimeSlots([]);
+      setSelectedTime('');
+    }
+  }, [selectedPhysician, physicians]);
 
   // Get today's date in YYYY-MM-DD format for min date attribute
   const today = new Date().toISOString().split('T')[0];
@@ -170,17 +189,27 @@ export default function BookConsultation() {
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Time *</label>
-                    <select
-                      required
-                      value={selectedTime}
-                      onChange={(e) => setSelectedTime(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                    >
-                      <option value="">Select a time</option>
-                      {timeSlots.map(time => (
-                        <option key={time} value={time}>{time}</option>
-                      ))}
-                    </select>
+                    {!selectedPhysician ? (
+                      <div className="w-full px-4 py-3 border border-gray-300 rounded-md bg-gray-50 text-gray-500">
+                        Please select a physician first
+                      </div>
+                    ) : availableTimeSlots.length === 0 ? (
+                      <div className="w-full px-4 py-3 border border-gray-300 rounded-md bg-gray-50 text-gray-500">
+                        Loading available times...
+                      </div>
+                    ) : (
+                      <select
+                        required
+                        value={selectedTime}
+                        onChange={(e) => setSelectedTime(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      >
+                        <option value="">Select a time</option>
+                        {availableTimeSlots.map((time: string) => (
+                          <option key={time} value={time}>{time}</option>
+                        ))}
+                      </select>
+                    )}
                   </div>
                   
                   <div>
