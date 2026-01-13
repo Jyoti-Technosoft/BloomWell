@@ -72,46 +72,69 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-50 to-white">
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 md:py-20">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <section className="relative overflow-hidden bg-linear-to-br from-indigo-50 via-white to-purple-50 mb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <motion.div
               initial="hidden"
               animate="visible"
               variants={staggerContainer}
               className="text-center lg:text-left"
             >
+              <motion.div variants={fadeInUp} className="mb-6">
+                <span className="inline-flex items-center px-4 py-2 bg-indigo-100 text-indigo-800 text-sm font-semibold rounded-full">
+                  <HeartIcon className="w-4 h-4 mr-2" />
+                  Trusted by 50,000+ Women
+                </span>
+              </motion.div>
+              
               <motion.h1 
                 variants={fadeInUp}
-                className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6"
+                className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-6"
               >
                 Transform Your <span className="text-primary-600">Women's Health</span> Journey
               </motion.h1>
               
               <motion.p 
                 variants={fadeInUp}
-                className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto lg:mx-0"
+                className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed"
               >
                 Empowering women with personalized wellness solutions, from weight management to hormonal balance and overall vitality.
               </motion.p>
               
               <motion.div 
                 variants={fadeInUp}
-                className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
+                className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12"
               >
                 <Link 
                   href="/treatments" 
-                  className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-full text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                  className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-base font-semibold rounded-full text-white bg-linear-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
                 >
                   Explore Treatments
                   <ArrowRightIcon className="ml-2 h-5 w-5" />
                 </Link>
                 {/* <Link 
                   href="/book-consultation" 
-                  className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-full text-indigo-700 bg-white-100 hover:bg-white-200 shadow-lg hover:shadow-xl transition-colors duration-300"
+                  className="inline-flex items-center justify-center px-8 py-4 border-2 border-indigo-200 text-base font-semibold rounded-full text-indigo-700 bg-white hover:bg-indigo-50 transition-all duration-300"
                 >
                   Book Consultation
                 </Link> */}
+              </motion.div>
+              
+              {/* Inline Stats */}
+              <motion.div 
+                variants={fadeInUp}
+                className="grid grid-cols-2 gap-6 max-w-md mx-auto lg:mx-0"
+              >
+                {[
+                  { number: '95%', text: 'Success Rate' },
+                  { number: '50K+', text: 'Women Helped' }
+                ].map((stat, index) => (
+                  <div key={stat.text} className="text-center lg:text-left">
+                    <p className="text-3xl font-bold text-indigo-600">{stat.number}</p>
+                    <p className="text-sm text-gray-600">{stat.text}</p>
+                  </div>
+                ))}
               </motion.div>
             </motion.div>
 
@@ -130,36 +153,36 @@ export default function Home() {
                   className="object-cover"
                   priority
                 />
-                <div className="absolute inset-0 bg-linear-to-r from-primary-500/10 to-primary-700/20" />
+                <div className="absolute inset-0 bg-linear-to-r from-indigo-500/10 to-purple-700/20" />
+              </div>
+
+              {/* Floating Stats Cards */}
+              <div className="absolute -bottom-8 left-0 right-0">
+                <div className="grid grid-cols-2 gap-4">
+                  {[
+                    { number: '15+', text: 'Years Experience', position: 'top-0 left-0' },
+                    { number: '24/7', text: 'Women Support', position: 'top-0 right-0' }
+                  ].map((stat, index) => (
+                    <motion.div
+                      key={stat.text}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.5 + (index * 0.1) }}
+                      className="bg-white p-4 rounded-xl shadow-lg text-center border border-gray-100"
+                    >
+                      <p className="text-2xl font-bold text-purple-600">{stat.number}</p>
+                      <p className="text-sm text-gray-600">{stat.text}</p>
+                    </motion.div>
+                  ))}
+                </div>
               </div>
             </motion.div>
-
-              {/* Stats Cards */}
-              <div className="grid grid-cols-2 gap-4 -mt-12 px-4">
-                {[
-                  { number: '95%', text: 'Women Success Rate' },
-                  { number: '50K+', text: 'Women Helped' },
-                  { number: '15+', text: 'Years Experience' },
-                  { number: '24/7', text: 'Women Support' }
-                ].map((stat, index) => (
-                  <motion.div
-                    key={stat.text}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 + (index * 0.1) }}
-                    className="bg-white p-4 rounded-xl shadow-lg text-center"
-                  >
-                    <p className="text-2xl font-bold text-primary-600">{stat.number}</p>
-                    <p className="text-sm text-gray-600">{stat.text}</p>
-                  </motion.div>
-                ))}
-              </div>
           </div>
         </div>
       </section>
 
       {/* How It Works Section */}
-      <section className="py-20 bg-linear-to-b from-white to-gray-50">
+      <section className="mb-16 bg-linear-to-b from-white to-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <motion.h2 
@@ -245,7 +268,7 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-16 bg-white">
+      <section className="mb-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <motion.h2 
@@ -289,7 +312,7 @@ export default function Home() {
       </section>
 
       {/* Team Section */}
-      <section className="py-20 bg-white">
+      <section className="mb-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <motion.h2 
@@ -378,31 +401,33 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <div className="bg-linear-to-r from-indigo-600 to-purple-600">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8 text-center"
-        >
-          <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
-            <span className="block">Ready to transform your wellness?</span>
-            <span className="block">Start your women's health journey today.</span>
-          </h2>
-          <p className="mt-4 text-xl text-indigo-100 max-w-3xl mx-auto">
-            Join thousands of women who have achieved their health and wellness goals with our personalized approach.
-          </p>
-          <div className="mt-8">
-            <Link
-              href={user ? "/book-consultation" : "/auth/signup"}
-              className="px-8 py-4 bg-white text-indigo-600 font-medium rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 inline-flex items-center"
-            >
-              {user ? "Book Consultation" : "Get Started Now"}
-              <ArrowRightIcon className="ml-2 h-5 w-5" />
-            </Link>
-          </div>
-        </motion.div>
-      </div>
+      <section className="mb-16">
+        <div className="bg-linear-to-r from-indigo-600 to-purple-600">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8 text-center"
+          >
+            <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
+              <span className="block">Ready to transform your wellness?</span>
+              <span className="block">Start your women's health journey today.</span>
+            </h2>
+            <p className="mt-4 text-xl text-indigo-100 max-w-3xl mx-auto">
+              Join thousands of women who have achieved their health and wellness goals with our personalized approach.
+            </p>
+            <div className="mt-8">
+              <Link
+                href={user ? "/book-consultation" : "/auth/signup"}
+                className="px-8 py-4 bg-white text-indigo-600 font-medium rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 inline-flex items-center"
+              >
+                {user ? "Book Consultation" : "Get Started Now"}
+                <ArrowRightIcon className="ml-2 h-5 w-5" />
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </section>
     </div>
   );
 }

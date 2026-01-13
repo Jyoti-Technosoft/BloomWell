@@ -142,7 +142,7 @@ export default function ReviewsPage() {
     <div className="bg-white">
       {/* Hero Section */}
       <div className="bg-indigo-700">
-        <div className="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto py-16 px-4">
           <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl lg:text-5xl">
             Patient Testimonials
           </h1>
@@ -364,7 +364,7 @@ export default function ReviewsPage() {
 
       {/* FAQ Section */}
       <div className="bg-gray-50">
-        <div className="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto py-16 px-4">
           <div className="lg:max-w-4xl mx-auto">
             <div className="text-center">
               <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">

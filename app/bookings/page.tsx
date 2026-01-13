@@ -199,307 +199,305 @@ export default function BookingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={fadeInUp}
-          className="mb-8"
-        >
-          <h1 className="text-3xl font-bold text-gray-900">Booking Information</h1>
-          <p className="mt-2 text-gray-600">Manage your women's health appointments and consultations</p>
-        </motion.div>
+    <div className="mb-12">
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={fadeInUp}
+        className="mb-8"
+      >
+        <h1 className="text-3xl font-bold text-gray-900">Booking Information</h1>
+        <p className="mt-2 text-gray-600">Manage your women's health appointments and consultations</p>
+      </motion.div>
 
-        {/* Booking Summary */}
+      {/* Booking Summary */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="mb-8"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-white rounded-lg shadow p-4 border-l-4 border-indigo-500">
+            <div className="flex items-center">
+              <CalendarIcon className="h-8 w-8 text-indigo-500 mr-3" />
+              <div>
+                <p className="text-2xl font-bold text-gray-900">{bookingCounts.all}</p>
+                <p className="text-sm text-gray-600">Total Appointments</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-4 border-l-4 border-blue-500">
+            <div className="flex items-center">
+              <CalendarIcon className="h-8 w-8 text-blue-500 mr-3" />
+              <div>
+                <p className="text-2xl font-bold text-gray-900">{bookingCounts.upcoming}</p>
+                <p className="text-sm text-gray-600">Upcoming</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-4 border-l-4 border-green-500">
+            <div className="flex items-center">
+              <CheckCircleIcon className="h-8 w-8 text-green-500 mr-3" />
+              <div>
+                <p className="text-2xl font-bold text-gray-900">{bookingCounts.completed}</p>
+                <p className="text-sm text-gray-600">Completed</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-4 border-l-4 border-red-500">
+            <div className="flex items-center">
+              <XCircleIcon className="h-8 w-8 text-red-500 mr-3" />
+              <div>
+                <p className="text-2xl font-bold text-gray-900">{bookingCounts.cancelled}</p>
+                <p className="text-sm text-gray-600">Cancelled</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Filter Tabs */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="mb-8"
+      >
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8">
+            {(['all', 'upcoming', 'completed', 'cancelled'] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setFilter(tab)}
+                className={`py-2 px-1 border-b-2 font-medium text-sm capitalize flex items-center space-x-2 ${
+                  filter === tab
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <span>{tab}</span>
+                <span className={`px-2 py-0.5 text-xs rounded-full ${
+                  filter === tab
+                    ? 'bg-indigo-100 text-indigo-600'
+                    : 'bg-gray-100 text-gray-600'
+                }`}>
+                  {bookingCounts[tab]}
+                </span>
+              </button>
+            ))}
+          </nav>
+        </div>
+      </motion.div>
+
+      {/* Bookings List */}
+      {loading ? (
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-white rounded-lg shadow p-6 animate-pulse">
+              <div className="h-4 bg-gray-200 rounded mb-4"></div>
+              <div className="h-3 bg-gray-200 rounded mb-2"></div>
+              <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+            </div>
+          ))}
+        </div>
+      ) : filteredBookings.length === 0 ? (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className="mb-8"
+          transition={{ delay: 0.2 }}
+          className="text-center py-12"
         >
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-white rounded-lg shadow p-4 border-l-4 border-indigo-500">
-              <div className="flex items-center">
-                <CalendarIcon className="h-8 w-8 text-indigo-500 mr-3" />
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">{bookingCounts.all}</p>
-                  <p className="text-sm text-gray-600">Total Appointments</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-lg shadow p-4 border-l-4 border-blue-500">
-              <div className="flex items-center">
-                <CalendarIcon className="h-8 w-8 text-blue-500 mr-3" />
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">{bookingCounts.upcoming}</p>
-                  <p className="text-sm text-gray-600">Upcoming</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-lg shadow p-4 border-l-4 border-green-500">
-              <div className="flex items-center">
-                <CheckCircleIcon className="h-8 w-8 text-green-500 mr-3" />
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">{bookingCounts.completed}</p>
-                  <p className="text-sm text-gray-600">Completed</p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-white rounded-lg shadow p-4 border-l-4 border-red-500">
-              <div className="flex items-center">
-                <XCircleIcon className="h-8 w-8 text-red-500 mr-3" />
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">{bookingCounts.cancelled}</p>
-                  <p className="text-sm text-gray-600">Cancelled</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Filter Tabs */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="mb-8"
-        >
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8">
-              {(['all', 'upcoming', 'completed', 'cancelled'] as const).map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setFilter(tab)}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm capitalize flex items-center space-x-2 ${
-                    filter === tab
-                      ? 'border-indigo-500 text-indigo-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  <span>{tab}</span>
-                  <span className={`px-2 py-0.5 text-xs rounded-full ${
-                    filter === tab
-                      ? 'bg-indigo-100 text-indigo-600'
-                      : 'bg-gray-100 text-gray-600'
-                  }`}>
-                    {bookingCounts[tab]}
-                  </span>
-                </button>
-              ))}
-            </nav>
-          </div>
-        </motion.div>
-
-        {/* Bookings List */}
-        {loading ? (
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-lg shadow p-6 animate-pulse">
-                <div className="h-4 bg-gray-200 rounded mb-4"></div>
-                <div className="h-3 bg-gray-200 rounded mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded w-3/4"></div>
-              </div>
-            ))}
-          </div>
-        ) : filteredBookings.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-center py-12"
-          >
-            <div className="bg-white rounded-lg shadow p-8">
-              {filter === 'all' && (
-                <>
-                  <CalendarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Appointments Yet</h3>
-                  <p className="text-gray-600 mb-6">
-                    You haven't booked any appointments yet. Schedule your first consultation to get started with your women's health journey.
-                  </p>
-                </>
-              )}
-              {filter === 'upcoming' && (
-                <>
-                  <CalendarIcon className="h-12 w-12 text-blue-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Upcoming Appointments</h3>
-                  <p className="text-gray-600 mb-6">
-                    You don't have any scheduled appointments. Book a new appointment to continue your care.
-                  </p>
-                </>
-              )}
-              {filter === 'completed' && (
-                <>
-                  <CheckCircleIcon className="h-12 w-12 text-green-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Completed Appointments</h3>
-                  <p className="text-gray-600 mb-6">
-                    You haven't completed any appointments yet. Your scheduled appointments will appear here once completed.
-                  </p>
-                </>
-              )}
-              {filter === 'cancelled' && (
-                <>
-                  <XCircleIcon className="h-12 w-12 text-red-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No Cancelled Appointments</h3>
-                  <p className="text-gray-600 mb-6">
-                    You don't have any cancelled appointments. That's great! Keep up with your scheduled appointments.
-                  </p>
-                </>
-              )}
-              <Link
-                href="/book-consultation"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-              >
-                Book Appointment
-              </Link>
-            </div>
-          </motion.div>
-        ) : (
-          <div className="space-y-4">
-            {filteredBookings.map((booking, index) => (
-              <motion.div
-                key={booking.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 * index }}
-                className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow"
-              >
-                <div className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      {/* Status Badge */}
-                      <div className="flex items-center space-x-3 mb-4">
-                        <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium border ${getStatusColor(booking.status)}`}>
-                          {getStatusIcon(booking.status)}
-                          <span className="ml-2">{getStatusText(booking.status)}</span>
-                        </div>
-                        <span className="text-sm text-gray-500 capitalize">{booking.type}</span>
-                      </div>
-
-                      {/* Status Description */}
-                      <div className={`mb-4 p-3 rounded-lg ${
-                        booking.status === 'scheduled' ? 'bg-blue-50 border border-blue-200' :
-                        booking.status === 'pending' ? 'bg-yellow-50 border border-yellow-200' :
-                        booking.status === 'completed' ? 'bg-green-50 border border-green-200' :
-                        booking.status === 'cancelled' ? 'bg-red-50 border border-red-200' :
-                        'bg-yellow-50 border border-yellow-200'
-                      }`}>
-                        <p className="text-sm text-gray-700">{getStatusDescription(booking.status)}</p>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <div className="flex items-center text-sm text-gray-600">
-                            <CalendarIcon className="h-4 w-4 mr-2 text-gray-400" />
-                            {new Date(booking.date).toLocaleDateString('en-US', {
-                              weekday: 'long',
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric'
-                            })}
-                          </div>
-                          <div className="flex items-center text-sm text-gray-600">
-                            <ClockIcon className="h-4 w-4 mr-2 text-gray-400" />
-                            {booking.time} ({booking.duration})
-                          </div>
-                          <div className="flex items-center text-sm text-gray-600">
-                            <UserIcon className="h-4 w-4 mr-2 text-gray-400" />
-                            Dr. {booking.physician.name} - {booking.physician.specialty}
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <div className="flex items-center text-sm text-gray-600">
-                            {booking.location.type === 'video' ? (
-                              <VideoCameraIcon className="h-4 w-4 mr-2 text-gray-400" />
-                            ) : (
-                              <BuildingOfficeIcon className="h-4 w-4 mr-2 text-gray-400" />
-                            )}
-                            {booking.location.type === 'video' ? 'Video Consultation' : 'In-Person Visit'}
-                          </div>
-                          {booking.location.type === 'in-person' && booking.location.address && (
-                            <div className="flex items-center text-sm text-gray-600">
-                              <MapPinIcon className="h-4 w-4 mr-2 text-gray-400" />
-                              {booking.location.address}
-                            </div>
-                          )}
-                          {booking.location.type === 'video' && booking.location.meetingLink && (
-                            <div className="text-sm text-gray-600">
-                              <a 
-                                href={booking.location.meetingLink} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-indigo-600 hover:text-indigo-700 underline font-medium"
-                              >
-                                Join Video Call
-                              </a>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {booking.notes && (
-                        <div className="mt-4 p-3 bg-gray-50 rounded-md">
-                          <p className="text-sm text-gray-600">
-                            <span className="font-medium">Notes:</span> {booking.notes}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="ml-4 flex flex-col space-y-2">
-                      {(booking.status === 'scheduled' || booking.status === 'pending') && (
-                        <button
-                          onClick={() => handleCancelBooking(booking.id)}
-                          className="inline-flex items-center px-3 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 transition-colors"
-                        >
-                          <XCircleIcon className="h-4 w-4 mr-1" />
-                          Cancel
-                        </button>
-                      )}
-                      {booking.status === 'completed' && (
-                        <button
-                          className="inline-flex items-center px-3 py-2 border border-indigo-300 text-sm font-medium rounded-md text-indigo-700 bg-white hover:bg-indigo-50 transition-colors"
-                        >
-                          <CheckCircleIcon className="h-4 w-4 mr-1" />
-                          Book Follow-up
-                        </button>
-                      )}
-                      {booking.status === 'cancelled' && (
-                        <Link
-                          href="/book-consultation"
-                          className="inline-flex items-center px-3 py-2 border border-indigo-300 text-sm font-medium rounded-md text-indigo-700 bg-white hover:bg-indigo-50 transition-colors"
-                        >
-                          <CalendarIcon className="h-4 w-4 mr-1" />
-                          Book New
-                        </Link>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        )}
-
-        {/* Book New Appointment CTA */}
-        {filter === 'upcoming' && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="mt-8 text-center"
-          >
+          <div className="bg-white rounded-lg shadow p-8">
+            {filter === 'all' && (
+              <>
+                <CalendarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No Appointments Yet</h3>
+                <p className="text-gray-600 mb-6">
+                  You haven't booked any appointments yet. Schedule your first consultation to get started with your women's health journey.
+                </p>
+              </>
+            )}
+            {filter === 'upcoming' && (
+              <>
+                <CalendarIcon className="h-12 w-12 text-blue-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No Upcoming Appointments</h3>
+                <p className="text-gray-600 mb-6">
+                  You don't have any scheduled appointments. Book a new appointment to continue your care.
+                </p>
+              </>
+            )}
+            {filter === 'completed' && (
+              <>
+                <CheckCircleIcon className="h-12 w-12 text-green-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No Completed Appointments</h3>
+                <p className="text-gray-600 mb-6">
+                  You haven't completed any appointments yet. Your scheduled appointments will appear here once completed.
+                </p>
+              </>
+            )}
+            {filter === 'cancelled' && (
+              <>
+                <XCircleIcon className="h-12 w-12 text-red-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No Cancelled Appointments</h3>
+                <p className="text-gray-600 mb-6">
+                  You don't have any cancelled appointments. That's great! Keep up with your scheduled appointments.
+                </p>
+              </>
+            )}
             <Link
               href="/book-consultation"
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
             >
-              Book New Appointment
+              Book Appointment
             </Link>
-          </motion.div>
-        )}
-      </div>
+          </div>
+        </motion.div>
+      ) : (
+        <div className="space-y-4">
+          {filteredBookings.map((booking, index) => (
+            <motion.div
+              key={booking.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 * index }}
+              className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow"
+            >
+              <div className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    {/* Status Badge */}
+                    <div className="flex items-center space-x-3 mb-4">
+                      <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium border ${getStatusColor(booking.status)}`}>
+                        {getStatusIcon(booking.status)}
+                        <span className="ml-2">{getStatusText(booking.status)}</span>
+                      </div>
+                      <span className="text-sm text-gray-500 capitalize">{booking.type}</span>
+                    </div>
+
+                    {/* Status Description */}
+                    <div className={`mb-4 p-3 rounded-lg ${
+                      booking.status === 'scheduled' ? 'bg-blue-50 border border-blue-200' :
+                      booking.status === 'pending' ? 'bg-yellow-50 border border-yellow-200' :
+                      booking.status === 'completed' ? 'bg-green-50 border border-green-200' :
+                      booking.status === 'cancelled' ? 'bg-red-50 border border-red-200' :
+                      'bg-yellow-50 border border-yellow-200'
+                    }`}>
+                      <p className="text-sm text-gray-700">{getStatusDescription(booking.status)}</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center text-sm text-gray-600">
+                          <CalendarIcon className="h-4 w-4 mr-2 text-gray-400" />
+                          {new Date(booking.date).toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </div>
+                        <div className="flex items-center text-sm text-gray-600">
+                          <ClockIcon className="h-4 w-4 mr-2 text-gray-400" />
+                          {booking.time} ({booking.duration})
+                        </div>
+                        <div className="flex items-center text-sm text-gray-600">
+                          <UserIcon className="h-4 w-4 mr-2 text-gray-400" />
+                          Dr. {booking.physician.name} - {booking.physician.specialty}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-center text-sm text-gray-600">
+                          {booking.location.type === 'video' ? (
+                            <VideoCameraIcon className="h-4 w-4 mr-2 text-gray-400" />
+                          ) : (
+                            <BuildingOfficeIcon className="h-4 w-4 mr-2 text-gray-400" />
+                          )}
+                          {booking.location.type === 'video' ? 'Video Consultation' : 'In-Person Visit'}
+                        </div>
+                        {booking.location.type === 'in-person' && booking.location.address && (
+                          <div className="flex items-center text-sm text-gray-600">
+                            <MapPinIcon className="h-4 w-4 mr-2 text-gray-400" />
+                            {booking.location.address}
+                          </div>
+                        )}
+                        {booking.location.type === 'video' && booking.location.meetingLink && (
+                          <div className="text-sm text-gray-600">
+                            <a 
+                              href={booking.location.meetingLink} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-indigo-600 hover:text-indigo-700 underline font-medium"
+                            >
+                              Join Video Call
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {booking.notes && (
+                      <div className="mt-4 p-3 bg-gray-50 rounded-md">
+                        <p className="text-sm text-gray-600">
+                          <span className="font-medium">Notes:</span> {booking.notes}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="ml-4 flex flex-col space-y-2">
+                    {(booking.status === 'scheduled' || booking.status === 'pending') && (
+                      <button
+                        onClick={() => handleCancelBooking(booking.id)}
+                        className="inline-flex items-center px-3 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 transition-colors"
+                      >
+                        <XCircleIcon className="h-4 w-4 mr-1" />
+                        Cancel
+                      </button>
+                    )}
+                    {booking.status === 'completed' && (
+                      <button
+                        className="inline-flex items-center px-3 py-2 border border-indigo-300 text-sm font-medium rounded-md text-indigo-700 bg-white hover:bg-indigo-50 transition-colors"
+                      >
+                        <CheckCircleIcon className="h-4 w-4 mr-1" />
+                        Book Follow-up
+                      </button>
+                    )}
+                    {booking.status === 'cancelled' && (
+                      <Link
+                        href="/book-consultation"
+                        className="inline-flex items-center px-3 py-2 border border-indigo-300 text-sm font-medium rounded-md text-indigo-700 bg-white hover:bg-indigo-50 transition-colors"
+                      >
+                        <CalendarIcon className="h-4 w-4 mr-1" />
+                        Book New
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      {/* Book New Appointment CTA */}
+      {filter === 'upcoming' && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="mt-8 text-center"
+        >
+          <Link
+            href="/book-consultation"
+            className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300"
+          >
+            Book New Appointment
+          </Link>
+        </motion.div>
+      )}
     </div>
   );
 }
