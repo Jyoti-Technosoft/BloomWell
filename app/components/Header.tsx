@@ -187,7 +187,7 @@ export default function Header() {
               <div className="relative profile-dropdown">
                 <button
                   onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                  className="flex items-center space-x-3 text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="flex items-center space-x-3 text-sm rounded-full focus:outline-none"
                 >
                   <span className="text-sm font-medium text-gray-700">
                     {session.user?.name}
@@ -247,7 +247,6 @@ export default function Header() {
                         <div className="border-t border-gray-100 my-1"></div>
                         <div 
                           className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-linear-to-r hover:from-red-50 hover:to-pink-50 rounded-lg cursor-pointer transition-all duration-200 ease-in-out"
-                          onClick={logout}
                         >
                           <div className="flex items-center">
                             <div className="h-8 w-8 rounded-lg bg-linear-to-br from-red-100 to-pink-100 flex items-center justify-center mr-3">

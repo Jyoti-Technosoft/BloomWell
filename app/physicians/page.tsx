@@ -69,7 +69,7 @@ function PhysiciansContent() {
     <div className="min-h-screen bg-linear-to-br from-gray-50 to-indigo-50">
       {/* Hero Section */}
       <div className="bg-linear-to-r from-indigo-600 to-purple-600 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 rounded-full mb-6">
               <UserIcon className="h-10 w-10 text-white" />
@@ -100,7 +100,7 @@ function PhysiciansContent() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">Meet Our Specialists</h2>
-          <div className="w-24 h-1 bg-linear-to-r from-blue-600 to-indigo-600 mx-auto rounded-full"></div>
+          <div className="w-64 h-1 bg-linear-to-r from-blue-600 to-indigo-600 mx-auto rounded-full"></div>
         </div>
 
         {/* Search and Filter Section */}
@@ -140,7 +140,7 @@ function PhysiciansContent() {
               >
                 <option value="">All Specialties</option>
                 {allSpecialties.map((specialty: string) => (
-                  <option value={specialty}>
+                  <option key={specialty} value={specialty}>
                     {specialty}
                   </option>
                 ))}
