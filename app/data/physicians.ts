@@ -1,4 +1,3 @@
-// app/data/physicians.ts
 export interface Physician {
   id: string;
   name: string;
@@ -12,7 +11,8 @@ export interface Physician {
   reviewCount?: number;
   consultationCount?: number;
   initialConsultation?: number;
-  availableTimeSlots?: string[];
+  available_time_slots?: string[];
+  available_dates?: string[];
 }
 
 export const physicians: Physician[] = [
@@ -29,7 +29,7 @@ export const physicians: Physician[] = [
     reviewCount: 127,
     consultationCount: 342,
     initialConsultation: 150,
-    availableTimeSlots: ['9:00 AM', '10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM', '4:00 PM']
+    available_time_slots: ['9:00 AM', '10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM', '4:00 PM']
   },
   {
     id: '2',
@@ -44,7 +44,8 @@ export const physicians: Physician[] = [
     reviewCount: 89,
     consultationCount: 256,
     initialConsultation: 150,
-    availableTimeSlots: ['8:30 AM', '9:30 AM', '10:30 AM', '11:30 AM', '1:30 PM', '2:30 PM', '3:30 PM']
+    available_time_slots: ['8:30 AM', '9:30 AM', '10:30 AM', '11:30 AM', '1:30 PM', '2:30 PM', '3:30 PM'],
+    available_dates: ['2024-01-15', '2024-01-16', '2024-01-17', '2024-01-18', '2024-01-19', '2024-01-22', '2024-01-23', '2024-01-24', '2024-01-25', '2024-01-26', '2024-01-29', '2024-01-30', '2024-01-31']
   },
   {
     id: '3',
@@ -59,7 +60,8 @@ export const physicians: Physician[] = [
     reviewCount: 156,
     consultationCount: 412,
     initialConsultation: 150,
-    availableTimeSlots: ['8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM']
+    available_time_slots: ['8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM'],
+    available_dates: ['2024-01-15', '2024-01-16', '2024-01-17', '2024-01-18', '2024-01-19', '2024-01-22', '2024-01-23', '2024-01-24', '2024-01-25', '2024-01-26', '2024-01-29', '2024-01-30', '2024-01-31']
   },
   {
     id: '4',
@@ -74,7 +76,8 @@ export const physicians: Physician[] = [
     reviewCount: 203,
     consultationCount: 523,
     initialConsultation: 150,
-    availableTimeSlots: ['9:00 AM', '10:30 AM', '12:00 PM', '2:30 PM', '4:00 PM']
+    available_time_slots: ['9:00 AM', '10:30 AM', '12:00 PM', '2:30 PM', '4:00 PM'],
+    available_dates: ['2024-01-15', '2024-01-16', '2024-01-17', '2024-01-18', '2024-01-19', '2024-01-22', '2024-01-23', '2024-01-24', '2024-01-25', '2024-01-26', '2024-01-29', '2024-01-30', '2024-01-31']
   },
   {
     id: '5',
@@ -89,7 +92,8 @@ export const physicians: Physician[] = [
     reviewCount: 78,
     consultationCount: 189,
     initialConsultation: 150,
-    availableTimeSlots: ['10:00 AM', '11:30 AM', '1:00 PM', '2:30 PM', '4:00 PM']
+    available_time_slots: ['8:00 AM', '9:30 AM', '11:30 AM', '1:30 PM', '3:30 PM'],
+    available_dates: ['2024-01-15', '2024-01-16', '2024-01-17', '2024-01-18', '2024-01-19', '2024-01-22', '2024-01-23', '2024-01-24', '2024-01-25', '2024-01-26', '2024-01-29', '2024-01-30', '2024-01-31']
   },
   {
     id: '6',
@@ -104,7 +108,7 @@ export const physicians: Physician[] = [
     reviewCount: 145,
     consultationCount: 387,
     initialConsultation: 150,
-    availableTimeSlots: ['8:00 AM', '9:30 AM', '11:00 AM', '1:30 PM', '3:00 PM', '4:30 PM']
+    available_time_slots: ['8:00 AM', '9:30 AM', '11:00 AM', '1:30 PM', '3:00 PM', '4:30 PM']
   },
   {
     id: '7',
@@ -119,7 +123,7 @@ export const physicians: Physician[] = [
     reviewCount: 92,
     consultationCount: 267,
     initialConsultation: 150,
-    availableTimeSlots: ['9:00 AM', '10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM', '4:00 PM']
+    available_time_slots: ['9:00 AM', '10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM', '4:00 PM']
   },
   {
     id: '8',
@@ -134,7 +138,8 @@ export const physicians: Physician[] = [
     reviewCount: 118,
     consultationCount: 298,
     initialConsultation: 150,
-    availableTimeSlots: ['10:30 AM', '12:00 PM', '2:00 PM', '3:30 PM', '5:00 PM']
+    available_time_slots: ['10:30 AM', '12:00 PM', '2:00 PM', '3:30 PM', '5:00 PM'],
+    available_dates: ['2024-01-15', '2024-01-16', '2024-01-17', '2024-01-18', '2024-01-19', '2024-01-22', '2024-01-23', '2024-01-24', '2024-01-25', '2024-01-26', '2024-01-29', '2024-01-30', '2024-01-31']
   },
   {
     id: '9',
@@ -149,7 +154,8 @@ export const physicians: Physician[] = [
     reviewCount: 167,
     consultationCount: 445,
     initialConsultation: 150,
-    availableTimeSlots: ['11:00 AM', '1:00 PM', '2:30 PM', '4:00 PM']
+    available_time_slots: ['11:00 AM', '1:00 PM', '2:30 PM', '4:00 PM'],
+    available_dates: ['2024-01-15', '2024-01-16', '2024-01-17', '2024-01-18', '2024-01-19', '2024-01-22', '2024-01-23', '2024-01-24', '2024-01-25', '2024-01-26', '2024-01-29', '2024-01-30', '2024-01-31']
   },
   {
     id: '10',
@@ -164,7 +170,7 @@ export const physicians: Physician[] = [
     reviewCount: 134,
     consultationCount: 312,
     initialConsultation: 150,
-    availableTimeSlots: ['8:30 AM', '10:00 AM', '11:30 AM', '1:30 PM', '3:00 PM']
+    available_time_slots: ['8:30 AM', '10:00 AM', '11:30 AM', '1:30 PM', '3:00 PM']
   },
   {
     id: '11',
@@ -179,7 +185,7 @@ export const physicians: Physician[] = [
     reviewCount: 81,
     consultationCount: 198,
     initialConsultation: 150,
-    availableTimeSlots: ['9:30 AM', '11:00 AM', '12:30 PM', '2:30 PM', '4:30 PM']
+    available_time_slots: ['9:30 AM', '11:00 AM', '12:30 PM', '2:30 PM', '4:30 PM']
   },
   {
     id: '12',
@@ -194,7 +200,7 @@ export const physicians: Physician[] = [
     reviewCount: 109,
     consultationCount: 276,
     initialConsultation: 150,
-    availableTimeSlots: ['10:00 AM', '11:30 AM', '1:00 PM', '2:30 PM', '4:00 PM', '5:30 PM']
+    available_time_slots: ['10:00 AM', '11:30 AM', '1:00 PM', '2:30 PM', '4:00 PM', '5:30 PM']
   }
 ];
 

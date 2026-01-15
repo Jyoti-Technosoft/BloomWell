@@ -1,14 +1,11 @@
 'use client';
-
 import { useEffect, useRef, useState } from 'react';
 import { DailyProvider, useDaily } from '@daily-co/daily-react';
+import { VideoCallProps } from '../app/lib/types';
 
-interface VideoCallProps {
-  roomUrl: string;
-  onLeave?: () => void;
-}
+interface VideoCallComponentProps extends VideoCallProps {}
 
-function VideoCallComponent({ roomUrl, onLeave }: VideoCallProps) {
+function VideoCallComponent({ roomUrl, onLeave }: VideoCallComponentProps) {
   const daily = useDaily();
   const [isJoined, setIsJoined] = useState(false);
   const [error, setError] = useState<string | null>(null);

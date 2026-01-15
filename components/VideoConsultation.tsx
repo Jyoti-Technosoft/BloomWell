@@ -1,14 +1,10 @@
 'use client';
-
 import { useState } from 'react';
 import VideoCall from '@/components/VideoCall';
+import { Physician } from '../app/lib/types';
 
 interface VideoConsultationProps {
-  physician: {
-    name: string;
-    role: string;
-    image?: string;
-  };
+  physician: Physician;
   onBack: () => void;
 }
 

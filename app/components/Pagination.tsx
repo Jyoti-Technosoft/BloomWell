@@ -1,22 +1,15 @@
 'use client';
-
 import Link from 'next/link';
-
-interface PaginationProps {
-  currentPage: number;
-  totalPages: number;
-  hasNext: boolean;
-  hasPrev: boolean;
-  basePath: string;
-}
+import { PaginationProps } from '../lib/types';
 
 export default function Pagination({ 
   currentPage, 
   totalPages, 
   hasNext, 
   hasPrev, 
+  onPageChange, 
   basePath 
-}: PaginationProps) {
+}: PaginationProps & { basePath?: string }) {
   const pages = [];
   const maxVisiblePages = 5;
   

@@ -1,32 +1,16 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useUser } from '../context/UserContext';
 import Toast from '../components/Toast';
-
-interface Physician {
-  id: string;
-  name: string;
-  role: string;
-  bio: string;
-  image: string;
-  education: string;
-  experience: string;
-  specialties: string[];
-  rating?: number;
-  reviewCount?: number;
-  consultationCount?: number;
-  initialConsultation?: number;
-  availableTimeSlots?: string[];
-}
+import BookingModal from '../components/BookingModal';
+import { Physician } from '../lib/types';
 
 export default function BookConsultation() {
-  const [selectedPhysician, setSelectedPhysician] = useState('');
-  const [selectedDate, setSelectedDate] = useState('');
-  const [selectedTime, setSelectedTime] = useState('');
-  const [reason, setReason] = useState('');
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [selectedPhysician, setSelectedPhysician] = useState<Physician | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [physicians, setPhysicians] = useState<Physician[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,77 +37,27 @@ export default function BookConsultation() {
     setToast(null);
   };
 
-  const handleSubmitBooking = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleBookingComplete = (bookingData: any) => {
+    setToast({
+      message: 'Consultation booked successfully! You will receive a confirmation email shortly.',
+      type: 'success'
+    });
+    setShowBookingModal(false);
+    setSelectedPhysician(null);
+  };
+
+  const handleCloseBookingModal = () => {
+    setShowBookingModal(false);
+  };
+
+  const openBookingModal = (physician: Physician) => {
     if (!user) {
       router.push('/auth/signin?callbackUrl=/book-consultation');
       return;
     }
-    
-    try {
-      const selectedDoctor = physicians.find((p: Physician) => p.name === selectedPhysician);
-      
-      const response = await fetch('/api/consultations', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          doctorName: selectedPhysician,
-          doctorSpecialty: selectedDoctor?.specialties?.join(', ') || '',
-          date: selectedDate,
-          time: selectedTime,
-          reason,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to book consultation');
-      }
-
-      // Show success message and reset form
-      setToast({
-        message: 'Consultation booking submitted successfully! We will contact you soon.',
-        type: 'success'
-      });
-      setSelectedPhysician('');
-      setSelectedDate('');
-      setSelectedTime('');
-      setReason('');
-    } catch (error) {
-      console.error('Error booking consultation:', error);
-      setToast({
-        message: error instanceof Error ? error.message : 'Failed to book consultation. Please try again.',
-        type: 'error'
-      });
-    }
+    setSelectedPhysician(physician);
+    setShowBookingModal(true);
   };
-
-  const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
-
-  useEffect(() => {
-    if (selectedPhysician) {
-      // Find the selected physician and get their time slots
-      const physician = physicians.find(p => p.name === selectedPhysician);
-      if (physician && physician.availableTimeSlots) {
-        setAvailableTimeSlots(physician.availableTimeSlots);
-      } else {
-        // Fallback to default time slots if physician doesn't have specific ones
-        setAvailableTimeSlots(['9:00 AM', '9:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM', '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM', '4:00 PM', '4:30 PM']);
-      }
-      // Clear selected time when physician changes
-      setSelectedTime('');
-    } else {
-      setAvailableTimeSlots([]);
-      setSelectedTime('');
-    }
-  }, [selectedPhysician, physicians]);
-
-  // Get today's date in YYYY-MM-DD format for min date attribute
-  const today = new Date().toISOString().split('T')[0];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -145,111 +79,7 @@ export default function BookConsultation() {
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 py-12">
         <div className="grid lg:grid-cols-2 gap-12">
-          {/* Booking Form */}
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-            <div className="p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Schedule Your Appointment</h2>
-              
-              {!user ? (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-6">
-                  <p className="text-yellow-800">
-                    Please <Link href="/auth/signin?callbackUrl=/book-consultation" className="font-medium underline">sign in</Link> to book a consultation.
-                  </p>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmitBooking} className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Select Physician *</label>
-                    <select
-                      required
-                      value={selectedPhysician}
-                      onChange={(e) => setSelectedPhysician(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                    >
-                      <option value="">Choose a physician</option>
-                      {physicians.map((physician: Physician) => (
-                        <option key={physician.name} value={physician.name}>
-                          {physician.name} - {physician.specialties.join(', ')}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Date *</label>
-                    <input
-                      type="date"
-                      required
-                      min={today}
-                      value={selectedDate}
-                      onChange={(e) => setSelectedDate(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Time *</label>
-                    {!selectedPhysician ? (
-                      <div className="w-full px-4 py-3 border border-gray-300 rounded-md bg-gray-50 text-gray-500">
-                        Please select a physician first
-                      </div>
-                    ) : availableTimeSlots.length === 0 ? (
-                      <div className="w-full px-4 py-3 border border-gray-300 rounded-md bg-gray-50 text-gray-500">
-                        Loading available times...
-                      </div>
-                    ) : (
-                      <select
-                        required
-                        value={selectedTime}
-                        onChange={(e) => setSelectedTime(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                      >
-                        <option value="">Select a time</option>
-                        {availableTimeSlots.map((time: string) => (
-                          <option key={time} value={time}>{time}</option>
-                        ))}
-                      </select>
-                    )}
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Reason for Visit *</label>
-                    <textarea
-                      required
-                      rows={4}
-                      value={reason}
-                      onChange={(e) => setReason(e.target.value)}
-                      placeholder="Please describe your symptoms or reason for consultation..."
-                      className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
-                    />
-                  </div>
-                  
-                  <div className="flex gap-4 pt-4">
-                    <button
-                      type="submit"
-                      className="cursor-pointer flex-1 bg-indigo-600 text-white py-3 px-6 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors font-medium"
-                    >
-                      Submit Booking
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedPhysician('');
-                        setSelectedDate('');
-                        setSelectedTime('');
-                        setReason('');
-                      }}
-                      className="cursor-pointer flex-1 bg-gray-200 text-gray-800 py-3 px-6 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors font-medium"
-                    >
-                      Clear Form
-                    </button>
-                  </div>
-                </form>
-              )}
-            </div>
-          </div>
-
-          {/* Physicians Preview */}
+          {/* Physicians List */}
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow-lg overflow-hidden">
               <div className="p-8">
@@ -261,12 +91,8 @@ export default function BookConsultation() {
                   {physicians.map((physician: Physician) => (
                     <div 
                       key={physician.name}
-                      className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                        selectedPhysician === physician.name 
-                          ? 'border-indigo-500 bg-indigo-50' 
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => setSelectedPhysician(physician.name)}
+                      className="border rounded-lg p-4 cursor-pointer transition-all hover:shadow-md border-gray-200 hover:border-gray-300"
+                      onClick={() => openBookingModal(physician)}
                     >
                       <div className="flex items-start space-x-4">
                         <div className="shrink-0">
@@ -283,6 +109,14 @@ export default function BookConsultation() {
                           <p className="text-sm text-indigo-600 font-medium">{physician.specialties.join(', ')}</p>
                           <p className="text-sm text-gray-600 mt-1">{physician.education}</p>
                           <p className="text-sm text-gray-500 mt-2 line-clamp-2">{physician.bio}</p>
+                          <div className="mt-3 flex items-center justify-between">
+                            <span className="text-sm font-semibold text-green-600">
+                              ${physician.initialConsultation || 150}
+                            </span>
+                            <button className="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                              Book Now →
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -297,28 +131,88 @@ export default function BookConsultation() {
                 )}
               </div>
             </div>
+          </div>
 
-            {/* Information Card */}
+          {/* Information Section */}
+          <div className="space-y-6">
+            {/* Healthcare Standards */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-              <h4 className="font-semibold text-blue-900 mb-3">What to Expect</h4>
-              <ul className="space-y-2 text-sm text-blue-800">
+              <h4 className="font-semibold text-blue-900 mb-3">Healthcare Standards</h4>
+              <p className="text-blue-700 text-sm leading-relaxed mb-4">
+                All consultations follow proper medical protocols. Video consultations are scheduled in advance 
+                and conducted through secure, HIPAA-compliant platforms to ensure quality of care and proper medical documentation.
+              </p>
+              <div className="space-y-2 text-sm text-blue-800">
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full mr-2"></div>
+                  <span>Scheduled appointments only</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-green-600 rounded-full mr-2"></div>
+                  <span>Secure video consultations</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-2 h-2 bg-purple-600 rounded-full mr-2"></div>
+                  <span>HIPAA-compliant platform</span>
+                </div>
+              </div>
+            </div>
+
+            {/* What to Expect */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h4 className="font-semibold text-gray-900 mb-3">What to Expect</h4>
+              <ul className="space-y-2 text-sm text-gray-700">
                 <li className="flex items-start">
-                  <span className="text-blue-600 mr-2">•</span>
+                  <span className="text-indigo-600 mr-2">•</span>
                   Initial consultation typically lasts 30-45 minutes
                 </li>
                 <li className="flex items-start">
-                  <span className="text-blue-600 mr-2">•</span>
+                  <span className="text-indigo-600 mr-2">•</span>
                   Please arrive 10 minutes early for paperwork
                 </li>
                 <li className="flex items-start">
-                  <span className="text-blue-600 mr-2">•</span>
+                  <span className="text-indigo-600 mr-2">•</span>
                   Bring your insurance card and photo ID
                 </li>
                 <li className="flex items-start">
-                  <span className="text-blue-600 mr-2">•</span>
+                  <span className="text-indigo-600 mr-2">•</span>
                   List of current medications and allergies
                 </li>
               </ul>
+            </div>
+
+            {/* Consultation Types */}
+            <div className="bg-white border border-gray-200 rounded-lg p-6">
+              <h4 className="font-semibold text-gray-900 mb-3">Consultation Types</h4>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <span className="text-blue-600 text-sm">📹</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">Video Consultation</p>
+                    <p className="text-sm text-gray-600">HIPAA-compliant video calls</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                    <span className="text-green-600 text-sm">📞</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">Phone Consultation</p>
+                    <p className="text-sm text-gray-600">Voice-only appointments</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                    <span className="text-purple-600 text-sm">🏥</span>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">In-Person Visit</p>
+                    <p className="text-sm text-gray-600">Face-to-face appointments</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -330,6 +224,16 @@ export default function BookConsultation() {
           message={toast.message}
           type={toast.type}
           onClose={handleCloseToast}
+        />
+      )}
+
+      {/* Booking Modal */}
+      {showBookingModal && selectedPhysician && (
+        <BookingModal
+          isOpen={showBookingModal}
+          onClose={handleCloseBookingModal}
+          physician={selectedPhysician}
+          onComplete={handleBookingComplete}
         />
       )}
     </div>

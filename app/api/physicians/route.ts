@@ -23,20 +23,62 @@ export async function GET(request: NextRequest) {
       [limit, offset]
     );
 
-    const physicians = result.rows.map((row: any) => ({
-      id: row.id,
-      name: row.name,
-      role: row.role,
-      bio: row.bio,
-      image: row.image,
-      education: row.education,
-      experience: row.experience,
-      specialties: row.specialties ? row.specialties.split(',').map((s: string) => s.trim()) : [],
-      rating: parseFloat(row.rating) || 0,
-      reviewCount: parseInt(row.review_count) || 0,
-      consultationCount: parseInt(row.consultations_count) || 0,
-      initialConsultation: parseFloat(row.initial_consultation) || 150,
-    }));
+    const physicians = result.rows.map((row: any) => {
+      // Parse specialties
+      let specialties = [];
+      if (row.specialties) {
+        if (Array.isArray(row.specialties)) {
+          specialties = row.specialties;
+        } else if (typeof row.specialties === 'string') {
+          // Try to parse as JSON first, then fallback to comma-separated or single string
+          try {
+            const parsed = JSON.parse(row.specialties);
+            specialties = Array.isArray(parsed) ? parsed : [parsed];
+          } catch {
+            // Handle comma-separated or single string values
+            specialties = row.specialties.includes(',') 
+              ? row.specialties.split(',').map((s: string) => s.trim())
+              : [row.specialties.trim()];
+          }
+        }
+      }
+
+      // Parse available_time_slots
+      let available_time_slots = [];
+      try {
+        available_time_slots = row.available_time_slots ? (typeof row.available_time_slots === 'string' ? JSON.parse(row.available_time_slots) : row.available_time_slots) : [];
+      } catch (e) {
+        console.error('Error parsing available_time_slots for physician', row.id, e);
+        available_time_slots = [];
+      }
+
+      // Parse available_dates
+      let available_dates = [];
+      try {
+        available_dates = row.available_dates ? (typeof row.available_dates === 'string' ? JSON.parse(row.available_dates) : row.available_dates) : [];
+      } catch (e) {
+        console.error('Error parsing available_dates for physician', row.id, e);
+        available_dates = [];
+      }
+
+      return {
+        id: row.id,
+        name: row.name,
+        role: row.role,
+        bio: row.bio,
+        image: row.image,
+        education: row.education,
+        experience: row.experience,
+        specialties: specialties,
+        rating: parseFloat(row.rating) || 0,
+        reviewCount: parseInt(row.review_count) || 0,
+        consultationCount: parseInt(row.consultations_count) || 0,
+        initialConsultation: parseFloat(row.initial_consultation) || 150,
+        available_time_slots: available_time_slots,
+        available_dates: available_dates,
+        consultationLink: row.consultation_link || null,
+      };
+    });
 
     return NextResponse.json({
       members: physicians,
@@ -58,15 +100,15 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, role, bio, image, education, experience, specialties } = body;
+    const { name, role, bio, image, education, experience, specialties, consultationLink } = body;
 
     const specialtiesString = specialties ? specialties.join(', ') : '';
 
     const result = await pool.query(
-      `INSERT INTO physicians (name, role, bio, image, education, experience, specialties) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7) 
+      `INSERT INTO physicians (name, role, bio, image, education, experience, specialties, consultation_link) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
        RETURNING *`,
-      [name, role, bio, image, education, experience, specialtiesString]
+      [name, role, bio, image, education, experience, specialtiesString, consultationLink || null]
     );
 
     const physician = {
@@ -82,6 +124,9 @@ export async function POST(request: NextRequest) {
       reviewCount: parseInt(result.rows[0].review_count) || 0,
       consultationCount: parseInt(result.rows[0].consultations_count) || 0,
       initialConsultation: parseFloat(result.rows[0].initial_consultation) || 150,
+      available_time_slots: result.rows[0].available_time_slots ? (typeof result.rows[0].available_time_slots === 'string' ? JSON.parse(result.rows[0].available_time_slots) : result.rows[0].available_time_slots) : [],
+      available_dates: result.rows[0].available_dates ? (typeof result.rows[0].available_dates === 'string' ? JSON.parse(result.rows[0].available_dates) : result.rows[0].available_dates) : [],
+      consultationLink: result.rows[0].consultation_link || null,
     };
 
     return NextResponse.json(physician, { status: 201 });

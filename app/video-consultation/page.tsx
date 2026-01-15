@@ -1,21 +1,10 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import VideoConsultation from '@/components/VideoConsultation';
-
-interface Physician {
-  id: string;
-  name: string;
-  role: string;
-  bio: string;
-  image: string;
-  education: string;
-  experience: string;
-  specialties: string[];
-}
+import { Physician } from '../lib/types';
 
 export default function VideoConsultationPage() {
-  const [selectedPhysician, setSelectedPhysician] = useState<any>(null);
+  const [selectedPhysician, setSelectedPhysician] = useState<Physician | null>(null);
   const [showVideoConsultation, setShowVideoConsultation] = useState(false);
   const [physiciansData, setPhysiciansData] = useState<{ members: Physician[] }>({ members: [] });
   const [loading, setLoading] = useState(true);

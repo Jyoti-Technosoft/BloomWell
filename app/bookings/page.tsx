@@ -84,11 +84,6 @@ export default function BookingsPage() {
     }
   };
 
-  const handleRescheduleBooking = async (bookingId: string) => {
-    // Reschedule functionality removed
-    console.log('Reschedule not available for booking:', bookingId);
-  };
-
   // Count bookings by status
   const bookingCounts = {
     all: bookings.length,

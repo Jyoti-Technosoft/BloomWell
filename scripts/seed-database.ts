@@ -14,7 +14,8 @@ const physicians = [
         review_count: 127,
         consultations_count: 342,
         initial_consultation: 150,
-        available_time_slots: ['9:00 AM', '10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM', '4:00 PM']
+        available_time_slots: ['9:00 AM', '10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM', '4:00 PM'],
+        available_dates: ['2024-01-15', '2024-01-16', '2024-01-17', '2024-01-18', '2024-01-19', '2024-01-22', '2024-01-23', '2024-01-24', '2024-01-25', '2024-01-26', '2024-01-29', '2024-01-30', '2024-01-31']
     },
     {
         id: '2',
@@ -26,10 +27,11 @@ const physicians = [
         experience: '12+ years',
         specialties: ['Endocrinology', 'Diabetes Care', 'Metabolic Health'],
         rating: 5,
-        review_count: 89,
-        consultations_count: 256,
-        initial_consultation: 150,
-        available_time_slots: ['8:30 AM', '9:30 AM', '10:30 AM', '11:30 AM', '1:30 PM', '2:30 PM', '3:30 PM']
+        reviewCount: 89,
+        consultationCount: 256,
+        initialConsultation: 150,
+        available_time_slots: ['8:30 AM', '9:30 AM', '10:30 AM', '11:30 AM', '1:30 PM', '2:30 PM', '3:30 PM'],
+        available_dates: ['2024-01-15', '2024-01-16', '2024-01-17', '2024-01-18', '2024-01-19', '2024-01-22', '2024-01-23', '2024-01-24', '2024-01-25', '2024-01-26', '2024-01-29', '2024-01-30', '2024-01-31']
     },
     {
         id: '3',
@@ -41,10 +43,11 @@ const physicians = [
         experience: '10+ years',
         specialties: ['Primary Care', 'Preventive Medicine', 'Chronic Disease Management'],
         rating: 5,
-        review_count: 156,
-        consultations_count: 412,
-        initial_consultation: 150,
-        available_time_slots: ['8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM']
+        reviewCount: 156,
+        consultationCount: 412,
+        initialConsultation: 150,
+        available_time_slots: ['8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM'],
+        available_dates: ['2024-01-15', '2024-01-16', '2024-01-17', '2024-01-18', '2024-01-19', '2024-01-22', '2024-01-23', '2024-01-24', '2024-01-25', '2024-01-26', '2024-01-29', '2024-01-30', '2024-01-31']
     },
     {
         id: '4',
@@ -56,10 +59,11 @@ const physicians = [
         experience: '18+ years',
         specialties: ['Cardiology', 'Preventive Cardiology', 'Heart Health'],
         rating: 4,
-        review_count: 203,
-        consultations_count: 523,
-        initial_consultation: 150,
-        available_time_slots: ['9:00 AM', '10:30 AM', '12:00 PM', '2:30 PM', '4:00 PM']
+        reviewCount: 203,
+        consultationCount: 523,
+        initialConsultation: 150,
+        available_time_slots: ['9:00 AM', '10:30 AM', '12:00 PM', '2:30 PM', '4:00 PM'],
+        available_dates: ['2024-01-15', '2024-01-16', '2024-01-17', '2024-01-18', '2024-01-19', '2024-01-22', '2024-01-23', '2024-01-24', '2024-01-25', '2024-01-26', '2024-01-29', '2024-01-30', '2024-01-31']
     },
     {
         id: '5',
@@ -71,10 +75,11 @@ const physicians = [
         experience: '8+ years',
         specialties: ['Dermatology', 'Cosmetic Procedures', 'Skin Health'],
         rating: 4,
-        review_count: 78,
-        consultations_count: 189,
-        initial_consultation: 150,
-        available_time_slots: ['10:00 AM', '11:30 AM', '1:00 PM', '2:30 PM', '4:00 PM']
+        reviewCount: 78,
+        consultationCount: 189,
+        initialConsultation: 150,
+        available_time_slots: ['8:00 AM', '9:30 AM', '11:30 AM', '1:30 PM', '3:30 PM'],
+        available_dates: ['2024-01-15', '2024-01-16', '2024-01-17', '2024-01-18', '2024-01-19', '2024-01-22', '2024-01-23', '2024-01-24', '2024-01-25', '2024-01-26', '2024-01-29', '2024-01-30', '2024-01-31']
     },
     {
         id: '6',
@@ -86,10 +91,11 @@ const physicians = [
         experience: '20+ years',
         specialties: ['Orthopedic Surgery', 'Sports Medicine', 'Joint Replacement'],
         rating: 4,
-        review_count: 145,
-        consultations_count: 387,
-        initial_consultation: 150,
-        available_time_slots: ['8:00 AM', '9:30 AM', '11:00 AM', '1:30 PM', '3:00 PM', '4:30 PM']
+        reviewCount: 145,
+        consultationCount: 387,
+        initialConsultation: 150,
+        available_time_slots: ['8:00 AM', '9:30 AM', '11:00 AM', '1:30 PM', '3:00 PM', '4:30 PM'],
+        available_dates: ['2024-01-15', '2024-01-16', '2024-01-17', '2024-01-18', '2024-01-19', '2024-01-22', '2024-01-23', '2024-01-24', '2024-01-25', '2024-01-26', '2024-01-29', '2024-01-30', '2024-01-31']
     },
     {
         id: '7',
@@ -101,10 +107,11 @@ const physicians = [
         experience: '7+ years',
         specialties: ['Pediatrics', 'Developmental Health', 'Child Wellness'],
         rating: 4,
-        review_count: 92,
-        consultations_count: 267,
-        initial_consultation: 150,
-        available_time_slots: ['9:00 AM', '10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM', '4:00 PM']
+        reviewCount: 92,
+        consultationCount: 267,
+        initialConsultation: 150,
+        available_time_slots: ['9:00 AM', '10:00 AM', '11:00 AM', '2:00 PM', '3:00 PM', '4:00 PM'],
+        available_dates: ['2024-01-15', '2024-01-16', '2024-01-17', '2024-01-18', '2024-01-19', '2024-01-22', '2024-01-23', '2024-01-24', '2024-01-25', '2024-01-26', '2024-01-29', '2024-01-30', '2024-01-31']
     },
     {
         id: '8',
@@ -116,10 +123,11 @@ const physicians = [
         experience: '14+ years',
         specialties: ['Neurology', 'Epilepsy', 'Headache Management'],
         rating: 4,
-        review_count: 118,
-        consultations_count: 298,
-        initial_consultation: 150,
-        available_time_slots: ['10:30 AM', '12:00 PM', '2:00 PM', '3:30 PM', '5:00 PM']
+        reviewCount: 118,
+        consultationCount: 298,
+        initialConsultation: 150,
+        available_time_slots: ['10:30 AM', '12:00 PM', '2:00 PM', '3:30 PM', '5:00 PM'],
+        available_dates: ['2024-01-15', '2024-01-16', '2024-01-17', '2024-01-18', '2024-01-19', '2024-01-22', '2024-01-23', '2024-01-24', '2024-01-25', '2024-01-26', '2024-01-29', '2024-01-30', '2024-01-31']
     },
     {
         id: '9',
@@ -131,10 +139,11 @@ const physicians = [
         experience: '11+ years',
         specialties: ['Psychiatry', 'Mental Health', 'Mood Disorders'],
         rating: 4,
-        review_count: 167,
-        consultations_count: 445,
-        initial_consultation: 150,
-        available_time_slots: ['11:00 AM', '1:00 PM', '2:30 PM', '4:00 PM']
+        reviewCount: 167,
+        consultationCount: 445,
+        initialConsultation: 150,
+        available_time_slots: ['11:00 AM', '1:00 PM', '2:30 PM', '4:00 PM'],
+        available_dates: ['2024-01-15', '2024-01-16', '2024-01-17', '2024-01-18', '2024-01-19', '2024-01-22', '2024-01-23', '2024-01-24', '2024-01-25', '2024-01-26', '2024-01-29', '2024-01-30', '2024-01-31']
     },
     {
         id: '10',
@@ -146,10 +155,11 @@ const physicians = [
         experience: '13+ years',
         specialties: ['Gastroenterology', 'Endoscopy', 'Digestive Health'],
         rating: 4,
-        review_count: 134,
-        consultations_count: 312,
-        initial_consultation: 150,
-        available_time_slots: ['8:30 AM', '10:00 AM', '11:30 AM', '1:30 PM', '3:00 PM']
+        reviewCount: 134,
+        consultationCount: 312,
+        initialConsultation: 150,
+        available_time_slots: ['8:30 AM', '10:00 AM', '11:30 AM', '1:30 PM', '3:00 PM'],
+        available_dates: ['2024-01-15', '2024-01-16', '2024-01-17', '2024-01-18', '2024-01-19', '2024-01-22', '2024-01-23', '2024-01-24', '2024-01-25', '2024-01-26', '2024-01-29', '2024-01-30', '2024-01-31']
     },
     {
         id: '11',
@@ -161,10 +171,11 @@ const physicians = [
         experience: '9+ years',
         specialties: ['Rheumatology', 'Autoimmune Diseases', 'Arthritis'],
         rating: 4,
-        review_count: 81,
-        consultations_count: 198,
-        initial_consultation: 150,
-        available_time_slots: ['9:30 AM', '11:00 AM', '12:30 PM', '2:30 PM', '4:30 PM']
+        reviewCount: 81,
+        consultationCount: 198,
+        initialConsultation: 150,
+        available_time_slots: ['9:30 AM', '11:00 AM', '12:30 PM', '2:30 PM', '4:30 PM'],
+        available_dates: ['2024-01-15', '2024-01-16', '2024-01-17', '2024-01-18', '2024-01-19', '2024-01-22', '2024-01-23', '2024-01-24', '2024-01-25', '2024-01-26', '2024-01-29', '2024-01-30', '2024-01-31']
     },
     {
         id: '12',
@@ -176,10 +187,11 @@ const physicians = [
         experience: '16+ years',
         specialties: ['Pulmonology', 'Sleep Medicine', 'Respiratory Health'],
         rating: 4,
-        review_count: 109,
-        consultations_count: 276,
-        initial_consultation: 150,
-        available_time_slots: ['10:00 AM', '11:30 AM', '1:00 PM', '2:30 PM', '4:00 PM', '5:30 PM']
+        reviewCount: 109,
+        consultationCount: 276,
+        initialConsultation: 150,
+        available_time_slots: ['10:00 AM', '11:30 AM', '1:00 PM', '2:30 PM', '4:00 PM', '5:30 PM'],
+        available_dates: ['2024-01-15', '2024-01-16', '2024-01-17', '2024-01-18', '2024-01-19', '2024-01-22', '2024-01-23', '2024-01-24', '2024-01-25', '2024-01-26', '2024-01-29', '2024-01-30', '2024-01-31']
     }
 ];
 
@@ -1149,7 +1161,6 @@ async function seedDatabase() {
     try {
         console.log("Starting database seeding...");
 
-        await createTables();
         await seedPhysicians();
         await seedMedicines();
         await seedTreatments();
@@ -1162,168 +1173,14 @@ async function seedDatabase() {
     }
 }
 
-async function createTables() {
-    console.log("Creating tables...");
-
-    await query(`
-    CREATE TABLE IF NOT EXISTS physicians (
-      id VARCHAR(255) PRIMARY KEY,
-      name VARCHAR(255) NOT NULL,
-      role VARCHAR(255) NOT NULL,
-      bio TEXT,
-      image VARCHAR(500),
-      education VARCHAR(255),
-      experience VARCHAR(255),
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
-
-    await query(`
-    CREATE TABLE IF NOT EXISTS medicines (
-      id VARCHAR(255) PRIMARY KEY,
-      name VARCHAR(255) NOT NULL,
-      description TEXT,
-      price DECIMAL(10,2),
-      dosage VARCHAR(255),
-      in_stock BOOLEAN DEFAULT true,
-      image VARCHAR(500),
-      category VARCHAR(255),
-      overview TEXT,
-      how_it_works TEXT,
-      shipping TEXT,
-      support TEXT,
-      benefits TEXT,
-      side_effects TEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
-
-    // Add missing columns if they don't exist
-    await query(`
-      ALTER TABLE medicines 
-      ADD COLUMN IF NOT EXISTS benefits TEXT,
-      ADD COLUMN IF NOT EXISTS side_effects TEXT;
-    `);
-
-    // Add profile columns to users table if they don't exist
-    await query(`
-      ALTER TABLE users 
-      ADD COLUMN IF NOT EXISTS first_name VARCHAR(255),
-      ADD COLUMN IF NOT EXISTS last_name VARCHAR(255),
-      ADD COLUMN IF NOT EXISTS phone VARCHAR(50),
-      ADD COLUMN IF NOT EXISTS date_of_birth DATE,
-      ADD COLUMN IF NOT EXISTS address TEXT,
-      ADD COLUMN IF NOT EXISTS city VARCHAR(255),
-      ADD COLUMN IF NOT EXISTS state VARCHAR(255),
-      ADD COLUMN IF NOT EXISTS zip_code VARCHAR(20),
-      ADD COLUMN IF NOT EXISTS emergency_contact VARCHAR(255),
-      ADD COLUMN IF NOT EXISTS emergency_phone VARCHAR(50),
-      ADD COLUMN IF NOT EXISTS allergies TEXT,
-      ADD COLUMN IF NOT EXISTS medications TEXT,
-      ADD COLUMN IF NOT EXISTS medical_history TEXT;
-    `);
-
-    await query(`
-    CREATE TABLE IF NOT EXISTS treatments (
-      id VARCHAR(255) PRIMARY KEY,
-      name VARCHAR(255) NOT NULL,
-      description TEXT,
-      overview TEXT,
-      how_it_works TEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
-
-    await query(`
-    CREATE TABLE IF NOT EXISTS users (
-      id VARCHAR(255) PRIMARY KEY,
-      email VARCHAR(255) UNIQUE NOT NULL,
-      password VARCHAR(255) NOT NULL,
-      name VARCHAR(255),
-      first_name VARCHAR(255),
-      last_name VARCHAR(255),
-      phone VARCHAR(50),
-      date_of_birth DATE,
-      address TEXT,
-      city VARCHAR(255),
-      state VARCHAR(255),
-      zip_code VARCHAR(20),
-      emergency_contact VARCHAR(255),
-      emergency_phone VARCHAR(50),
-      allergies TEXT,
-      medications TEXT,
-      medical_history TEXT,
-      role VARCHAR(50) DEFAULT 'user',
-      email_verified BOOLEAN DEFAULT false,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
-
-    await query(`
-    CREATE TABLE IF NOT EXISTS contacts (
-      id VARCHAR(255) PRIMARY KEY,
-      name VARCHAR(255) NOT NULL,
-      email VARCHAR(255) NOT NULL,
-      message TEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
-
-    await query(`
-    CREATE TABLE IF NOT EXISTS consultations (
-      id VARCHAR(255) PRIMARY KEY,
-      user_id VARCHAR(255) REFERENCES users(id) ON DELETE CASCADE,
-      doctor_name VARCHAR(255) NOT NULL,
-      doctor_specialty VARCHAR(255),
-      consultation_date DATE,
-      consultation_time VARCHAR(50),
-      reason TEXT,
-      status VARCHAR(50) DEFAULT 'pending',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
-
-    await query(`
-    CREATE TABLE IF NOT EXISTS evaluations (
-      id VARCHAR(255) PRIMARY KEY,
-      user_id VARCHAR(255),
-      medicine_id VARCHAR(255),
-      medicine_name VARCHAR(255),
-      responses JSONB,
-      status VARCHAR(50) DEFAULT 'pending',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
-
-    await query(`
-    CREATE TABLE IF NOT EXISTS reviews (
-      id VARCHAR(255) PRIMARY KEY,
-      name VARCHAR(255) NOT NULL,
-      email VARCHAR(255) NOT NULL,
-      rating INTEGER CHECK (rating >= 1 AND rating <= 5),
-      content TEXT,
-      status VARCHAR(50) DEFAULT 'pending',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
-
-    console.log("Tables created successfully!");
-}
-
 async function seedPhysicians() {
     console.log("Seeding physicians...");
 
     for (const physician of physicians) {
         await query(
             `
-        INSERT INTO physicians (id, name, role, bio, image, education, experience, specialties, rating, review_count, consultations_count, initial_consultation)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        INSERT INTO physicians (id, name, role, bio, image, education, experience, specialties, rating, review_count, consultations_count, initial_consultation, available_time_slots, available_dates)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
         ON CONFLICT (id) DO UPDATE SET
           name = excluded.name,
           role = excluded.role,
@@ -1336,6 +1193,8 @@ async function seedPhysicians() {
           review_count = excluded.review_count,
           consultations_count = excluded.consultations_count,
           initial_consultation = excluded.initial_consultation,
+          available_time_slots = excluded.available_time_slots,
+          available_dates = excluded.available_dates,
           updated_at = CURRENT_TIMESTAMP
       `,
             [
@@ -1350,7 +1209,9 @@ async function seedPhysicians() {
                 physician.rating,
                 physician.review_count,
                 physician.consultations_count,
-                physician.initial_consultation
+                physician.initial_consultation,
+                physician.available_time_slots ? JSON.stringify(physician.available_time_slots) : null,
+                physician.available_dates ? JSON.stringify(physician.available_dates) : null
             ]
         );
     }

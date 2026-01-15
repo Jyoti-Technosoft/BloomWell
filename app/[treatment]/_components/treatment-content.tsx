@@ -3,119 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
-
-interface Medicine {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  image: string;
-  price: number;
-  dosage: string;
-  sideEffects: string[];
-  benefits: string[];
-  inStock: boolean;
-}
-
-interface Treatment {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  image: string;
-  medicines: string[];
-  overview?: string;
-  howItWorks?: string;
-  benefits?: string[];
-  faqs?: Array<{ question: string; answer: string }>;
-}
-
-function MedicineCard({ medicine }: { medicine: Medicine }) {
-  const router = useRouter();
-
-  const handleViewDetails = () => {
-    router.push(`/medicines/${medicine.id}`);
-  };
-
-  return (
-    <div className="flex flex-col rounded-lg border border-gray-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-      <div className="h-48 bg-gray-100 flex items-center justify-center p-4">
-        {medicine.image ? (
-          <img
-            src={medicine.image}
-            alt={medicine.name}
-            className="h-full w-full object-contain"
-          />
-        ) : (
-          <div className="text-gray-400">
-            <svg
-              className="h-12 w-12"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1}
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
-          </div>
-        )}
-      </div>
-
-      <div className="p-6 flex-1">
-        <div className="flex justify-between items-start">
-          <div>
-            <h3 className="text-lg font-medium text-gray-900">
-              {medicine.name}
-            </h3>
-            <p className="mt-1 text-sm text-gray-500">{medicine.description}</p>
-            <p className="mt-2 text-sm text-gray-600">{medicine.dosage}</p>
-          </div>
-          <div className="text-right">
-            <p className="text-2xl font-bold text-gray-900">
-              ${medicine.price}
-            </p>
-            {medicine.inStock ? (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                In Stock
-              </span>
-            ) : (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                Out of Stock
-              </span>
-            )}
-          </div>
-        </div>
-
-        <ul className="mt-4 space-y-2">
-          {medicine.benefits.map((feature: string, index: number) => (
-            <li key={index} className="flex items-start">
-              <CheckCircleIcon className="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
-              <span className="ml-2 text-sm text-gray-600">{feature}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="border-t border-gray-200 p-4 bg-gray-50">
-        <button
-          onClick={handleViewDetails}
-          disabled={!medicine.inStock}
-          className={`w-full cursor-pointer flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-            medicine.inStock
-              ? "bg-indigo-600 hover:bg-indigo-700"
-              : "bg-gray-400 cursor-not-allowed"
-          } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
-        >
-          {!medicine.inStock ? "Out of Stock" : "View Details"}
-        </button>
-      </div>
-    </div>
-  );
-}
+import { Medicine, Treatment } from '../../lib/types';
 
 export function TreatmentContent({ treatment }: { treatment: string }) {
   const [treatmentData, setTreatmentData] = useState<Treatment | null>(null);
@@ -299,7 +187,63 @@ export function TreatmentContent({ treatment }: { treatment: string }) {
         <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {medicines.length > 0 ? (
             medicines.map((medicine: Medicine) => (
-              <MedicineCard key={medicine.id} medicine={medicine} />
+              <div key={medicine.id} className="flex flex-col rounded-lg border border-gray-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                <div className="h-48 bg-gray-100 flex items-center justify-center p-4">
+                  {medicine.image ? (
+                    <img
+                      src={medicine.image}
+                      alt={medicine.name}
+                      className="h-full w-full object-contain"
+                    />
+                  ) : (
+                    <div className="text-gray-400">
+                      <svg
+                        className="h-12 w-12"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
+                        />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <div className="p-4">
+                  <h3 className="text-lg font-semibold text-gray-900">{medicine.name}</h3>
+                  <p className="mt-1 text-sm text-gray-500">{medicine.description}</p>
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-lg font-bold text-gray-900">
+                      ${medicine.price}
+                    </span>
+                    {medicine.inStock ? (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        In Stock
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        Out of Stock
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-4">
+                    <Link
+                      href={`/medicines/${medicine.id}`}
+                      className={`w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+                        medicine.inStock
+                          ? 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500'
+                          : 'bg-gray-400 cursor-not-allowed'
+                      } focus:outline-none focus:ring-2 focus:ring-offset-2`}
+                    >
+                      {!medicine.inStock ? "Out of Stock" : "View Details"}
+                    </Link>
+                  </div>
+                </div>
+              </div>
             ))
           ) : (
             <div className="col-span-3 text-center py-12">
