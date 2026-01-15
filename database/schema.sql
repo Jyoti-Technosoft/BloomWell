@@ -55,6 +55,7 @@ CREATE TABLE IF NOT EXISTS evaluations (
     user_id VARCHAR(255),
     medicine_id VARCHAR(255) NOT NULL,
     medicine_name VARCHAR(255) NOT NULL,
+    evaluation_type VARCHAR(50) DEFAULT 'general',
     responses JSONB NOT NULL,
     status VARCHAR(50) DEFAULT 'pending_review',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -147,6 +148,7 @@ CREATE INDEX IF NOT EXISTS idx_consultations_date ON consultations(consultation_
 CREATE INDEX IF NOT EXISTS idx_evaluations_user_id ON evaluations(user_id);
 CREATE INDEX IF NOT EXISTS idx_evaluations_status ON evaluations(status);
 CREATE INDEX IF NOT EXISTS idx_evaluations_medicine_id ON evaluations(medicine_id);
+CREATE INDEX IF NOT EXISTS idx_evaluations_type ON evaluations(evaluation_type);
 CREATE INDEX IF NOT EXISTS idx_medicines_category ON medicines(category);
 CREATE INDEX IF NOT EXISTS idx_treatments_category ON treatments(category);
 CREATE INDEX IF NOT EXISTS idx_physicians_specialties ON physicians(specialties);

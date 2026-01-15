@@ -58,7 +58,7 @@ export default function BookConsultation() {
     setSelectedPhysician(physician);
     setShowBookingModal(true);
   };
-  console.log("Selected Physician:", selectedPhysician);
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}

@@ -124,6 +124,7 @@ async function migrateData() {
           user_id: evaluation.userId === 'anonymous' ? null : evaluation.userId,
           medicine_id: evaluation.medicineId,
           medicine_name: evaluation.medicineName,
+          evaluation_type: 'general', // Default to 'general' for migrated data
           responses: evaluation.responses,
           status: evaluation.status
         });

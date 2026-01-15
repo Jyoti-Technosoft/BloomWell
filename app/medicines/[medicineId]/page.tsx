@@ -450,32 +450,34 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
       )}
 
       {/* Questionnaire Flow Components */}
-      {medicine && (
-        <>
-          <MedicalQuestionnaire
-            key="medical-questionnaire"
-            medicineId={medicineId}
-            medicineName={medicine.name}
-            isOpen={showQuestionnaire}
-            onClose={handleCloseAllModals}
-            onComplete={handleQuestionnaireComplete}
-          />
+      {medicine && showQuestionnaire && (
+        <MedicalQuestionnaire
+          key={`medical-questionnaire-${medicineId}-${showQuestionnaire}`}
+          medicineId={medicineId}
+          medicineName={medicine.name}
+          isOpen={showQuestionnaire}
+          onClose={handleCloseAllModals}
+          onComplete={handleQuestionnaireComplete}
+        />
+      )}
 
-          <IdentityVerification
-            isOpen={showIdentityVerification}
-            onClose={handleCloseAllModals}
-            onComplete={handleIdentityVerificationComplete}
-          />
+      {medicine && showIdentityVerification && (
+        <IdentityVerification
+          isOpen={showIdentityVerification}
+          onClose={handleCloseAllModals}
+          onComplete={handleIdentityVerificationComplete}
+        />
+      )}
 
-          <TreatmentRecommendation
-            medicineId={medicineId}
-            medicineName={medicine.name}
-            formData={questionnaireData}
-            isOpen={showRecommendation}
-            onClose={handleCloseAllModals}
-            onProceed={handleRecommendationProceed}
-          />
-        </>
+      {medicine && showRecommendation && (
+        <TreatmentRecommendation
+          medicineId={medicineId}
+          medicineName={medicine.name}
+          formData={questionnaireData}
+          isOpen={showRecommendation}
+          onClose={handleCloseAllModals}
+          onProceed={handleRecommendationProceed}
+        />
       )}
     </div>
   );

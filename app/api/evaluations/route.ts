@@ -1,4 +1,3 @@
-// app/api/evaluations/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { postgresDb } from '../../lib/postgres-db';
@@ -26,6 +25,13 @@ interface EvaluationData {
   sleepHours: string;
   stressLevel: string;
   dietaryRestrictions: string[];
+  currentWeightliftingRoutine: string;
+  proteinIntake: string;
+  workoutFrequency: string;
+  healthConcerns: string[];
+  sleepIssues: string[];
+  stressTriggers: string[];
+  stressManagementTechniques: string[];
   userId?: string;
 }
 
@@ -67,29 +73,30 @@ export async function POST(request: NextRequest) {
 
     const evaluationData: EvaluationData = await request.json();
 
-    // Validate required fields
-    const requiredFields = [
-      'medicineId',
-      'medicineName',
-      'birthday',
-      'pregnant',
-      'currentlyUsingMedicines',
-      'hasDiabetes',
-      'seenDoctorLastTwoYears',
-      'medicalConditions',
-      'height',
-      'weight',
-      'targetWeight',
-      'goals',
-      'allergies',
-      'primaryGoal',
-      'triedWeightLossMethods',
-      'activityLevel',
-      'sleepHours',
-      'stressLevel',
-      'dietaryRestrictions',
-      'lastFourSSN'
-    ];
+    // Get goal-specific required fields
+    const getGoalSpecificRequiredFields = (primaryGoal: string): string[] => {
+      const baseFields = [
+        'medicineId', 'medicineName', 'birthday', 'pregnant', 'currentlyUsingMedicines',
+        'hasDiabetes', 'seenDoctorLastTwoYears', 'primaryGoal', 'lastFourSSN'
+      ];
+
+      switch (primaryGoal) {
+        case 'Weight Loss':
+          return [...baseFields, 'height', 'weight', 'targetWeight', 'triedWeightLossMethods', 'goals', 'allergies', 'dietaryRestrictions'];
+        case 'Muscle Gain':
+          return [...baseFields, 'height', 'weight', 'targetWeight', 'currentWeightliftingRoutine', 'workoutFrequency', 'proteinIntake', 'goals', 'allergies', 'dietaryRestrictions'];
+        case 'Improved Health':
+          return [...baseFields, 'medicalConditions', 'healthConcerns', 'goals', 'allergies', 'dietaryRestrictions'];
+        case 'Better Sleep':
+          return [...baseFields, 'activityLevel', 'sleepHours', 'stressLevel', 'sleepIssues', 'goals', 'allergies', 'dietaryRestrictions'];
+        case 'Stress Reduction':
+          return [...baseFields, 'activityLevel', 'sleepHours', 'stressLevel', 'stressTriggers', 'stressManagementTechniques', 'goals', 'allergies', 'dietaryRestrictions'];
+        default:
+          return [...baseFields, 'height', 'weight', 'targetWeight', 'goals', 'allergies', 'dietaryRestrictions'];
+      }
+    };
+
+    const requiredFields = getGoalSpecificRequiredFields(evaluationData.primaryGoal);
 
     for (const field of requiredFields) {
       const value = evaluationData[field as keyof EvaluationData];
@@ -137,6 +144,7 @@ export async function POST(request: NextRequest) {
       user_id: userId,
       medicine_id: evaluationData.medicineId,
       medicine_name: evaluationData.medicineName,
+      evaluation_type: evaluationData.primaryGoal.toLowerCase().replace(' ', '-'),
       responses: {
         birthday: evaluationData.birthday,
         pregnant: evaluationData.pregnant,
@@ -157,7 +165,14 @@ export async function POST(request: NextRequest) {
         activityLevel: evaluationData.activityLevel,
         sleepHours: evaluationData.sleepHours,
         stressLevel: evaluationData.stressLevel,
-        dietaryRestrictions: evaluationData.dietaryRestrictions
+        dietaryRestrictions: evaluationData.dietaryRestrictions,
+        currentWeightliftingRoutine: evaluationData.currentWeightliftingRoutine || '',
+        proteinIntake: evaluationData.proteinIntake || '',
+        workoutFrequency: evaluationData.workoutFrequency || '',
+        healthConcerns: evaluationData.healthConcerns,
+        sleepIssues: evaluationData.sleepIssues,
+        stressTriggers: evaluationData.stressTriggers,
+        stressManagementTechniques: evaluationData.stressManagementTechniques
       },
       status: 'pending_review'
     });

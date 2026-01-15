@@ -39,6 +39,7 @@ export interface Evaluation {
   user_id: string | null;
   medicine_id: string;
   medicine_name: string;
+  evaluation_type: string;
   responses: any;
   status: string;
   created_at: string;
@@ -161,12 +162,13 @@ export const postgresDb = {
     async create(evaluation: Omit<Evaluation, 'id' | 'created_at' | 'updated_at'>): Promise<Evaluation> {
       const id = Date.now().toString();
       const result = await queryOne<Evaluation>(
-        'INSERT INTO evaluations (id, user_id, medicine_id, medicine_name, responses, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING *',
+        'INSERT INTO evaluations (id, user_id, medicine_id, medicine_name, evaluation_type, responses, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING *',
         [
           id,
           evaluation.user_id,
           evaluation.medicine_id,
           evaluation.medicine_name,
+          evaluation.evaluation_type,
           JSON.stringify(evaluation.responses),
           evaluation.status
         ]
