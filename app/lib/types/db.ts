@@ -1,4 +1,3 @@
-// app/lib/types/db.ts
 export interface Database {
   users: Array<{
     id: string;

@@ -1,5 +1,3 @@
-// app/data/medicine-details.ts
-
 export interface MedicineDetails {
   id: string;
   name: string;

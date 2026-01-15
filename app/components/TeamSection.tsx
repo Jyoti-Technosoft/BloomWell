@@ -3,22 +3,18 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { UserIcon } from '@heroicons/react/24/outline';
 import Pagination from './Pagination';
-
-interface Physician {
-  id: string;
-  name: string;
-  role: string;
-  bio: string;
-  image: string;
-  education: string;
-  experience: string;
-  specialties: string[];
-}
+import { Physician } from '../lib/types';
 
 export default function TeamSection() {
   const searchParams = useSearchParams();
   const page = parseInt(searchParams.get('page') || '1');
-  const [teamData, setTeamData] = useState<{ members: Physician[]; currentPage: number; totalPages: number; hasNext: boolean; hasPrev: boolean }>({
+  const [teamData, setTeamData] = useState<{
+    members: Physician[];
+    currentPage: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  }>({
     members: [],
     currentPage: 1,
     totalPages: 1,

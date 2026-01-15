@@ -23,20 +23,56 @@ export async function GET(request: NextRequest) {
       [limit, offset]
     );
 
-    const physicians = result.rows.map((row: any) => ({
-      id: row.id,
-      name: row.name,
-      role: row.role,
-      bio: row.bio,
-      image: row.image,
-      education: row.education,
-      experience: row.experience,
-      specialties: row.specialties ? row.specialties.split(',').map((s: string) => s.trim()) : [],
-      rating: parseFloat(row.rating) || 0,
-      reviewCount: parseInt(row.review_count) || 0,
-      consultationCount: parseInt(row.consultations_count) || 0,
-      initialConsultation: parseFloat(row.initial_consultation) || 150,
-    }));
+    const physicians = result.rows.map((row: any) => {
+      // Parse specialties
+      let specialties = [];
+      try {
+        specialties = row.specialties ? (typeof row.specialties === 'string' ? JSON.parse(row.specialties) : row.specialties) : [];
+        if (Array.isArray(specialties)) {
+          specialties = specialties;
+        } else if (typeof specialties === 'string') {
+          specialties = specialties.split(',').map((s: string) => s.trim());
+        }
+      } catch (e) {
+        console.error('Error parsing specialties for physician', row.id, e);
+        specialties = row.specialties ? row.specialties.split(',').map((s: string) => s.trim()) : [];
+      }
+
+      // Parse available_time_slots
+      let available_time_slots = [];
+      try {
+        available_time_slots = row.available_time_slots ? (typeof row.available_time_slots === 'string' ? JSON.parse(row.available_time_slots) : row.available_time_slots) : [];
+      } catch (e) {
+        console.error('Error parsing available_time_slots for physician', row.id, e);
+        available_time_slots = [];
+      }
+
+      // Parse available_dates
+      let available_dates = [];
+      try {
+        available_dates = row.available_dates ? (typeof row.available_dates === 'string' ? JSON.parse(row.available_dates) : row.available_dates) : [];
+      } catch (e) {
+        console.error('Error parsing available_dates for physician', row.id, e);
+        available_dates = [];
+      }
+
+      return {
+        id: row.id,
+        name: row.name,
+        role: row.role,
+        bio: row.bio,
+        image: row.image,
+        education: row.education,
+        experience: row.experience,
+        specialties: specialties,
+        rating: parseFloat(row.rating) || 0,
+        reviewCount: parseInt(row.review_count) || 0,
+        consultationCount: parseInt(row.consultations_count) || 0,
+        initialConsultation: parseFloat(row.initial_consultation) || 150,
+        available_time_slots: available_time_slots,
+        available_dates: available_dates,
+      };
+    });
 
     return NextResponse.json({
       members: physicians,
@@ -82,6 +118,8 @@ export async function POST(request: NextRequest) {
       reviewCount: parseInt(result.rows[0].review_count) || 0,
       consultationCount: parseInt(result.rows[0].consultations_count) || 0,
       initialConsultation: parseFloat(result.rows[0].initial_consultation) || 150,
+      available_time_slots: result.rows[0].available_time_slots ? (typeof result.rows[0].available_time_slots === 'string' ? JSON.parse(result.rows[0].available_time_slots) : result.rows[0].available_time_slots) : [],
+      available_dates: result.rows[0].available_dates ? (typeof result.rows[0].available_dates === 'string' ? JSON.parse(result.rows[0].available_dates) : result.rows[0].available_dates) : [],
     };
 
     return NextResponse.json(physician, { status: 201 });

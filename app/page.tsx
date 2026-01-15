@@ -407,7 +407,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8 text-center"
+            className="mx-auto py-8 px-8 sm:px-8 lg:px-8 text-center"
           >
             <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
               <span className="block">Ready to transform your wellness?</span>
@@ -419,7 +419,7 @@ export default function Home() {
             <div className="mt-8">
               <Link
                 href={user ? "/book-consultation" : "/auth/signup"}
-                className="px-8 py-4 bg-white text-indigo-600 font-medium rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 inline-flex items-center"
+                className="px-4 py-4 bg-white text-indigo-600 font-medium rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 inline-flex items-center"
               >
                 {user ? "Book Consultation" : "Get Started Now"}
                 <ArrowRightIcon className="ml-2 h-5 w-5" />

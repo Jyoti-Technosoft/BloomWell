@@ -1,6 +1,6 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
@@ -17,36 +17,26 @@ import Toast from '../../components/Toast';
 import MedicalQuestionnaire from '../../components/MedicalQuestionnaire';
 import IdentityVerification from '../../components/IdentityVerification';
 import TreatmentRecommendation from '../../components/TreatmentRecommendation';
+import { Medicine } from '../../lib/types';
 
-interface Medicine {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  image: string;
-  price: number;
-  dosage: string;
-  sideEffects: string[];
-  benefits: string[];
-  inStock: boolean;
-  overview?: string;
-  howItWorks?: string;
-  shipping?: string;
-  support?: string;
-  usageInstructions?: string[];
-  precautions?: string[];
-  features?: string[];
-}
-
-export default function MedicineDetailsPage() {
-  const params = useParams();
+export default function MedicinePage({ params }: { params: Promise<{ medicineId: string }> }) {
+  const resolvedParams = React.use(params);
+  const medicineId = resolvedParams.medicineId;
   const router = useRouter();
   const { user } = useUser();
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [medicine, setMedicine] = useState<Medicine | null>(null);
   const [loading, setLoading] = useState(true);
   
-  const medicineId = params.medicineId as string;
+  // Questionnaire flow state - moved to top
+  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
+  const [showIdentityVerification, setShowIdentityVerification] = useState(false);
+  const [showRecommendation, setShowRecommendation] = useState(false);
+  const [questionnaireData, setQuestionnaireData] = useState<any>(null);
+
+  const handleCloseToast = () => {
+    setToast(null);
+  };
 
   useEffect(() => {
     const fetchMedicine = async () => {
@@ -66,16 +56,6 @@ export default function MedicineDetailsPage() {
 
     fetchMedicine();
   }, [medicineId]);
-
-  // Questionnaire flow state
-  const [showQuestionnaire, setShowQuestionnaire] = useState(false);
-  const [showIdentityVerification, setShowIdentityVerification] = useState(false);
-  const [showRecommendation, setShowRecommendation] = useState(false);
-  const [questionnaireData, setQuestionnaireData] = useState<any>(null);
-
-  const handleCloseToast = () => {
-    setToast(null);
-  };
 
   if (loading) {
     return (
@@ -113,6 +93,15 @@ export default function MedicineDetailsPage() {
   const treatmentCategory = medicine.category;
 
   const handleClaimEvaluation = () => {
+    // Check if medicine data is available
+    if (!medicine) {
+      setToast({
+        message: 'Medicine information not available. Please refresh the page.',
+        type: 'error'
+      });
+      return;
+    }
+
     if (!user) {
       router.push(`/auth/signin?callbackUrl=/medicines/${medicineId}`);
       return;
@@ -212,7 +201,7 @@ export default function MedicineDetailsPage() {
             <div className="shrink-0">
               <div className="w-48 h-48 rounded-2xl overflow-hidden bg-white/10 backdrop-blur-sm border border-white/20">
                 <Image
-                  src={medicine.image}
+                  src={medicine.image || '/placeholder-medicine.png'}
                   alt={medicine.name}
                   width={192}
                   height={192}
@@ -283,7 +272,7 @@ export default function MedicineDetailsPage() {
             >
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Benefits</h2>
               <div className="grid md:grid-cols-2 gap-4">
-                {medicine.benefits.map((benefit: string, index: number) => (
+                {medicine.benefits?.map((benefit: string, index: number) => (
                   <div key={index} className="flex items-start">
                     <CheckCircleIcon className="h-6 w-6 text-green-500 mr-3 mt-0.5 shrink-0" />
                     <span className="text-gray-700">{benefit}</span>
@@ -329,7 +318,7 @@ export default function MedicineDetailsPage() {
                 </p>
               </div>
               <ul className="space-y-2">
-                {medicine.sideEffects.map((sideEffect: string, index: number) => (
+                {medicine.sideEffects?.map((sideEffect: string, index: number) => (
                   <li key={index} className="flex items-start">
                     <span className="text-yellow-600 mr-2">•</span>
                     <span className="text-gray-700">{sideEffect}</span>
@@ -464,6 +453,7 @@ export default function MedicineDetailsPage() {
       {medicine && (
         <>
           <MedicalQuestionnaire
+            key="medical-questionnaire"
             medicineId={medicineId}
             medicineName={medicine.name}
             isOpen={showQuestionnaire}

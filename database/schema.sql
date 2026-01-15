@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS contacts (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Consultations table
+-- Consultations table (updated for new booking flow)
 CREATE TABLE IF NOT EXISTS consultations (
     id VARCHAR(255) PRIMARY KEY,
     user_id VARCHAR(255) NOT NULL,
@@ -35,7 +35,17 @@ CREATE TABLE IF NOT EXISTS consultations (
     consultation_time TIME NOT NULL,
     reason TEXT NOT NULL,
     status VARCHAR(50) DEFAULT 'pending',
+    -- New fields from comprehensive booking flow
+    consultation_type VARCHAR(50) DEFAULT 'video',
+    medical_history TEXT,
+    medications TEXT,
+    allergies TEXT,
+    preferred_pharmacy VARCHAR(255),
+    insurance_provider VARCHAR(255),
+    insurance_member_id VARCHAR(255),
+    consultation_fee DECIMAL(10,2) DEFAULT 150.00,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -94,6 +104,12 @@ CREATE TABLE IF NOT EXISTS physicians (
     education VARCHAR(255) NOT NULL,
     experience VARCHAR(255) NOT NULL,
     specialties TEXT,
+    rating INTEGER,
+    review_count INTEGER,
+    consultations_count INTEGER,
+    initial_consultation DECIMAL(10,2) DEFAULT 150.00,
+    available_time_slots TEXT,
+    available_dates TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

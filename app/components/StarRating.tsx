@@ -1,10 +1,4 @@
-interface StarRatingProps {
-  rating: number;
-  reviewCount?: number;
-  size?: 'sm' | 'md' | 'lg';
-  showCount?: boolean;
-  className?: string;
-}
+import { StarRatingProps } from '../lib/types';
 
 export default function StarRating({ 
   rating, 
