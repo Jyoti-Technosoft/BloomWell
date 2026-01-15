@@ -2,17 +2,21 @@
 // Field-level encryption for HIPAA compliance
 import crypto from 'crypto';
 
-// Encryption key MUST be set in environment variables
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
+// Get and validate encryption key (lazy evaluation)
+const getEncryptionKey = () => {
+  const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
+  
+  // CRITICAL: Fail fast if encryption key is not set
+  if (!ENCRYPTION_KEY) {
+    throw new Error('FATAL: ENCRYPTION_KEY environment variable is required for HIPAA compliance. Set it in .env.local');
+  }
 
-// CRITICAL: Fail fast if encryption key is not set
-if (!ENCRYPTION_KEY) {
-  throw new Error('FATAL: ENCRYPTION_KEY environment variable is required for HIPAA compliance. Set it in .env.local');
-}
-
-if (ENCRYPTION_KEY.length !== 64) {
-  throw new Error('FATAL: ENCRYPTION_KEY must be exactly 64 hex characters (32 bytes)');
-}
+  if (ENCRYPTION_KEY.length !== 64) {
+    throw new Error('FATAL: ENCRYPTION_KEY must be exactly 64 hex characters (32 bytes)');
+  }
+  
+  return ENCRYPTION_KEY;
+};
 
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 16;
@@ -28,7 +32,7 @@ export function encryptField(text: string): EncryptedData {
   if (!text) return { encrypted: '', iv: '', tag: '' };
   
   const iv = crypto.randomBytes(IV_LENGTH);
-  const cipher = crypto.createCipheriv(ALGORITHM, Buffer.from(ENCRYPTION_KEY!, 'hex'), iv);
+  const cipher = crypto.createCipheriv(ALGORITHM, Buffer.from(getEncryptionKey(), 'hex'), iv);
   cipher.setAAD(Buffer.from('additional-data')); // Additional authenticated data
   
   let encrypted = cipher.update(text, 'utf8', 'hex');
@@ -48,7 +52,7 @@ export function decryptField(encryptedData: EncryptedData): string {
   if (!encryptedData.encrypted) return '';
   
   try {
-    const decipher = crypto.createDecipheriv(ALGORITHM, Buffer.from(ENCRYPTION_KEY!, 'hex'), Buffer.from(encryptedData.iv, 'hex'));
+    const decipher = crypto.createDecipheriv(ALGORITHM, Buffer.from(getEncryptionKey(), 'hex'), Buffer.from(encryptedData.iv, 'hex'));
     decipher.setAAD(Buffer.from('additional-data'));
     decipher.setAuthTag(Buffer.from(encryptedData.tag, 'hex'));
     
