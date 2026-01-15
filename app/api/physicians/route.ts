@@ -26,16 +26,21 @@ export async function GET(request: NextRequest) {
     const physicians = result.rows.map((row: any) => {
       // Parse specialties
       let specialties = [];
-      try {
-        specialties = row.specialties ? (typeof row.specialties === 'string' ? JSON.parse(row.specialties) : row.specialties) : [];
-        if (Array.isArray(specialties)) {
-          specialties = specialties;
-        } else if (typeof specialties === 'string') {
-          specialties = specialties.split(',').map((s: string) => s.trim());
+      if (row.specialties) {
+        if (Array.isArray(row.specialties)) {
+          specialties = row.specialties;
+        } else if (typeof row.specialties === 'string') {
+          // Try to parse as JSON first, then fallback to comma-separated or single string
+          try {
+            const parsed = JSON.parse(row.specialties);
+            specialties = Array.isArray(parsed) ? parsed : [parsed];
+          } catch {
+            // Handle comma-separated or single string values
+            specialties = row.specialties.includes(',') 
+              ? row.specialties.split(',').map((s: string) => s.trim())
+              : [row.specialties.trim()];
+          }
         }
-      } catch (e) {
-        console.error('Error parsing specialties for physician', row.id, e);
-        specialties = row.specialties ? row.specialties.split(',').map((s: string) => s.trim()) : [];
       }
 
       // Parse available_time_slots
@@ -71,6 +76,7 @@ export async function GET(request: NextRequest) {
         initialConsultation: parseFloat(row.initial_consultation) || 150,
         available_time_slots: available_time_slots,
         available_dates: available_dates,
+        consultationLink: row.consultation_link || null,
       };
     });
 
@@ -94,15 +100,15 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, role, bio, image, education, experience, specialties } = body;
+    const { name, role, bio, image, education, experience, specialties, consultationLink } = body;
 
     const specialtiesString = specialties ? specialties.join(', ') : '';
 
     const result = await pool.query(
-      `INSERT INTO physicians (name, role, bio, image, education, experience, specialties) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7) 
+      `INSERT INTO physicians (name, role, bio, image, education, experience, specialties, consultation_link) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
        RETURNING *`,
-      [name, role, bio, image, education, experience, specialtiesString]
+      [name, role, bio, image, education, experience, specialtiesString, consultationLink || null]
     );
 
     const physician = {
@@ -120,6 +126,7 @@ export async function POST(request: NextRequest) {
       initialConsultation: parseFloat(result.rows[0].initial_consultation) || 150,
       available_time_slots: result.rows[0].available_time_slots ? (typeof result.rows[0].available_time_slots === 'string' ? JSON.parse(result.rows[0].available_time_slots) : result.rows[0].available_time_slots) : [],
       available_dates: result.rows[0].available_dates ? (typeof result.rows[0].available_dates === 'string' ? JSON.parse(result.rows[0].available_dates) : result.rows[0].available_dates) : [],
+      consultationLink: result.rows[0].consultation_link || null,
     };
 
     return NextResponse.json(physician, { status: 201 });

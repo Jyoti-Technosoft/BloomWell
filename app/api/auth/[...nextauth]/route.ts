@@ -48,7 +48,7 @@ const handler = NextAuth({
   ],
   session: {
     strategy: 'jwt',
-    maxAge: 24 * 60 * 60,
+    maxAge: 15 * 60, // 15 minutes for HIPAA compliance
   },
   pages: {
     signIn: '/auth/signin',

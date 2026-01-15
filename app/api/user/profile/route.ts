@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
+import { query } from '../../../lib/postgres';
+import { logger, auditLog } from '../../../lib/secure-logger';
 import pool from '@/app/lib/postgres';
 
 export async function GET(request: NextRequest) {
@@ -11,11 +13,18 @@ export async function GET(request: NextRequest) {
     });
     
     if (!token) {
-      console.error('No token found in request');
+      logger.error('Authentication failed - no token');
+      await auditLog({
+        action: 'AUTH_FAILED',
+        resource: 'user_profile',
+        timestamp: new Date(),
+        success: false,
+        details: { reason: 'no_token' }
+      });
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    console.log('Token found:', token.email);
+    logger.info('Profile access attempt', { userId: token.id });
 
     const result = await pool.query(
       `SELECT 
@@ -41,11 +50,29 @@ export async function GET(request: NextRequest) {
     );
 
     if (result.rows.length === 0) {
-      console.error('User not found for email:', token.email);
+      logger.warn('User not found', { userId: token.id });
+      await auditLog({
+        userId: token.id,
+        action: 'PROFILE_ACCESS_FAILED',
+        resource: 'user_profile',
+        timestamp: new Date(),
+        success: false,
+        details: { reason: 'user_not_found' }
+      });
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     const user = result.rows[0];
+    
+    // Log successful profile access
+    await auditLog({
+      userId: token.id,
+      action: 'PROFILE_ACCESSED',
+      resource: 'user_profile',
+      timestamp: new Date(),
+      success: true,
+      details: { profileFields: Object.keys(user).length }
+    });
     
     const profileData = {
       firstName: user.first_name || '',
@@ -83,14 +110,21 @@ export async function PUT(request: NextRequest) {
     });
     
     if (!token) {
-      console.error('No token found in PUT request');
+      logger.error('Profile update authentication failed');
+      await auditLog({
+        action: 'PROFILE_UPDATE_FAILED',
+        resource: 'user_profile',
+        timestamp: new Date(),
+        success: false,
+        details: { reason: 'no_token' }
+      });
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    console.log('PUT token found:', token.email);
+    logger.info('Profile update attempt', { userId: token.id });
 
     const body = await request.json();
-    console.log('Received profile data:', body);
+    logger.info('Profile update data received', { fieldCount: Object.keys(body).length });
     
     const {
       firstName,
@@ -111,12 +145,20 @@ export async function PUT(request: NextRequest) {
     // First check if user exists
     const userCheck = await pool.query('SELECT id FROM users WHERE email = $1', [token.email]);
     if (userCheck.rows.length === 0) {
-      console.error('User not found for email:', token.email);
+      logger.warn('Profile update failed - user not found', { userId: token.id });
+      await auditLog({
+        userId: token.id,
+        action: 'PROFILE_UPDATE_FAILED',
+        resource: 'user_profile',
+        timestamp: new Date(),
+        success: false,
+        details: { reason: 'user_not_found' }
+      });
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     // Update user profile in the unified users table
-    console.log('Updating user profile for:', token.email);
+    logger.info('Updating user profile', { userId: token.id });
     const result = await pool.query(
       `UPDATE users SET
         first_name = COALESCE($2, first_name),
@@ -153,14 +195,38 @@ export async function PUT(request: NextRequest) {
       ]
     );
 
-    console.log('Update result:', result.rowCount, 'rows affected');
+    logger.info('Profile update completed', { 
+      userId: token.id, 
+      rowsAffected: result.rowCount 
+    });
+
+    // Log successful profile update
+    await auditLog({
+      userId: token.id,
+      action: 'PROFILE_UPDATED',
+      resource: 'user_profile',
+      timestamp: new Date(),
+      success: true,
+      details: { fieldsUpdated: Object.keys(body).length }
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error updating profile:', error);
-    console.error('Error details:', error instanceof Error ? error.message : 'Unknown error');
+    logger.error('Profile update error', { 
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    });
+    
+    await auditLog({
+      action: 'PROFILE_UPDATE_FAILED',
+      resource: 'user_profile',
+      timestamp: new Date(),
+      success: false,
+      details: { error: error instanceof Error ? error.message : 'Unknown error' }
+    });
+    
     return NextResponse.json(
-      { error: 'Failed to update profile', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Failed to update profile' },
       { status: 500 }
     );
   }

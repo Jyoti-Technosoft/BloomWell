@@ -92,11 +92,85 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
   };
 
   const handleBookingComplete = (bookingData: any) => {
+    // Extract consultation data from nested response structure
+    const consultation = bookingData.consultation;
+    const consultationLink = consultation?.consultationLink;
+    
+    // Store consultation details for proper scheduling logic
+    if (consultation) {
+      setDoctorData(prev => prev ? { 
+        ...prev, 
+        consultationLink: consultationLink || null,
+        scheduledConsultation: {
+          id: consultation.id,
+          date: consultation.consultation_date,
+          time: consultation.consultation_time,
+          type: consultation.consultation_type,
+          link: consultationLink
+        }
+      } : null);
+    }
+    
     setToast({
-      message: 'Consultation booked successfully! You will receive a confirmation email shortly.',
+      message: consultationLink && consultation?.consultation_type === 'video' && isConsultationNow(consultation?.consultation_date, consultation?.consultation_time)
+        ? 'Consultation booked successfully! You can now start the video call.'
+        : 'Consultation booked successfully! You will receive a confirmation email with details.',
       type: 'success'
     });
     setShowBookingModal(false);
+  };
+
+  // Check if consultation is scheduled for now (within 5 minutes buffer)
+  const isConsultationNow = (date: string, time: string) => {
+    if (!date || !time) return false;
+    
+    const consultationDateTime = new Date(`${date} ${time}`);
+    const now = new Date();
+    const fiveMinutesFromNow = new Date(now.getTime() + 5 * 60 * 1000);
+    
+    return consultationDateTime <= fiveMinutesFromNow && consultationDateTime > now;
+  };
+
+  // Check if consultation link should be shown
+  const shouldShowVideoCallButton = () => {
+    // Always show if physician has instant consultation link
+    if (doctorData?.consultationLink && !doctorData?.scheduledConsultation) {
+      return true;
+    }
+    
+    // Show for scheduled video consultations when it's time
+    const scheduled = doctorData?.scheduledConsultation;
+    if (scheduled?.type === 'video' && scheduled?.link) {
+      return isConsultationNow(scheduled.date, scheduled.time);
+    }
+    
+    return false;
+  };
+
+  const handleDirectConsultation = () => {
+    if (!user) {
+      router.push(`/auth/signin?callbackUrl=${encodeURIComponent(`/physicians/${slug}`)}`);
+      return;
+    }
+    
+    // Get the appropriate consultation link
+    const consultationLink = doctorData?.scheduledConsultation?.link || doctorData?.consultationLink;
+    
+    if (consultationLink) {
+      // Handle different types of consultation links
+      if (consultationLink.startsWith('tel:')) {
+        // Phone consultation - open phone dialer
+        window.location.href = consultationLink;
+      } else {
+        // Video consultation - open in new tab
+        window.open(consultationLink, '_blank');
+      }
+    } else {
+      setToast({
+        message: 'Consultation link is not available. Please book a consultation first.',
+        type: 'info'
+      });
+    }
   };
 
   const handleCloseBookingModal = () => {
@@ -220,10 +294,26 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
           {/* Booking Section */}
           <div className="p-8">
             <div className="text-center">
-              <h3 className="text-2xl font-semibold text-gray-900 mb-4">Schedule Your Consultation</h3>
-              <p className="text-gray-600 mb-6">Book a consultation with Dr. {doctorData.name.split(' ').slice(1).join(' ')} through our secure healthcare platform.</p>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-4">Consultation Options</h3>
+              <p className="text-gray-600 mb-6">Choose how you'd like to consult with Dr. {doctorData.name.split(' ').slice(1).join(' ')}</p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                {shouldShowVideoCallButton() && (
+                  <button
+                    onClick={handleDirectConsultation}
+                    className="cursor-pointer inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-full text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
+                  >
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      {doctorData?.scheduledConsultation?.type === 'phone' ? (
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2v10a2 2 0 012 2h14a2 2 0 002-2V5a2 2 0 00-2-2H5z" />
+                      ) : (
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      )}
+                    </svg>
+                    {doctorData?.scheduledConsultation?.type === 'phone' ? 'Call Now' : 
+                     doctorData?.scheduledConsultation ? 'Join Video Call' : 'Start Video Call'}
+                  </button>
+                )}
                 <button
                   onClick={handleBookConsultation}
                   className="cursor-pointer inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-full text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
@@ -231,18 +321,35 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
-                  Book Consultation
+                  Schedule Consultation
                 </button>
               </div>
               
               <div className="mt-6 flex flex-col sm:flex-row gap-6 justify-center text-sm text-gray-500">
+                {shouldShowVideoCallButton() && (
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                    <span>
+                      {doctorData?.scheduledConsultation?.type === 'phone' 
+                        ? `Phone call available at ${doctorData.scheduledConsultation.time}`
+                        : doctorData?.scheduledConsultation 
+                          ? `Video call available at ${doctorData.scheduledConsultation.time}` 
+                          : 'Instant consultation available'
+                      }
+                    </span>
+                  </div>
+                )}
+                {doctorData?.scheduledConsultation && !shouldShowVideoCallButton() && (
+                  <div className="flex items-center">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                    <span>
+                      Scheduled for {new Date(doctorData.scheduledConsultation.date).toLocaleDateString()} at {doctorData.scheduledConsultation.time}
+                    </span>
+                  </div>
+                )}
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-indigo-500 rounded-full mr-2"></div>
-                  <span>Scheduled appointments only</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                  <span>Secure video consultations</span>
+                  <span>Scheduled appointments available</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>

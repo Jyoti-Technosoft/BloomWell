@@ -53,7 +53,7 @@ export default function BookingModal({ isOpen, onClose, physician, onComplete }:
       }
 
       const result = await response.json();
-      onComplete(bookingData as Consultation);
+      onComplete(result);
       onClose();
     } catch (error) {
       console.error('Booking error:', error);

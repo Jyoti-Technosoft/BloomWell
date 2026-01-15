@@ -31,6 +31,14 @@ export interface Physician {
   initialConsultation?: number;
   available_time_slots?: string[];
   available_dates?: string[];
+  consultationLink?: string | null;
+  scheduledConsultation?: {
+    id: string;
+    date: string;
+    time: string;
+    type: string;
+    link: string | null;
+  };
 }
 
 // Medicine/Treatment related types

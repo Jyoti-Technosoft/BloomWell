@@ -155,8 +155,10 @@ export async function POST(request: NextRequest) {
 
     let consultationLink = null;
     if (bookingData.consultationType === 'video') {
-      // Generate a secure consultation link
-      consultationLink = `https://consult.bloomwell.com/room/${consultation.id}`;
+      // Generate a Daily.co room URL
+      consultationLink = `https://api.daily.co/v1/rooms/${consultation.id}`;
+    } else if (bookingData.consultationType === 'phone') {
+      consultationLink = `tel:+1-800-800-8000`;
     }
 
     // await sendConfirmationEmail(session.user.email, consultation);

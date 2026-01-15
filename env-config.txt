@@ -11,3 +11,13 @@ NODE_ENV=development
 NEON_DATABASE_URL=neon_database_url
 
 DAILY_API_KEY=daily_api_key
+
+ENCRYPTION_KEY=encryption_key
+
+NEXTAUTH_URL=http://localhost:3000
+
+# Email Configuration (for notifications)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password

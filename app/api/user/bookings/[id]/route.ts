@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import pool from '@/app/lib/postgres';
+import { logger, auditLog } from '@/app/lib/secure-logger';
 
 export async function DELETE(
   request: NextRequest,
@@ -14,24 +15,38 @@ export async function DELETE(
     });
     
     if (!token) {
-      console.error('No token found in DELETE booking request');
+      logger.error('Booking cancellation failed - no token');
+      await auditLog({
+        action: 'BOOKING_CANCEL_FAILED',
+        resource: 'booking',
+        timestamp: new Date(),
+        success: false,
+        details: { reason: 'no_token' }
+      });
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
     const { id: bookingId } = await params;
-    console.log('Attempting to delete booking:', bookingId);
-    console.log('User email:', token.email);
+    logger.info('Booking cancellation attempt', { bookingId: bookingId.substring(0, 8) });
 
     // First check if booking exists and get user info
     const userResult = await pool.query('SELECT id FROM users WHERE email = $1', [token.email]);
     
     if (userResult.rows.length === 0) {
-      console.error('User not found for email:', token.email);
+      logger.warn('Booking cancellation failed - user not found', { userId: token.id });
+      await auditLog({
+        userId: token.id,
+        action: 'BOOKING_CANCEL_FAILED',
+        resource: 'booking',
+        timestamp: new Date(),
+        success: false,
+        details: { reason: 'user_not_found' }
+      });
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     const userId = userResult.rows[0].id;
-    console.log('User ID:', userId);
+    logger.info('User verified for booking cancellation', { userId });
 
     // Check consultations first
     const consultationCheck = await pool.query(
@@ -39,7 +54,10 @@ export async function DELETE(
       [bookingId, userId]
     );
 
-    console.log('Consultation check result:', consultationCheck.rows);
+    logger.info('Consultation check completed', { 
+      bookingId: bookingId.substring(0, 8), 
+      found: consultationCheck.rows.length > 0 
+    });
 
     if (consultationCheck.rows.length > 0) {
       const consultationResult = await pool.query(
@@ -47,7 +65,19 @@ export async function DELETE(
         ['cancelled', bookingId, userId]
       );
       
-      console.log('Updated consultation, rows affected:', consultationResult.rowCount);
+      logger.info('Consultation cancelled', { 
+        bookingId: bookingId.substring(0, 8), 
+        rowsAffected: consultationResult.rowCount 
+      });
+      
+      await auditLog({
+        userId: token.id,
+        action: 'CONSULTATION_CANCELLED',
+        resource: 'consultation',
+        timestamp: new Date(),
+        success: true,
+        details: { bookingId: bookingId.substring(0, 8) }
+      });
       
       if (consultationResult.rowCount && consultationResult.rowCount > 0) {
         return NextResponse.json({ success: true, message: 'Consultation cancelled' });
@@ -60,7 +90,10 @@ export async function DELETE(
       [bookingId, userId]
     );
 
-    console.log('Evaluation check result:', evaluationCheck.rows);
+    logger.info('Evaluation check completed', { 
+      bookingId: bookingId.substring(0, 8), 
+      found: evaluationCheck.rows.length > 0 
+    });
 
     if (evaluationCheck.rows.length > 0) {
       const evaluationResult = await pool.query(
@@ -68,21 +101,52 @@ export async function DELETE(
         ['cancelled', bookingId, userId]
       );
       
-      console.log('Updated evaluation, rows affected:', evaluationResult.rowCount);
+      logger.info('Evaluation cancelled', { 
+        bookingId: bookingId.substring(0, 8), 
+        rowsAffected: evaluationResult.rowCount 
+      });
+      
+      await auditLog({
+        userId: token.id,
+        action: 'EVALUATION_CANCELLED',
+        resource: 'evaluation',
+        timestamp: new Date(),
+        success: true,
+        details: { bookingId: bookingId.substring(0, 8) }
+      });
       
       if (evaluationResult.rowCount && evaluationResult.rowCount > 0) {
         return NextResponse.json({ success: true, message: 'Evaluation cancelled' });
       }
     }
 
-    console.error('Booking not found:', bookingId);
+    logger.warn('Booking not found', { bookingId: bookingId.substring(0, 8) });
+    await auditLog({
+      userId: token.id,
+      action: 'BOOKING_CANCEL_FAILED',
+      resource: 'booking',
+      timestamp: new Date(),
+      success: false,
+      details: { reason: 'booking_not_found', bookingId: bookingId.substring(0, 8) }
+    });
     return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
     
   } catch (error) {
-    console.error('Error cancelling booking:', error);
-    console.error('Error details:', error instanceof Error ? error.message : 'Unknown error');
+    logger.error('Booking cancellation error', { 
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
+    });
+    
+    await auditLog({
+      action: 'BOOKING_CANCEL_FAILED',
+      resource: 'booking',
+      timestamp: new Date(),
+      success: false,
+      details: { error: error instanceof Error ? error.message : 'Unknown error' }
+    });
+    
     return NextResponse.json(
-      { error: 'Failed to cancel booking', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Failed to cancel booking' },
       { status: 500 }
     );
   }
