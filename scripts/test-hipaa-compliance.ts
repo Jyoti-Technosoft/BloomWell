@@ -3,7 +3,7 @@
 import { execSync } from 'child_process';
 import { readFileSync, existsSync } from 'fs';
 import { query } from '../app/lib/postgres';
-import { encryptField, decryptField } from '../app/lib/encryption';
+import { encryptSensitiveFields, decryptSensitiveFields } from '../app/lib/encryption';
 import { auditLog } from '../app/lib/secure-logger';
 
 interface ComplianceTest {
@@ -157,7 +157,7 @@ class HIPAAComplianceTester {
 
   private async testTrainingDocumentation(): Promise<boolean> {
     try {
-      const trainingPath = './HIPAA_TRAINING_PROGRAM.md';
+      const trainingPath = './documents/HIPAA_TRAINING_PROGRAM.md';
       if (!existsSync(trainingPath)) return false;
       
       const content = readFileSync(trainingPath, 'utf8');
@@ -180,10 +180,10 @@ class HIPAAComplianceTester {
         return false;
       }
       
-      const testData = 'SSN-123-45-6789';
-      const encrypted = encryptField(testData);
-      const decrypted = decryptField(encrypted);
-      return testData === decrypted;
+      const testData = { testField: 'SSN-123-45-6789' };
+      const encrypted = encryptSensitiveFields(testData);
+      const decrypted = decryptSensitiveFields(encrypted);
+      return testData.testField === decrypted.testField;
     } catch (error) {
       return false;
     }

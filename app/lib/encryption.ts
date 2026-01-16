@@ -86,7 +86,13 @@ export const SENSITIVE_FIELDS = [
   'stressManagementTechniques',
   'currentlyUsingMedicines',
   'emergencyPhone',
-  'phoneNumber'
+  'phoneNumber',
+  'dateOfBirth',  // Date of birth is PII
+  'address',      // Physical address is PII
+  'fullName',     // Full name is PII
+  'zipCode',      // ZIP code is PII
+  'city',         // City is PII
+  'state'         // State is PII
 ];
 
 // Encrypt object with sensitive fields

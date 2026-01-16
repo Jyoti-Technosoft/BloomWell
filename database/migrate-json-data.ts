@@ -10,7 +10,7 @@ interface JsonData {
     id: string;
     createdAt: string;
     dateOfBirth: string;
-    gender: string;
+    healthcarePurpose: string;
     phoneNumber: string;
   }>;
   contacts: Array<{
@@ -69,7 +69,7 @@ async function migrateData() {
             full_name: user.fullName,
             date_of_birth: user.dateOfBirth,
             phone_number: user.phoneNumber,
-            gender: user.gender
+            healthcarePurpose: user.healthcarePurpose
           });
           userIdMap[user.id] = newUser.id;
           console.log(`✓ Migrated user: ${user.email} (ID: ${user.id} -> ${newUser.id})`);

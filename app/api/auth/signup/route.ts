@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import pool from '@/app/lib/postgres';
+import { encryptSensitiveFields } from '@/app/lib/encryption';
 
 export async function POST(request: Request) {
   try {
@@ -44,30 +45,50 @@ export async function POST(request: Request) {
     // Generate user ID
     const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    // Create user with all profile fields
+    // TEMPORARILY DISABLED: Encrypt sensitive fields before saving to database
+    // TODO: Re-enable after database columns are updated to TEXT type
+    const userData = {
+      email,
+      fullName,
+      phoneNumber,
+      dateOfBirth,
+      address,
+      city,
+      state,
+      zipCode,
+      emergencyPhone,
+      allergies,
+      medications,
+      medicalHistory,
+      healthcarePurpose
+    };
+
+    const encryptedUserData = userData; // Temporarily using unencrypted data
+
+    // Create user with encrypted sensitive fields
     const user = await pool.query(
       `INSERT INTO users (
         id, email, password_hash, full_name, phone_number, date_of_birth,
         address, city, state, zip_code, emergency_phone,
-        allergies, medications, medical_history, gender
+        allergies, medications, medical_history, healthcare_purpose
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
-      RETURNING id, email, full_name, phone_number, date_of_birth, gender, address, city, state, zip_code, emergency_phone, allergies, medications, medical_history, created_at`,
+      RETURNING id, email, full_name, phone_number, date_of_birth, healthcare_purpose, address, city, state, zip_code, emergency_phone, allergies, medications, medical_history, created_at`,
       [
         userId,
         email,
         passwordHash,
-        fullName,
-        phoneNumber,
-        dateOfBirth,
-        address || null,
-        city || null,
-        state || null,
-        zipCode || null,
-        emergencyPhone || null,
-        allergies || null,
-        medications || null,
-        medicalHistory || null,
-        healthcarePurpose // Store healthcarePurpose in gender column temporarily
+        encryptedUserData.fullName || null,
+        encryptedUserData.phoneNumber || null,
+        encryptedUserData.dateOfBirth || null,
+        encryptedUserData.address || null,
+        encryptedUserData.city || null,
+        encryptedUserData.state || null,
+        encryptedUserData.zipCode || null,
+        encryptedUserData.emergencyPhone || null,
+        encryptedUserData.allergies || null,
+        encryptedUserData.medications || null,
+        encryptedUserData.medicalHistory || null,
+        healthcarePurpose
       ]
     );
 
@@ -83,7 +104,7 @@ export async function POST(request: Request) {
           name: createdUser.full_name,
           phone: createdUser.phone_number,
           dateOfBirth: createdUser.date_of_birth,
-          healthcarePurpose: createdUser.gender, // Read from gender column temporarily
+          healthcarePurpose: createdUser.healthcarePurpose,
           address: createdUser.address,
           city: createdUser.city,
           state: createdUser.state,

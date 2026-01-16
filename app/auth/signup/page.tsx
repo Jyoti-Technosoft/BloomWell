@@ -370,7 +370,7 @@ const SignUp = () => {
                     htmlFor="healthcarePurpose"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    I am seeking
+                    HealthCare Purpose
                   </label>
                   <select
                     id="healthcarePurpose"

@@ -4,9 +4,9 @@ async function migrateUserFields() {
   try {
     console.log('Adding missing columns to users table...');
     
-    // Add gender column
-    await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS gender VARCHAR(50)`);
-    console.log('✓ Added gender column');
+    // Add healthcare_purpose column
+    await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS healthcare_purpose VARCHAR(50)`);
+    console.log('✓ Added healthcare_purpose column');
     
     // Add phone_number column  
     await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_number VARCHAR(50)`);
