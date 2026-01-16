@@ -97,7 +97,12 @@ export function encryptSensitiveFields(data: any): any {
   
   for (const field of SENSITIVE_FIELDS) {
     if (encrypted[field]) {
-      encrypted[field] = encryptField(encrypted[field]);
+      // Handle arrays by JSON stringifying first
+      if (Array.isArray(encrypted[field])) {
+        encrypted[field] = encryptField(JSON.stringify(encrypted[field]));
+      } else {
+        encrypted[field] = encryptField(encrypted[field]);
+      }
     }
   }
   
@@ -112,7 +117,13 @@ export function decryptSensitiveFields(data: any): any {
   
   for (const field of SENSITIVE_FIELDS) {
     if (decrypted[field] && typeof decrypted[field] === 'object' && decrypted[field].encrypted) {
-      decrypted[field] = decryptField(decrypted[field]);
+      const decryptedValue = decryptField(decrypted[field]);
+      // Try to parse as JSON (for arrays), otherwise use as string
+      try {
+        decrypted[field] = JSON.parse(decryptedValue);
+      } catch {
+        decrypted[field] = decryptedValue;
+      }
     }
   }
   

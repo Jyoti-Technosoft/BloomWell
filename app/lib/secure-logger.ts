@@ -1,6 +1,7 @@
 // lib/secure-logger.ts
 // HIPAA-compliant logging utility that prevents PHI exposure
 import crypto from 'crypto';
+import { query } from './postgres';
 
 // Hash function for sensitive identifiers
 function hashIdentifier(identifier: string): string {
@@ -60,11 +61,12 @@ export interface AuditLogEntry {
   details?: any;
 }
 
-// Audit logging for HIPAA compliance
-export async function auditLog(entry: AuditLogEntry): Promise<void> {
+// Store audit log in database (HIPAA requirement)
+async function storeAuditLog(entry: AuditLogEntry): Promise<void> {
   try {
+    const auditId = crypto.randomUUID();
     const sanitizedEntry = {
-      userId: entry.userId ? hashIdentifier(entry.userId) : null,
+      userId: entry.userId || null,
       action: entry.action,
       resource: entry.resource,
       timestamp: entry.timestamp,
@@ -74,11 +76,44 @@ export async function auditLog(entry: AuditLogEntry): Promise<void> {
       details: entry.details ? sanitizeData(entry.details) : null
     };
 
-    // Log to secure audit trail
-    console.log('AUDIT:', JSON.stringify(sanitizedEntry));
+    await query(
+      `INSERT INTO audit_logs (id, user_id, action, resource, timestamp, ip_address, user_agent, success, details)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      [
+        auditId,
+        sanitizedEntry.userId,
+        sanitizedEntry.action,
+        sanitizedEntry.resource,
+        sanitizedEntry.timestamp,
+        sanitizedEntry.ipAddress,
+        sanitizedEntry.userAgent,
+        sanitizedEntry.success,
+        JSON.stringify(sanitizedEntry.details)
+      ]
+    );
+  } catch (error) {
+    // Fail silently to avoid breaking application flow
+    console.error('Audit logging failed:', error instanceof Error ? error.message : String(error));
+  }
+}
+
+// Audit logging for HIPAA compliance
+export async function auditLog(entry: AuditLogEntry): Promise<void> {
+  try {
+    // Store in database for compliance
+    await storeAuditLog(entry);
     
-    // TODO: Store in database audit table
-    // await postgresDb.auditLogs.create(sanitizedEntry);
+    // Also log to console for immediate monitoring
+    const sanitizedEntry = {
+      userId: entry.userId ? hashIdentifier(entry.userId) : null,
+      action: entry.action,
+      resource: entry.resource,
+      timestamp: entry.timestamp,
+      success: entry.success,
+      details: entry.details ? sanitizeData(entry.details) : null
+    };
+
+    console.log('AUDIT:', JSON.stringify(sanitizedEntry));
     
   } catch (error) {
     // Fail silently to avoid breaking application flow

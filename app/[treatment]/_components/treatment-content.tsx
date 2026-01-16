@@ -48,7 +48,7 @@ export function TreatmentContent({ treatment }: { treatment: string }) {
 
   if (loading) {
     return (
-      <div className="bg-white">
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-indigo-50">
         <div className="bg-indigo-700">
           <div className="max-w-7xl mx-auto py-16 px-4">
             <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl lg:text-5xl">
@@ -67,7 +67,7 @@ export function TreatmentContent({ treatment }: { treatment: string }) {
 
   if (!treatmentData) {
     return (
-      <div className="bg-white">
+      <div className="min-h-screen bg-linear-to-br from-gray-50 to-indigo-50">
         <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-3xl font-extrabold text-gray-900">Treatment Not Found</h1>
           <p className="mt-4 text-gray-600">The treatment you're looking for doesn't exist.</p>
@@ -80,7 +80,7 @@ export function TreatmentContent({ treatment }: { treatment: string }) {
   }
 
   return (
-    <div className="bg-white">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-indigo-50">
       <div className="bg-indigo-700">
         <div className="max-w-7xl mx-auto py-16 px-4">
           <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl lg:text-5xl">

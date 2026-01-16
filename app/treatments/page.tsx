@@ -29,14 +29,14 @@ export default function TreatmentsPage() {
   };
 
 return (
-    <div className="bg-white">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-indigo-50">
       {/* Hero Section */}
       <div className="bg-indigo-700">
-        <div className="max-w-7xl mx-auto px-4 sm:py-24 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-24">
           <h1 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl lg:text-5xl">
             Our Treatments
           </h1>
-          <p className="mt-6 max-w-3xl text-xl text-indigo-100">
+          <p className="mt-6 max-w-3xl text-lg sm:text-xl text-indigo-100">
             Personalized medical treatments designed to help you achieve your
             health and wellness goals.
           </p>

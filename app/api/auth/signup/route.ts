@@ -7,26 +7,24 @@ export async function POST(request: Request) {
     const { 
       email, 
       password, 
-      firstName, 
-      lastName, 
-      phone,
+      fullName,
+      phoneNumber,
       dateOfBirth,
-      gender,
+      healthcarePurpose,
       address,
       city,
       state,
       zipCode,
-      emergencyContact,
       emergencyPhone,
       allergies,
       medications,
       medicalHistory
     } = await request.json();
     
-    // Validate input
-    if (!email || !password || !firstName || !lastName) {
+    // Validate input - only check fields that exist in database schema
+    if (!email || !password || !fullName || !phoneNumber || !dateOfBirth || !healthcarePurpose) {
       return NextResponse.json(
-        { error: 'Email, password, first name, and last name are required' },
+        { error: 'Email, password, full name, phone number, date of birth, and healthcare purpose are required' },
         { status: 400 }
       );
     }
@@ -46,33 +44,30 @@ export async function POST(request: Request) {
     // Generate user ID
     const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    // Create user with all profile information
+    // Create user with all profile fields
     const user = await pool.query(
       `INSERT INTO users (
-        id, email, password_hash, full_name, first_name, last_name, phone_number, date_of_birth,
-        address, city, state, zip_code, emergency_contact, emergency_phone,
+        id, email, password_hash, full_name, phone_number, date_of_birth,
+        address, city, state, zip_code, emergency_phone,
         allergies, medications, medical_history, gender
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
-      RETURNING id, email, full_name, first_name, last_name, phone_number, created_at`,
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+      RETURNING id, email, full_name, phone_number, date_of_birth, gender, address, city, state, zip_code, emergency_phone, allergies, medications, medical_history, created_at`,
       [
         userId,
         email,
         passwordHash,
-        `${firstName} ${lastName}`,
-        firstName,
-        lastName,
-        phone || null,
-        dateOfBirth || null,
+        fullName,
+        phoneNumber,
+        dateOfBirth,
         address || null,
         city || null,
         state || null,
         zipCode || null,
-        emergencyContact || null,
         emergencyPhone || null,
         allergies || null,
         medications || null,
         medicalHistory || null,
-        gender || null
+        healthcarePurpose // Store healthcarePurpose in gender column temporarily
       ]
     );
 
@@ -86,9 +81,17 @@ export async function POST(request: Request) {
           id: createdUser.id,
           email: createdUser.email,
           name: createdUser.full_name,
-          firstName: createdUser.first_name,
-          lastName: createdUser.last_name,
           phone: createdUser.phone_number,
+          dateOfBirth: createdUser.date_of_birth,
+          healthcarePurpose: createdUser.gender, // Read from gender column temporarily
+          address: createdUser.address,
+          city: createdUser.city,
+          state: createdUser.state,
+          zipCode: createdUser.zip_code,
+          emergencyPhone: createdUser.emergency_phone,
+          allergies: createdUser.allergies,
+          medications: createdUser.medications,
+          medicalHistory: createdUser.medical_history,
           createdAt: createdUser.created_at
         }
       },
