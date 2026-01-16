@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDownIcon, UserIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import LogoutButton from '../auth/LogoutButton';
-import { useUser } from '../context/UserContext';
 
 interface NavItem {
   name: string;
@@ -44,7 +43,6 @@ export default function Header() {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const { data: session, status } = useSession();
-  const { logout } = useUser();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -321,8 +319,37 @@ export default function Header() {
                           <p className="text-sm text-gray-500">{session.user.email}</p>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-3">
-                        <LogoutButton />
+                    </div>
+                    <div className="px-4 space-y-1">
+                      <Link
+                        href="/profile"
+                        onClick={closeMobileMenu}
+                        className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg"
+                      >
+                        <div className="h-8 w-8 rounded-lg bg-linear-to-br from-indigo-100 to-purple-100 flex items-center justify-center mr-3">
+                          <UserIcon className="h-4 w-4 text-indigo-600" />
+                        </div>
+                        Profile
+                      </Link>
+                      <Link
+                        href="/bookings"
+                        onClick={closeMobileMenu}
+                        className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg"
+                      >
+                        <div className="h-8 w-8 rounded-lg bg-linear-to-br from-green-100 to-emerald-100 flex items-center justify-center mr-3">
+                          <svg className="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                        Booking Info
+                      </Link>
+                      <div className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer">
+                        <div className="h-8 w-8 rounded-lg bg-linear-to-br from-red-100 to-pink-100 flex items-center justify-center mr-3">
+                          <svg className="h-4 w-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                          </svg>
+                        </div>
+                        <span className="text-base font-medium">Logout</span>
                       </div>
                     </div>
                   </div>
@@ -401,7 +428,7 @@ export default function Header() {
                 ))}
 
                 {/* Auth links for mobile when not logged in */}
-                {status === 'authenticated' && (
+                {status !== 'authenticated' && (
                   <div className="border-t border-gray-200 pt-3 mt-3">
                     <Link
                       href="/auth/signin"

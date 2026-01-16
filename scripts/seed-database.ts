@@ -999,7 +999,7 @@ const dbData = {
             "email": "hetal.jtdev@gmail.com",
             "password": "$2b$10$oZt3aSroQ1UhoTT2zLRRS.V/jUqFgtFs44fxnrAeSaQgjeCEcx5Vi",
             "fullName": "Hetal Gandhi",
-            "gender": "Female",
+            "healthcarePurpose": "General wellness",
             "phoneNumber": "+1234567890",
             "dateOfBirth": "1990-01-01",
             "id": "1766710000000",
@@ -1314,13 +1314,13 @@ async function seedExistingData() {
         for (const user of dbData.users) {
             await query(
                 `
-          INSERT INTO users (id, email, password_hash, full_name, gender, phone_number, date_of_birth, created_at)
+          INSERT INTO users (id, email, password_hash, full_name, healthcare_purpose, phone_number, date_of_birth, created_at)
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
           ON CONFLICT (email) DO UPDATE SET
             id = excluded.id,
             password_hash = excluded.password_hash,
             full_name = excluded.full_name,
-            gender = excluded.gender,
+            healthcare_purpose = excluded.healthcare_purpose,
             phone_number = excluded.phone_number,
             date_of_birth = excluded.date_of_birth,
             created_at = excluded.created_at
@@ -1330,7 +1330,7 @@ async function seedExistingData() {
                     user.email,
                     user.password,
                     user.fullName,
-                    user.gender || "Not specified",
+                    user.healthcarePurpose || "Not specified",
                     user.phoneNumber || "",
                     user.dateOfBirth || "2000-01-01",
                     user.createdAt

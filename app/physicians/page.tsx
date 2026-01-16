@@ -115,7 +115,7 @@ function PhysiciansContent() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Search by name, specialty, or bio..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+                  className="w-full h-10 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
                 />
                 {searchTerm && (
                   <button
@@ -136,7 +136,7 @@ function PhysiciansContent() {
               <select
                 value={selectedSpecialty}
                 onChange={(e) => setSelectedSpecialty(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+                className="w-full h-10 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
               >
                 <option value="">All Specialties</option>
                 {allSpecialties.map((specialty: string) => (
@@ -153,7 +153,7 @@ function PhysiciansContent() {
               <select
                 value={selectedRating}
                 onChange={(e) => setSelectedRating(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+                className="w-full h-10 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
               >
                 <option value="">All Ratings</option>
                 <option value="5">5 Stars</option>
@@ -165,14 +165,15 @@ function PhysiciansContent() {
             </div>
 
             {/* Clear Filters Button */}
-            <div className="flex items-end">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">&nbsp;</label>
               <button
                 onClick={() => {
                   setSearchTerm('');
                   setSelectedSpecialty('');
                   setSelectedRating('');
                 }}
-                className="w-full px-4 py-2 bg-gray-600 text-white font-medium rounded-lg hover:bg-gray-700 transition-colors"
+                className="w-full h-10 px-4 bg-gray-600 text-white font-medium rounded-lg hover:bg-gray-700 transition-colors"
               >
                 Clear Filters
               </button>

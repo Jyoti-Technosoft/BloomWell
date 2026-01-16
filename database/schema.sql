@@ -4,6 +4,104 @@
 -- Enable UUID extension for generating unique IDs
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- HIPAA Audit Logs table (REQUIRED for compliance)
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id VARCHAR(255) PRIMARY KEY,
+    user_id VARCHAR(255),
+    action VARCHAR(100) NOT NULL,
+    resource VARCHAR(100) NOT NULL,
+    timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    success BOOLEAN NOT NULL,
+    details JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+-- Patient Consent Management table (REQUIRED for compliance)
+CREATE TABLE IF NOT EXISTS patient_consent (
+    id VARCHAR(255) PRIMARY KEY,
+    user_id VARCHAR(255) NOT NULL,
+    consent_type VARCHAR(100) NOT NULL,
+    consent_given BOOLEAN NOT NULL,
+    consent_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP WITH TIME ZONE,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Data Retention Policy table (REQUIRED for compliance)
+CREATE TABLE IF NOT EXISTS data_retention (
+    id VARCHAR(255) PRIMARY KEY,
+    user_id VARCHAR(255) NOT NULL,
+    data_type VARCHAR(100) NOT NULL,
+    retention_period_years INTEGER NOT NULL,
+    deletion_date TIMESTAMP WITH TIME ZONE,
+    status VARCHAR(50) DEFAULT 'active',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Multi-Factor Authentication table (REQUIRED for HIPAA compliance)
+CREATE TABLE IF NOT EXISTS mfa_setup (
+    id VARCHAR(255) PRIMARY KEY,
+    user_id VARCHAR(255) NOT NULL,
+    secret VARCHAR(255) NOT NULL,
+    backup_codes JSONB NOT NULL,
+    enabled BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- MFA Verification Attempts table (for security monitoring)
+CREATE TABLE IF NOT EXISTS mfa_attempts (
+    id VARCHAR(255) PRIMARY KEY,
+    user_id VARCHAR(255) NOT NULL,
+    success BOOLEAN NOT NULL,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Breach Incidents table (REQUIRED for HIPAA compliance)
+CREATE TABLE IF NOT EXISTS breach_incidents (
+    id VARCHAR(255) PRIMARY KEY,
+    user_id VARCHAR(255),
+    breach_type VARCHAR(100) NOT NULL,
+    severity VARCHAR(50) NOT NULL,
+    description TEXT NOT NULL,
+    affected_data_types JSONB NOT NULL,
+    discovery_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    notification_date TIMESTAMP WITH TIME ZONE,
+    resolved_date TIMESTAMP WITH TIME ZONE,
+    status VARCHAR(50) DEFAULT 'discovered',
+    mitigation_steps JSONB NOT NULL,
+    affected_users INTEGER DEFAULT 0,
+    notified_users INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+-- Breach Notifications table (REQUIRED for HIPAA compliance)
+CREATE TABLE IF NOT EXISTS breach_notifications (
+    id VARCHAR(255) PRIMARY KEY,
+    user_id VARCHAR(255) NOT NULL,
+    breach_id VARCHAR(255) NOT NULL,
+    method VARCHAR(50) NOT NULL,
+    sent_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(50) DEFAULT 'sent',
+    error_message TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (breach_id) REFERENCES breach_incidents(id) ON DELETE CASCADE
+);
+
 -- Users table
 CREATE TABLE IF NOT EXISTS users (
     id VARCHAR(255) PRIMARY KEY,
@@ -11,9 +109,19 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255) NOT NULL,
     full_name VARCHAR(255) NOT NULL,
     date_of_birth VARCHAR(255) NOT NULL,
-    gender VARCHAR(255) NOT NULL,
+    healthcare_purpose VARCHAR(255) NOT NULL,
     phone_number VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    address VARCHAR(255),
+    city VARCHAR(255),
+    state VARCHAR(255),
+    zip_code VARCHAR(50),
+    emergency_contact VARCHAR(255),
+    emergency_phone VARCHAR(255),
+    allergies TEXT,
+    medications TEXT,
+    medical_history TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Contacts table
@@ -129,17 +237,6 @@ CREATE TABLE IF NOT EXISTS reviews (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
--- Password reset tokens table
-CREATE TABLE IF NOT EXISTS password_reset_tokens (
-    id VARCHAR(255) PRIMARY KEY,
-    user_id VARCHAR(255) NOT NULL,
-    token VARCHAR(255) UNIQUE NOT NULL,
-    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    used BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
 -- Indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_consultations_user_id ON consultations(user_id);
@@ -155,5 +252,25 @@ CREATE INDEX IF NOT EXISTS idx_physicians_specialties ON physicians(specialties)
 CREATE INDEX IF NOT EXISTS idx_reviews_user_id ON reviews(user_id);
 CREATE INDEX IF NOT EXISTS idx_reviews_status ON reviews(status);
 CREATE INDEX IF NOT EXISTS idx_reviews_rating ON reviews(rating);
-CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_token ON password_reset_tokens(token);
-CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user_id ON password_reset_tokens(user_id);
+
+-- HIPAA Compliance Indexes (REQUIRED)
+CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_timestamp ON audit_logs(timestamp);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_resource ON audit_logs(resource);
+CREATE INDEX IF NOT EXISTS idx_patient_consent_user_id ON patient_consent(user_id);
+CREATE INDEX IF NOT EXISTS idx_patient_consent_type ON patient_consent(consent_type);
+CREATE INDEX IF NOT EXISTS idx_patient_consent_date ON patient_consent(consent_date);
+CREATE INDEX IF NOT EXISTS idx_data_retention_user_id ON data_retention(user_id);
+CREATE INDEX IF NOT EXISTS idx_data_retention_deletion_date ON data_retention(deletion_date);
+CREATE INDEX IF NOT EXISTS idx_data_retention_status ON data_retention(status);
+CREATE INDEX IF NOT EXISTS idx_mfa_setup_user_id ON mfa_setup(user_id);
+CREATE INDEX IF NOT EXISTS idx_mfa_setup_enabled ON mfa_setup(enabled);
+CREATE INDEX IF NOT EXISTS idx_mfa_attempts_user_id ON mfa_attempts(user_id);
+CREATE INDEX IF NOT EXISTS idx_mfa_attempts_timestamp ON mfa_attempts(timestamp);
+CREATE INDEX IF NOT EXISTS idx_breach_incidents_discovery_date ON breach_incidents(discovery_date);
+CREATE INDEX IF NOT EXISTS idx_breach_incidents_status ON breach_incidents(status);
+CREATE INDEX IF NOT EXISTS idx_breach_incidents_severity ON breach_incidents(severity);
+CREATE INDEX IF NOT EXISTS idx_breach_notifications_user_id ON breach_notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_breach_notifications_breach_id ON breach_notifications(breach_id);
+CREATE INDEX IF NOT EXISTS idx_breach_notifications_sent_at ON breach_notifications(sent_at);

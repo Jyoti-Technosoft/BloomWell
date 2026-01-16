@@ -181,10 +181,10 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
       <div className="bg-linear-to-r from-indigo-600 to-purple-600 text-white">
-        <div className="max-w-4xl mx-auto px-4 py-12">
-          <div className="flex flex-col md:flex-row items-center gap-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+          <div className="flex flex-col items-center gap-6 text-center">
             <div className="shrink-0">
-              <div className="h-32 w-32 rounded-full overflow-hidden border-4 border-white shadow-lg">
+              <div className="h-24 w-24 sm:h-32 sm:w-32 rounded-full overflow-hidden border-4 border-white shadow-lg">
                 <Image
                   src={doctorData.image}
                   alt={doctorData.name}
@@ -194,11 +194,11 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
                 />
               </div>
             </div>
-            <div className="text-center md:text-left">
-              <h1 className="text-4xl font-bold mb-2">{doctorData.name}</h1>
-              <p className="text-xl text-indigo-100 mb-1">{doctorData.specialties?.join(', ') || ''}</p>
-              <p className="text-indigo-200">{doctorData.education}</p>
-              <div className="flex items-center justify-center md:justify-start mt-2 space-x-4">
+            <div className="w-full">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">{doctorData.name}</h1>
+              <p className="text-lg sm:text-xl text-indigo-100 mb-1 wrap-break-word">{doctorData.specialties?.join(', ') || ''}</p>
+              <p className="text-indigo-200 text-sm sm:text-base">{doctorData.education}</p>
+              <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mt-3 sm:mt-4">
                 <StarRating 
                   rating={doctorData.rating || 0} 
                   reviewCount={doctorData.reviewCount || 0}
@@ -206,12 +206,12 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
                   className="text-white"
                 />
                 <div className="flex items-center">
-                  <div className="w-2 h-2 bg-indigo-300 rounded-full mr-2"></div>
-                  <span className="text-indigo-200">{doctorData.experience} experience</span>
+                  <div className="w-2 h-2 bg-indigo-300 rounded-full mr-2 shrink-0"></div>
+                  <span className="text-indigo-200 text-sm sm:text-base">{doctorData.experience} experience</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-2 h-2 bg-green-300 rounded-full mr-2"></div>
-                  <span className="text-indigo-200">{doctorData.consultationCount || 0} consultations</span>
+                  <div className="w-2 h-2 bg-green-300 rounded-full mr-2 shrink-0"></div>
+                  <span className="text-indigo-200 text-sm sm:text-base">{doctorData.consultationCount || 0} consultations</span>
                 </div>
               </div>
             </div>
@@ -220,7 +220,7 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           {/* About Section */}
           <div className="p-8 border-b">
@@ -256,7 +256,7 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
           {/* Consultation Info */}
           <div className="p-8 border-b">
             <h3 className="text-xl font-semibold text-gray-900 mb-4">Consultation Information</h3>
-            <div className="grid md:grid-cols-3 gap-6 text-center">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 text-center">
               <div className="bg-indigo-50 rounded-lg p-4">
                 <p className="text-3xl font-bold text-indigo-600 mb-2">${doctorData.initialConsultation || 150}</p>
                 <p className="text-gray-600">Initial Consultation</p>
@@ -301,7 +301,7 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
                 {shouldShowVideoCallButton() && (
                   <button
                     onClick={handleDirectConsultation}
-                    className="cursor-pointer inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-full text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200"
+                    className="cursor-pointer inline-flex items-center justify-center px-6 sm:px-8 py-3 border border-transparent text-base font-medium rounded-full text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200 w-full sm:w-auto"
                   >
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       {doctorData?.scheduledConsultation?.type === 'phone' ? (
@@ -316,7 +316,7 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
                 )}
                 <button
                   onClick={handleBookConsultation}
-                  className="cursor-pointer inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-full text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+                  className="cursor-pointer inline-flex items-center justify-center px-6 sm:px-8 py-3 border border-transparent text-base font-medium rounded-full text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 w-full sm:w-auto"
                 >
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -325,11 +325,11 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
                 </button>
               </div>
               
-              <div className="mt-6 flex flex-col sm:flex-row gap-6 justify-center text-sm text-gray-500">
+              <div className="mt-6 flex flex-col gap-3 sm:gap-6 justify-center text-sm text-gray-500">
                 {shouldShowVideoCallButton() && (
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                    <span>
+                  <div className="flex items-center justify-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2 shrink-0"></div>
+                    <span className="text-center">
                       {doctorData?.scheduledConsultation?.type === 'phone' 
                         ? `Phone call available at ${doctorData.scheduledConsultation.time}`
                         : doctorData?.scheduledConsultation 
@@ -340,20 +340,20 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
                   </div>
                 )}
                 {doctorData?.scheduledConsultation && !shouldShowVideoCallButton() && (
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                    <span>
+                  <div className="flex items-center justify-center">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2 shrink-0"></div>
+                    <span className="text-center">
                       Scheduled for {new Date(doctorData.scheduledConsultation.date).toLocaleDateString()} at {doctorData.scheduledConsultation.time}
                     </span>
                   </div>
                 )}
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-indigo-500 rounded-full mr-2"></div>
-                  <span>Scheduled appointments available</span>
+                <div className="flex items-center justify-center">
+                  <div className="w-2 h-2 bg-indigo-500 rounded-full mr-2 shrink-0"></div>
+                  <span className="text-center">Scheduled appointments available</span>
                 </div>
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
-                  <span>HIPAA-compliant platform</span>
+                <div className="flex items-center justify-center">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full mr-2 shrink-0"></div>
+                  <span className="text-center">HIPAA-compliant platform</span>
                 </div>
               </div>
             </div>
@@ -363,7 +363,7 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
         {/* Related Doctors */}
         <div className="mt-12">
           <h3 className="text-2xl font-bold text-gray-900 mb-6">Other Physicians</h3>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {physicians
               .filter(d => d.name !== doctorData.name)
               .slice(0, 3)

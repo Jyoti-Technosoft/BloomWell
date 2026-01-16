@@ -139,7 +139,7 @@ export default function ReviewsPage() {
   };
 
   return (
-    <div className="bg-white">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-indigo-50">
       {/* Hero Section */}
       <div className="bg-indigo-700">
         <div className="max-w-7xl mx-auto py-16 px-4">

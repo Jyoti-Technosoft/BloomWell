@@ -86,7 +86,13 @@ export const SENSITIVE_FIELDS = [
   'stressManagementTechniques',
   'currentlyUsingMedicines',
   'emergencyPhone',
-  'phoneNumber'
+  'phoneNumber',
+  'dateOfBirth',  // Date of birth is PII
+  'address',      // Physical address is PII
+  'fullName',     // Full name is PII
+  'zipCode',      // ZIP code is PII
+  'city',         // City is PII
+  'state'         // State is PII
 ];
 
 // Encrypt object with sensitive fields
@@ -97,7 +103,12 @@ export function encryptSensitiveFields(data: any): any {
   
   for (const field of SENSITIVE_FIELDS) {
     if (encrypted[field]) {
-      encrypted[field] = encryptField(encrypted[field]);
+      // Handle arrays by JSON stringifying first
+      if (Array.isArray(encrypted[field])) {
+        encrypted[field] = encryptField(JSON.stringify(encrypted[field]));
+      } else {
+        encrypted[field] = encryptField(encrypted[field]);
+      }
     }
   }
   
@@ -112,7 +123,13 @@ export function decryptSensitiveFields(data: any): any {
   
   for (const field of SENSITIVE_FIELDS) {
     if (decrypted[field] && typeof decrypted[field] === 'object' && decrypted[field].encrypted) {
-      decrypted[field] = decryptField(decrypted[field]);
+      const decryptedValue = decryptField(decrypted[field]);
+      // Try to parse as JSON (for arrays), otherwise use as string
+      try {
+        decrypted[field] = JSON.parse(decryptedValue);
+      } catch {
+        decrypted[field] = decryptedValue;
+      }
     }
   }
   

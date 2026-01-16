@@ -24,7 +24,7 @@ export default function AboutPage() {
       </div>
 
       {/* Our Story */}
-      <div className="py-16 bg-white overflow-hidden">
+      <div className="py-16 overflow-hidden min-h-screen bg-linear-to-br from-gray-50 to-indigo-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="lg:grid lg:grid-cols-2 lg:gap-8 items-start">
             <div>

@@ -70,9 +70,9 @@ export default function Home() {
   }, []);
   
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-50 to-white">
+    <div className="min-h-screen bg-linear-to-br from-indigo-50 via-white to-purple-50 mb-16">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-linear-to-br from-indigo-50 via-white to-purple-50 mb-16">
+      <section className="mb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <motion.div
@@ -182,7 +182,7 @@ export default function Home() {
       </section>
 
       {/* How It Works Section */}
-      <section className="mb-16 bg-linear-to-b from-white to-gray-50">
+      <section className="mb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <motion.h2 
@@ -268,7 +268,7 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="mb-16 bg-white">
+      <section className="mb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <motion.h2 
@@ -312,7 +312,7 @@ export default function Home() {
       </section>
 
       {/* Team Section */}
-      <section className="mb-16 bg-white">
+      <section className="mb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <motion.h2 
@@ -388,7 +388,7 @@ export default function Home() {
             )}
           </div>
 
-          <div className="text-center mt-12">
+          <div className="text-center">
             <Link
               href="/physicians"
               className="inline-flex items-center px-8 py-4 bg-linear-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
