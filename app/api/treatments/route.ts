@@ -1,15 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Pool } from 'pg';
-
-const pool = new Pool({
-  connectionString: process.env.NEON_DATABASE_URL,
-});
+import { query } from '@/app/lib/postgres';
 
 export async function GET(request: NextRequest) {
   try {
-    const result = await pool.query('SELECT * FROM treatments ORDER BY id');
+    const result = await query('SELECT * FROM treatments ORDER BY id');
     
-    const treatments = result.rows.map((row: any) => {
+    const treatments = result.map((row: any) => {
       let category = row.category;
       if (!category) {
         const name = row.name.toLowerCase();
@@ -74,7 +70,7 @@ export async function POST(request: NextRequest) {
 
     const medicinesString = medicines ? medicines.join(', ') : '';
 
-    const result = await pool.query(
+    const result = await query(
       `INSERT INTO treatments (name, description, category, image, medicines) 
        VALUES ($1, $2, $3, $4, $5) 
        RETURNING *`,
@@ -82,12 +78,12 @@ export async function POST(request: NextRequest) {
     );
 
     const treatment = {
-      id: result.rows[0].id,
-      name: result.rows[0].name,
-      description: result.rows[0].description,
-      category: result.rows[0].category,
-      image: result.rows[0].image,
-      medicines: result.rows[0].medicines ? result.rows[0].medicines.split(',').map((m: string) => m.trim()) : [],
+      id: result[0].id,
+      name: result[0].name,
+      description: result[0].description,
+      category: result[0].category,
+      image: result[0].image,
+      medicines: result[0].medicines ? result[0].medicines.split(',').map((m: string) => m.trim()) : [],
     };
 
     return NextResponse.json(treatment, { status: 201 });

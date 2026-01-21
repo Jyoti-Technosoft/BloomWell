@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { postgresDb } from '../../lib/postgres-db';
 import { logger, auditLog } from '../../lib/secure-logger';
-import { encryptSensitiveFields, SENSITIVE_FIELDS } from '../../lib/encryption';
+import { encryptSensitiveFields } from '../../lib/encryption';
 
 interface EvaluationData {
   medicineId: string;

@@ -32,17 +32,43 @@ const handler = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const user = await postgresDb.users.findByEmail(credentials.email);
-        if (!user) return null;
+        try {
+          // Call signin API to get decrypted user data
+          const response = await fetch(`${process.env.NEXTAUTH_URL}/api/auth/signin`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(credentials)
+          });
 
-        const isValid = await bcrypt.compare(credentials.password, user.password_hash);
-        if (!isValid) return null;
+          if (!response.ok) {
+            console.error('Signin API response not ok:', response.status);
+            return null;
+          }
 
-        return {
-          id: user.id,
-          name: user.full_name,
-          email: user.email,
-        };
+          const data = await response.json();
+          if (data.error) {
+            console.error('Signin API returned error:', data.error);
+            return null;
+          }
+
+          console.log('Signin API response:', data);
+
+          // Check if user data exists and has required fields
+          if (!data.user || !data.user.id || !data.user.fullName || !data.user.email) {
+            console.error('Invalid signin API response - missing user object:', data);
+            return null;
+          }
+
+          // The response structure is correct, so return the user object
+          return {
+            id: data.user.id,
+            name: data.user.fullName, // Use decrypted name from signin API
+            email: data.user.email,
+          };
+        } catch (error) {
+          console.error('Authorize function error:', error);
+          return null;
+        }
       },
     }),
   ],
@@ -55,7 +81,21 @@ const handler = NextAuth({
   },
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.id = user.id;
+      console.log('JWT callback - token:', token);
+      console.log('JWT callback - user:', user);
+      
+      if (!user) {
+        console.error('JWT callback - user is null or undefined');
+        return token;
+      }
+      
+      if (!user.id) {
+        console.error('JWT callback - user.id is missing');
+        return token;
+      }
+      
+      token.id = user.id;
+      console.log('JWT callback - setting token.id to:', user.id);
       return token;
     },
     async session({ session, token }) {

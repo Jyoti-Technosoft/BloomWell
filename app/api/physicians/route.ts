@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Pool } from 'pg';
-
-const pool = new Pool({
-  connectionString: process.env.NEON_DATABASE_URL,
-});
+import { query } from '@/app/lib/postgres';
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,18 +8,34 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '9');
     const offset = (page - 1) * limit;
 
+    // Add timeout to queries
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Query timeout')), 10000)
+    );
+
     // Get total count for pagination
-    const countResult = await pool.query('SELECT COUNT(*) FROM physicians');
-    const totalCount = parseInt(countResult.rows[0].count);
+    const countResult = await Promise.race([
+      query('SELECT COUNT(*) FROM physicians'),
+      timeoutPromise
+    ]) as any[];
+    
+    if (!countResult || countResult.length === 0) {
+      throw new Error('Failed to get physician count');
+    }
+    
+    const totalCount = parseInt(countResult[0].count);
     const totalPages = Math.ceil(totalCount / limit);
 
     // Get physicians with pagination
-    const result = await pool.query(
-      'SELECT * FROM physicians ORDER BY id LIMIT $1 OFFSET $2',
-      [limit, offset]
-    );
+    const result = await Promise.race([
+      query(
+        'SELECT * FROM physicians ORDER BY id LIMIT $1 OFFSET $2',
+        [limit, offset]
+      ),
+      timeoutPromise
+    ]) as any[];
 
-    const physicians = result.rows.map((row: any) => {
+    const physicians = result.map((row: any) => {
       // Parse specialties
       let specialties = [];
       if (row.specialties) {
@@ -104,7 +116,7 @@ export async function POST(request: NextRequest) {
 
     const specialtiesString = specialties ? specialties.join(', ') : '';
 
-    const result = await pool.query(
+    const result = await query(
       `INSERT INTO physicians (name, role, bio, image, education, experience, specialties, consultation_link) 
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
        RETURNING *`,
@@ -112,21 +124,21 @@ export async function POST(request: NextRequest) {
     );
 
     const physician = {
-      id: result.rows[0].id,
-      name: result.rows[0].name,
-      role: result.rows[0].role,
-      bio: result.rows[0].bio,
-      image: result.rows[0].image,
-      education: result.rows[0].education,
-      experience: result.rows[0].experience,
-      specialties: result.rows[0].specialties ? result.rows[0].specialties.split(',').map((s: string) => s.trim()) : [],
-      rating: parseFloat(result.rows[0].rating) || 0,
-      reviewCount: parseInt(result.rows[0].review_count) || 0,
-      consultationCount: parseInt(result.rows[0].consultations_count) || 0,
-      initialConsultation: parseFloat(result.rows[0].initial_consultation) || 150,
-      available_time_slots: result.rows[0].available_time_slots ? (typeof result.rows[0].available_time_slots === 'string' ? JSON.parse(result.rows[0].available_time_slots) : result.rows[0].available_time_slots) : [],
-      available_dates: result.rows[0].available_dates ? (typeof result.rows[0].available_dates === 'string' ? JSON.parse(result.rows[0].available_dates) : result.rows[0].available_dates) : [],
-      consultationLink: result.rows[0].consultation_link || null,
+      id: result[0].id,
+      name: result[0].name,
+      role: result[0].role,
+      bio: result[0].bio,
+      image: result[0].image,
+      education: result[0].education,
+      experience: result[0].experience,
+      specialties: result[0].specialties ? result[0].specialties.split(',').map((s: string) => s.trim()) : [],
+      rating: parseFloat(result[0].rating) || 0,
+      reviewCount: parseInt(result[0].review_count) || 0,
+      consultationCount: parseInt(result[0].consultations_count) || 0,
+      initialConsultation: parseFloat(result[0].initial_consultation) || 150,
+      available_time_slots: result[0].available_time_slots ? (typeof result[0].available_time_slots === 'string' ? JSON.parse(result[0].available_time_slots) : result[0].available_time_slots) : [],
+      available_dates: result[0].available_dates ? (typeof result[0].available_dates === 'string' ? JSON.parse(result[0].available_dates) : result[0].available_dates) : [],
+      consultationLink: result[0].consultation_link || null,
     };
 
     return NextResponse.json(physician, { status: 201 });

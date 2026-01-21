@@ -24,6 +24,12 @@ dotenv.config({ path: '.env.local' });
 const pool = new Pool({
   connectionString: process.env.NEON_DATABASE_URL, // Neon pooled URL
   ssl: true,
+  max: 20, // Maximum number of connections in the pool
+  idleTimeoutMillis: 30000, // How long a client is allowed to remain idle before being closed
+  connectionTimeoutMillis: 10000, // How long to wait when connecting a new client (reduced from 2000)
+  application_name: 'bloom-well', // Helps with connection pooling
+  keepAlive: true, // Keep connections alive
+  keepAliveInitialDelayMillis: 10000, // Initial delay before keep-alive check
 });
 
 
