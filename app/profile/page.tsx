@@ -18,8 +18,7 @@ export default function ProfilePage() {
   const { data: session, status } = useSession();
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
-    firstName: '',
-    lastName: '',
+    fullName: '',
     email: '',
     phone: '',
     dateOfBirth: '',
@@ -27,7 +26,6 @@ export default function ProfilePage() {
     city: '',
     state: '',
     zipCode: '',
-    emergencyContact: '',
     emergencyPhone: '',
     allergies: '',
     medications: '',
@@ -129,8 +127,8 @@ export default function ProfilePage() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-white">
-                  {profileData.firstName && profileData.lastName 
-                    ? `${profileData.firstName} ${profileData.lastName}`
+                  {profileData.fullName
+                    ? `${profileData.fullName}`
                     : session.user?.name || 'Your Profile'
                   }
                 </h1>
@@ -159,22 +157,11 @@ export default function ProfilePage() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                 <input
                   type="text"
-                  name="firstName"
-                  value={profileData.firstName}
-                  onChange={handleInputChange}
-                  disabled={!isEditing}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-50"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                <input
-                  type="text"
-                  name="lastName"
-                  value={profileData.lastName}
+                  name="fullName"
+                  value={profileData.fullName}
                   onChange={handleInputChange}
                   disabled={!isEditing}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-50"
@@ -287,8 +274,8 @@ export default function ProfilePage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Emergency Contact</label>
                 <input
                   type="text"
-                  name="emergencyContact"
-                  value={profileData.emergencyContact}
+                  name="emergencyPhone"
+                  value={profileData.emergencyPhone}
                   onChange={handleInputChange}
                   disabled={!isEditing}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-50"

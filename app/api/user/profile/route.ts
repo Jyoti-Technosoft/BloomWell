@@ -31,10 +31,9 @@ export async function GET(request: NextRequest) {
         id,
         email,
         full_name,
-        first_name,
-        last_name,
         phone_number,
         date_of_birth,
+        healthcarePurpose,
         address,
         city,
         state,
@@ -43,7 +42,9 @@ export async function GET(request: NextRequest) {
         emergency_phone,
         allergies,
         medications,
-        medical_history
+        medical_history,
+        created_at,
+        updated_at
       FROM users
       WHERE email = $1`,
       [token.email]
@@ -75,20 +76,21 @@ export async function GET(request: NextRequest) {
     });
     
     const profileData = {
-      firstName: user.first_name || '',
-      lastName: user.last_name || '',
+      fullName: user.full_name || '',
       email: user.email || '',
       phone: user.phone_number || '',
-      dateOfBirth: user.date_of_birth ? user.date_of_birth : '',
+      dateOfBirth: user.date_of_birth || '',
+      healthcarePurpose: user.healthcarePurpose || '',
       address: user.address || '',
       city: user.city || '',
       state: user.state || '',
       zipCode: user.zip_code || '',
-      emergencyContact: user.emergency_contact || '',
       emergencyPhone: user.emergency_phone || '',
       allergies: user.allergies || '',
       medications: user.medications || '',
-      medicalHistory: user.medical_history || ''
+      medicalHistory: user.medical_history || '',
+      createdAt: user.created_at,
+      updatedAt: user.updated_at
     };
 
     return NextResponse.json(profileData);
@@ -127,15 +129,14 @@ export async function PUT(request: NextRequest) {
     logger.info('Profile update data received', { fieldCount: Object.keys(body).length });
     
     const {
-      firstName,
-      lastName,
+      fullName,
       phone,
       dateOfBirth,
+      healthcarePurpose,
       address,
       city,
       state,
       zipCode,
-      emergencyContact,
       emergencyPhone,
       allergies,
       medications,
@@ -161,37 +162,38 @@ export async function PUT(request: NextRequest) {
     logger.info('Updating user profile', { userId: token.id });
     const result = await pool.query(
       `UPDATE users SET
-        first_name = COALESCE($2, first_name),
-        last_name = COALESCE($3, last_name),
-        phone_number = COALESCE($4, phone_number),
-        date_of_birth = COALESCE($5, date_of_birth),
-        address = COALESCE($6, address),
-        city = COALESCE($7, city),
-        state = COALESCE($8, state),
-        zip_code = COALESCE($9, zip_code),
-        emergency_contact = COALESCE($10, emergency_contact),
-        emergency_phone = COALESCE($11, emergency_phone),
-        allergies = COALESCE($12, allergies),
-        medications = COALESCE($13, medications),
-        medical_history = COALESCE($14, medical_history),
-        full_name = COALESCE($15, full_name)
-      WHERE email = $1`,
+        phone_number = COALESCE($2, phone_number),
+        date_of_birth = COALESCE($3, date_of_birth),
+        healthcare_purpose = COALESCE($4, healthcare_purpose),
+        address = COALESCE($5, address),
+        city = COALESCE($6, city),
+        state = COALESCE($7, state),
+        zip_code = COALESCE($8, zip_code),
+        emergency_contact = COALESCE($9, emergency_contact),
+        emergency_phone = COALESCE($10, emergency_phone),
+        allergies = COALESCE($11, allergies),
+        medications = COALESCE($12, medications),
+        medical_history = COALESCE($13, medical_history),
+        full_name = COALESCE($14, full_name),
+        updated_at = CURRENT_TIMESTAMP
+      WHERE email = $1
+      RETURNING id, email, full_name, phone_number, date_of_birth, healthcare_purpose,
+                address, city, state, zip_code, emergency_contact, emergency_phone,
+                allergies, medications, medical_history, created_at, updated_at`,
       [
         token.email,
-        firstName || null,
-        lastName || null,
-        phone || null,
-        dateOfBirth || null,
-        address || null,
-        city || null,
-        state || null,
-        zipCode || null,
-        emergencyContact || null,
-        emergencyPhone || null,
-        allergies || null,
-        medications || null,
-        medicalHistory || null,
-        firstName && lastName ? `${firstName} ${lastName}`.trim() : null
+        phone,
+        dateOfBirth,
+        healthcarePurpose,
+        address,
+        city,
+        state,
+        zipCode,
+        emergencyPhone,
+        allergies,
+        medications,
+        medicalHistory,
+        fullName
       ]
     );
 

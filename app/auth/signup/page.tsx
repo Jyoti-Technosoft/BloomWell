@@ -13,9 +13,8 @@ type FormData = {
   email: string;
   phoneNumber: string;
   dateOfBirth: string;
-  gender: string;
-  firstName: string;
-  lastName: string;
+  healthcarePurpose: string;
+  fullName: string;
   password: string;
   confirmPassword: string;
   agreeTerms: boolean;
@@ -25,7 +24,6 @@ type FormData = {
   state: string;
   zipCode: string;
   // Medical Information
-  emergencyContact: string;
   emergencyPhone: string;
   allergies: string;
   medications: string;
@@ -46,12 +44,42 @@ const SignUp = () => {
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [phone, setPhone] = useState<string>('');
+  const [emergencyPhone, setEmergencyPhone] = useState<string>('');
   const [selectedCountry, setSelectedCountry] = useState<string>('US');
   const [phoneError, setPhoneError] = useState<string>('');
 
   const onSubmit = async (data: FormData) => {
     try {
       setError(null);
+      
+      // Manual validation check since React Hook Form might not be blocking properly
+      const birthDate = new Date(data.dateOfBirth);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      
+      // Check birthdate validation
+      if (isNaN(birthDate.getTime())) {
+        setError('Date of birth format is invalid');
+        return;
+      }
+      
+      if (age < 13) {
+        setError('You must be at least 13 years old');
+        return;
+      }
+      
+      if (age > 120) {
+        setError('Please enter a valid date of birth');
+        return;
+      }
+      // Check emergency phone validation
+      if (data.emergencyPhone) {
+        const emergencyPhoneValidation = validatePhoneNumber(emergencyPhone, selectedCountry);
+        if (!emergencyPhoneValidation.isValid) {
+          setError('Invalid emergency phone number format');
+          return;
+        }
+      }
       
       // Validate phone number based on selected country
       const phoneValidation = validatePhoneNumber(phone, selectedCountry);
@@ -63,6 +91,7 @@ const SignUp = () => {
       const submitData = {
         ...data,
         phoneNumber: phone || '',
+        emergencyPhone: emergencyPhone || '',
       };
       
       // Remove confirmPassword from the data before sending to the server
@@ -172,6 +201,22 @@ const SignUp = () => {
           </p>
         </div>
 
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <div className="flex">
+            <div className="shrink-0">
+              <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-blue-800">Welcome to our women's healthcare platform</h3>
+              <div className="mt-2 text-sm text-blue-700">
+                <p>We provide comprehensive healthcare services for women and support for their families. Whether you're seeking care for yourself or supporting a loved one, we're here to help.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="bg-white shadow rounded-lg">
           <form onSubmit={handleSubmit(onSubmit)} className="px-4 py-8 sm:p-8">
 
@@ -180,49 +225,30 @@ const SignUp = () => {
                 Personal Information
               </h2>
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div>
+                <div className="sm:col-span-2">
                   <label
-                    htmlFor="firstName"
+                    htmlFor="fullName"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    First Name
+                    Full Name
                   </label>
                   <input
                     type="text"
-                    id="firstName"
-                    {...register("firstName", {
-                      required: "First name is required",
+                    id="fullName"
+                    {...register("fullName", {
+                      required: "Full name is required",
                     })}
                     className={inputClassName}
                   />
-                  {errors.firstName && (
+                  {errors.fullName && (
                     <p className="mt-1 text-sm text-red-600">
-                      {errors.firstName.message}
+                      {errors.fullName.message}
                     </p>
                   )}
                 </div>
-                <div>
-                  <label
-                    htmlFor="lastName"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Last Name
-                  </label>
-                  <input
-                    type="text"
-                    id="lastName"
-                    {...register("lastName", {
-                      required: "Last name is required",
-                    })}
-                    className={inputClassName}
-                  />
-                  {errors.lastName && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {errors.lastName.message}
-                    </p>
-                  )}
-                </div>
-              <div>
+              </div>
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div className="sm:col-span-2">
                   <label
                     htmlFor="email"
                     className="block text-sm font-medium text-gray-700"
@@ -255,7 +281,7 @@ const SignUp = () => {
                     Phone Number
                   </label>
                   <div className="mt-1">
-                    <div className="flex gap-2 mb-2">
+                    <div className="flex flex-col sm:flex-row gap-2 mb-2">
                       <select
                         value={selectedCountry}
                         onChange={(e) => {
@@ -264,7 +290,7 @@ const SignUp = () => {
                           setPhoneError(''); // Clear error when country changes
                           setPhone('');
                         }}
-                        className="block rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                        className="block w-full sm:w-auto rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                       >
                         {getSupportedCountries().map((country) => (
                           <option key={country.code} value={country.code}>
@@ -311,6 +337,24 @@ const SignUp = () => {
                     id="dateOfBirth"
                     {...register("dateOfBirth", {
                       required: "Date of birth is required",
+                      validate: {
+                        validDate: (value) => {
+                          if (!value) return "Date of birth is required";
+                          const birthDate = new Date(value);
+                          const today = new Date();
+                          const age = today.getFullYear() - birthDate.getFullYear();
+                          if (isNaN(birthDate.getTime())) {
+                            return "Invalid date format";
+                          }
+                          if (age < 13) {
+                            return "You must be at least 13 years old";
+                          }
+                          if (age > 120) {
+                            return "Please enter a valid date of birth";
+                          }
+                          return true;
+                        }
+                      }
                     })}
                     className={inputClassName}
                   />
@@ -323,25 +367,23 @@ const SignUp = () => {
 
                 <div>
                   <label
-                    htmlFor="gender"
+                    htmlFor="healthcarePurpose"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Gender
+                    HealthCare Purpose
                   </label>
                   <select
-                    id="gender"
-                    {...register("gender", { required: "Gender is required" })}
+                    id="healthcarePurpose"
+                    {...register("healthcarePurpose", { required: "Please select your purpose" })}
                     className={selectClassName}
                   >
-                    <option value="">Select gender</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="other">Other</option>
-                    <option value="prefer_not_to_say">Prefer not to say</option>
+                    <option value="">Select your purpose</option>
+                    <option value="seeking_care">I am seeking care</option>
+                    <option value="caregiver_parent">Caregiver/parent</option>
                   </select>
-                  {errors.gender && (
+                  {errors.healthcarePurpose && (
                     <p className="mt-1 text-sm text-red-600">
-                      {errors.gender.message}
+                      {errors.healthcarePurpose.message}
                     </p>
                   )}
                 </div>
@@ -417,31 +459,25 @@ const SignUp = () => {
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
                   <label
-                    htmlFor="emergencyContact"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Emergency Contact Name
-                  </label>
-                  <input
-                    type="text"
-                    id="emergencyContact"
-                    {...register("emergencyContact")}
-                    className={inputClassName}
-                  />
-                </div>
-                <div>
-                  <label
                     htmlFor="emergencyPhone"
                     className="block text-sm font-medium text-gray-700"
                   >
                     Emergency Contact Phone
                   </label>
-                  <input
-                    type="tel"
-                    id="emergencyPhone"
-                    {...register("emergencyPhone")}
+                  <PhoneInput
+                    international
+                    countryCallingCodeEditable={false}
+                    defaultCountry={selectedCountry as any}
+                    value={emergencyPhone}
+                    onChange={(value) => setEmergencyPhone(value || '')}
                     className={inputClassName}
+                    placeholder="+1 (555) 123-4567"
                   />
+                  {errors.emergencyPhone && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.emergencyPhone.message}
+                    </p>
+                  )}
                 </div>
                 <div className="sm:col-span-2">
                   <label

@@ -10,7 +10,7 @@ type Database = {
         email: string;
         password: string;
         fullName: string;
-        gender?: string;
+        healthcarePurpose?: string;
         phoneNumber?: string;
         dateOfBirth?: string;
         createdAt: string;

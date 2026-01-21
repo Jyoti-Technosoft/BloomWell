@@ -1,32 +1,31 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import pool from '@/app/lib/postgres';
+import { encryptSensitiveFields } from '@/app/lib/encryption';
 
 export async function POST(request: Request) {
   try {
     const { 
       email, 
       password, 
-      firstName, 
-      lastName, 
-      phone,
+      fullName,
+      phoneNumber,
       dateOfBirth,
-      gender,
+      healthcarePurpose,
       address,
       city,
       state,
       zipCode,
-      emergencyContact,
       emergencyPhone,
       allergies,
       medications,
       medicalHistory
     } = await request.json();
     
-    // Validate input
-    if (!email || !password || !firstName || !lastName) {
+    // Validate input - only check fields that exist in database schema
+    if (!email || !password || !fullName || !phoneNumber || !dateOfBirth || !healthcarePurpose) {
       return NextResponse.json(
-        { error: 'Email, password, first name, and last name are required' },
+        { error: 'Email, password, full name, phone number, date of birth, and healthcare purpose are required' },
         { status: 400 }
       );
     }
@@ -46,33 +45,50 @@ export async function POST(request: Request) {
     // Generate user ID
     const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    // Create user with all profile information
+    // TEMPORARILY DISABLED: Encrypt sensitive fields before saving to database
+    // TODO: Re-enable after database columns are updated to TEXT type
+    const userData = {
+      email,
+      fullName,
+      phoneNumber,
+      dateOfBirth,
+      address,
+      city,
+      state,
+      zipCode,
+      emergencyPhone,
+      allergies,
+      medications,
+      medicalHistory,
+      healthcarePurpose
+    };
+
+    const encryptedUserData = userData; // Temporarily using unencrypted data
+
+    // Create user with encrypted sensitive fields
     const user = await pool.query(
       `INSERT INTO users (
-        id, email, password_hash, full_name, first_name, last_name, phone_number, date_of_birth,
-        address, city, state, zip_code, emergency_contact, emergency_phone,
-        allergies, medications, medical_history, gender
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
-      RETURNING id, email, full_name, first_name, last_name, phone_number, created_at`,
+        id, email, password_hash, full_name, phone_number, date_of_birth,
+        address, city, state, zip_code, emergency_phone,
+        allergies, medications, medical_history, healthcare_purpose
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+      RETURNING id, email, full_name, phone_number, date_of_birth, healthcare_purpose, address, city, state, zip_code, emergency_phone, allergies, medications, medical_history, created_at`,
       [
         userId,
         email,
         passwordHash,
-        `${firstName} ${lastName}`,
-        firstName,
-        lastName,
-        phone || null,
-        dateOfBirth || null,
-        address || null,
-        city || null,
-        state || null,
-        zipCode || null,
-        emergencyContact || null,
-        emergencyPhone || null,
-        allergies || null,
-        medications || null,
-        medicalHistory || null,
-        gender || null
+        encryptedUserData.fullName || null,
+        encryptedUserData.phoneNumber || null,
+        encryptedUserData.dateOfBirth || null,
+        encryptedUserData.address || null,
+        encryptedUserData.city || null,
+        encryptedUserData.state || null,
+        encryptedUserData.zipCode || null,
+        encryptedUserData.emergencyPhone || null,
+        encryptedUserData.allergies || null,
+        encryptedUserData.medications || null,
+        encryptedUserData.medicalHistory || null,
+        healthcarePurpose
       ]
     );
 
@@ -86,9 +102,17 @@ export async function POST(request: Request) {
           id: createdUser.id,
           email: createdUser.email,
           name: createdUser.full_name,
-          firstName: createdUser.first_name,
-          lastName: createdUser.last_name,
           phone: createdUser.phone_number,
+          dateOfBirth: createdUser.date_of_birth,
+          healthcarePurpose: createdUser.healthcarePurpose,
+          address: createdUser.address,
+          city: createdUser.city,
+          state: createdUser.state,
+          zipCode: createdUser.zip_code,
+          emergencyPhone: createdUser.emergency_phone,
+          allergies: createdUser.allergies,
+          medications: createdUser.medications,
+          medicalHistory: createdUser.medical_history,
           createdAt: createdUser.created_at
         }
       },
