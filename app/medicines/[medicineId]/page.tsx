@@ -173,13 +173,13 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Medicine Not Found</h1>
           <p className="text-gray-600 mb-8">The medicine you're looking for doesn't exist.</p>
-          <Link
-            href={`/${treatmentCategory}`}
+          <button
+            onClick={() => router.back()}
             className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
           >
             <ArrowLeftIcon className="h-4 w-4 mr-2" />
-            Back to {treatmentCategory.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-          </Link>
+            Back
+          </button>
         </div>
       </div>
     );
@@ -190,13 +190,13 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
       {/* Header */}
       <div className="bg-linear-to-r from-indigo-600 to-purple-600 text-white">
         <div className="max-w-7xl mx-auto px-4 py-12">
-          <Link
-            href={`/${treatmentCategory}`}
+          <button
+            onClick={() => router.back()}
             className="inline-flex items-center text-indigo-100 hover:text-white mb-6 transition-colors"
           >
             <ArrowLeftIcon className="h-5 w-5 mr-2" />
-            Back to {treatmentCategory.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-          </Link>
+            Back
+          </button>
           <div className="flex flex-col md:flex-row items-center gap-8">
             <div className="shrink-0">
               <div className="w-48 h-48 rounded-2xl overflow-hidden bg-white/10 backdrop-blur-sm border border-white/20">

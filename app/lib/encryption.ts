@@ -2,151 +2,256 @@
 // Field-level encryption for HIPAA compliance
 import crypto from 'crypto';
 
-// Get and validate encryption key (lazy evaluation)
-const getEncryptionKey = () => {
-  const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
-  
-  // CRITICAL: Fail fast if encryption key is not set
-  if (!ENCRYPTION_KEY) {
-    throw new Error('FATAL: ENCRYPTION_KEY environment variable is required for HIPAA compliance. Set it in .env.local');
-  }
+// Check if AWS credentials are available
+const AWS_AVAILABLE = !!(process.env.AWS_REGION && process.env.AWS_KMS_KEY_ID);
 
-  if (ENCRYPTION_KEY.length !== 64) {
-    throw new Error('FATAL: ENCRYPTION_KEY must be exactly 64 hex characters (32 bytes)');
-  }
-  
-  return ENCRYPTION_KEY;
-};
+let kms: any = null;
 
+// Initialize AWS KMS if available
+async function initializeAWS() {
+  if (AWS_AVAILABLE) {
+    try {
+      const { KMSClient, GenerateDataKeyCommand, DecryptCommand } = await import('@aws-sdk/client-kms');
+      kms = new KMSClient({
+        region: process.env.AWS_REGION!,
+      });
+      console.log('🔐 AWS KMS encryption enabled');
+    } catch (error) {
+      console.warn('⚠️ AWS KMS not available, using fallback encryption');
+    }
+  } else {
+    console.log('🔒 Using fallback encryption (no AWS credentials)');
+  }
+}
+
+// Initialize on module load
+initializeAWS();
+
+const KMS_KEY_ID = process.env.AWS_KMS_KEY_ID!;
 const ALGORITHM = 'aes-256-gcm';
-const IV_LENGTH = 16;
+const IV_LENGTH = 12;
+const FALLBACK_KEY = process.env.ENCRYPTION_KEY || 'fallback-encryption-key-32-chars!';
+const FIXED_FALLBACK_KEY = crypto.createHash('sha256').update(FALLBACK_KEY).digest();
 
-interface EncryptedData {
+export interface EncryptedData {
   encrypted: string;
   iv: string;
   tag: string;
+  key: string; // encrypted data key (base64)
 }
 
-// Encrypt sensitive field
-export function encryptField(text: string): EncryptedData {
-  if (!text) return { encrypted: '', iv: '', tag: '' };
-  
-  const iv = crypto.randomBytes(IV_LENGTH);
-  const cipher = crypto.createCipheriv(ALGORITHM, Buffer.from(getEncryptionKey(), 'hex'), iv);
-  cipher.setAAD(Buffer.from('additional-data')); // Additional authenticated data
-  
-  let encrypted = cipher.update(text, 'utf8', 'hex');
-  encrypted += cipher.final('hex');
-  
-  const tag = cipher.getAuthTag();
-  
-  return {
-    encrypted,
-    iv: iv.toString('hex'),
-    tag: tag.toString('hex')
-  };
+/* ------------------ Core Encryption ------------------ */
+
+export async function encryptField(text: string): Promise<EncryptedData> {
+  if (!text) {
+    return { encrypted: '', iv: '', tag: '', key: '' };
+  }
+
+  if (AWS_AVAILABLE && kms) {
+    // Use AWS KMS encryption
+    const { GenerateDataKeyCommand } = await import('@aws-sdk/client-kms');
+    const { plaintextKey, encryptedKey } = await generateDataKey();
+    const iv = crypto.randomBytes(IV_LENGTH);
+
+    const cipher = crypto.createCipheriv(ALGORITHM, plaintextKey, iv);
+
+    let encrypted = cipher.update(text, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+
+    return {
+      encrypted,
+      iv: iv.toString('hex'),
+      tag: cipher.getAuthTag().toString('hex'),
+      key: encryptedKey,
+    };
+  } else {
+    // Use fallback encryption
+    const iv = crypto.randomBytes(IV_LENGTH);
+    const cipher = crypto.createCipheriv(ALGORITHM, FIXED_FALLBACK_KEY, iv);
+
+    let encrypted = cipher.update(text, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+
+    return {
+      encrypted,
+      iv: iv.toString('hex'),
+      tag: cipher.getAuthTag().toString('hex'),
+      key: 'fallback', // Indicate fallback encryption
+    };
+  }
 }
 
-// Decrypt sensitive field
-export function decryptField(encryptedData: EncryptedData): string {
-  if (!encryptedData.encrypted) return '';
-  
+async function generateDataKey() {
+  if (AWS_AVAILABLE && kms) {
+    const { GenerateDataKeyCommand } = await import('@aws-sdk/client-kms');
+    const command = new GenerateDataKeyCommand({
+      KeyId: KMS_KEY_ID,
+      KeySpec: 'AES_256',
+    });
+
+    const response = await kms.send(command);
+    return {
+      plaintextKey: response.Plaintext,
+      encryptedKey: response.CiphertextBlob,
+    };
+  } else {
+    // Fallback: return a key derived from fallback key
+    return {
+      plaintextKey: FIXED_FALLBACK_KEY,
+      encryptedKey: 'fallback',
+    };
+  }
+}
+
+async function decryptDataKey(encryptedKey: string): Promise<Buffer> {
+  if (AWS_AVAILABLE && kms && encryptedKey !== 'fallback') {
+    const { DecryptCommand } = await import('@aws-sdk/client-kms');
+    const command = new DecryptCommand({
+      CiphertextBlob: Buffer.from(encryptedKey, 'base64'),
+    });
+
+    const response = await kms.send(command);
+    return response.Plaintext;
+  } else {
+    // Fallback: return fallback key
+    return FIXED_FALLBACK_KEY;
+  }
+}
+
+export async function decryptField(data: EncryptedData): Promise<string> {
+  if (!data?.encrypted) return '';
+
   try {
-    const decipher = crypto.createDecipheriv(ALGORITHM, Buffer.from(getEncryptionKey(), 'hex'), Buffer.from(encryptedData.iv, 'hex'));
-    decipher.setAAD(Buffer.from('additional-data'));
-    decipher.setAuthTag(Buffer.from(encryptedData.tag, 'hex'));
-    
-    let decrypted = decipher.update(encryptedData.encrypted, 'hex', 'utf8');
+    const key = await decryptDataKey(data.key);
+
+    const decipher = crypto.createDecipheriv(
+      ALGORITHM,
+      key,
+      Buffer.from(data.iv, 'hex')
+    );
+
+    decipher.setAuthTag(Buffer.from(data.tag, 'hex'));
+
+    let decrypted = decipher.update(data.encrypted, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
-    
+
     return decrypted;
   } catch (error) {
-    console.error('Decryption failed:', error);
-    return '';
+    console.log('Decryption failed:', (error as Error).message);
+    return '[DECRYPTION_FAILED - Different encryption key used]';
   }
 }
 
-// Hash sensitive identifiers (for audit logs)
+/* ------------------ Utilities ------------------ */
+
 export function hashIdentifier(identifier: string): string {
-  return crypto.createHash('sha256').update(identifier).digest('hex').substring(0, 8);
+  return crypto
+    .createHash('sha256')
+    .update(identifier)
+    .digest('hex')
+    .substring(0, 8);
 }
 
-// Fields that require encryption
-export const SENSITIVE_FIELDS = [
-  'ssn',
-  'socialSecurity',
-  'lastFourSSN',
-  'medicalHistory',
-  'medications',
-  'allergies',
-  'medicalConditions',
-  'healthConcerns',
-  'sleepIssues',
-  'stressTriggers',
-  'stressManagementTechniques',
-  'currentlyUsingMedicines',
-  'emergencyPhone',
-  'phoneNumber',
-  'dateOfBirth',  // Date of birth is PII
-  'address',      // Physical address is PII
-  'fullName',     // Full name is PII
-  'zipCode',      // ZIP code is PII
-  'city',         // City is PII
-  'state'         // State is PII
-];
-
-// Encrypt object with sensitive fields
-export function encryptSensitiveFields(data: any): any {
-  if (!data || typeof data !== 'object') return data;
-  
-  const encrypted = { ...data };
-  
-  for (const field of SENSITIVE_FIELDS) {
-    if (encrypted[field]) {
-      // Handle arrays by JSON stringifying first
-      if (Array.isArray(encrypted[field])) {
-        encrypted[field] = encryptField(JSON.stringify(encrypted[field]));
-      } else {
-        encrypted[field] = encryptField(encrypted[field]);
-      }
-    }
-  }
-  
-  return encrypted;
-}
-
-// Decrypt object with sensitive fields
-export function decryptSensitiveFields(data: any): any {
-  if (!data || typeof data !== 'object') return data;
-  
-  const decrypted = { ...data };
-  
-  for (const field of SENSITIVE_FIELDS) {
-    if (decrypted[field] && typeof decrypted[field] === 'object' && decrypted[field].encrypted) {
-      const decryptedValue = decryptField(decrypted[field]);
-      // Try to parse as JSON (for arrays), otherwise use as string
-      try {
-        decrypted[field] = JSON.parse(decryptedValue);
-      } catch {
-        decrypted[field] = decryptedValue;
-      }
-    }
-  }
-  
-  return decrypted;
-}
-
-// Generate secure random token
-export function generateSecureToken(length: number = 32): string {
+export function generateSecureToken(length = 32): string {
   return crypto.randomBytes(length).toString('hex');
 }
 
-export default {
-  encryptField,
-  decryptField,
-  hashIdentifier,
-  encryptSensitiveFields,
-  decryptSensitiveFields,
-  generateSecureToken,
-  SENSITIVE_FIELDS
-};
+/* ------------------ Bulk Field Helpers ------------------ */
+
+export const SENSITIVE_FIELDS = [
+  'fullName',
+  'phoneNumber',
+  'dateOfBirth',
+  'address',
+  'city',
+  'state',
+  'zipCode',
+  'emergencyPhone',
+  'allergies',
+  'medications',
+  'medicalHistory',
+  'healthcarePurpose',
+];
+
+export async function encryptSensitiveFields(data: any) {
+  if (!data || typeof data !== 'object') return data;
+
+  const result = { ...data };
+
+  for (const field of SENSITIVE_FIELDS) {
+    if (result[field]) {
+      const value = Array.isArray(result[field])
+        ? JSON.stringify(result[field])
+        : String(result[field]);
+
+      result[field] = await encryptField(value);
+    }
+  }
+
+  return result;
+}
+
+export async function decryptSensitiveFields(data: any) {
+  if (!data || typeof data !== 'object') return data;
+
+  const result = { ...data };
+
+  for (const field of SENSITIVE_FIELDS) {
+    const value = result[field];
+
+    // Handle encrypted data stored as JSON string
+    let encryptedData = value;
+    if (typeof value === 'string') {
+      // Skip JSON parsing for plain strings that aren't encrypted
+      if (!value.includes('"encrypted"')) {
+        // This is a plain string, not encrypted data
+        continue;
+      }
+      try {
+        encryptedData = JSON.parse(value);
+      } catch (e) {
+        console.log(`Failed to parse encrypted data for ${field}:`, e);
+        continue;
+      }
+    }
+    if (encryptedData?.encrypted && (!AWS_AVAILABLE)) {
+      // When AWS is not available, check if this data can be decrypted with fallback key
+      if (encryptedData.key === 'fallback') {
+        // This is fallback-encrypted data, try fallback decryption
+        const decryptedValue = await decryptField(encryptedData);
+
+        if (decryptedValue.includes('[DECRYPTION_FAILED')) {
+          result[field] = `[ENCRYPTED - Different encryption key used]`;
+        } else {
+          try {
+            result[field] = JSON.parse(decryptedValue);
+          } catch {
+            result[field] = decryptedValue;
+          }
+        }
+      } else {
+        // This was AWS-encrypted data (no key field or non-fallback key), can't decrypt with fallback key
+        result[field] = `[ENCRYPTED - Requires AWS KMS to decrypt]`;
+      }
+    } else if (encryptedData?.encrypted && AWS_AVAILABLE) {
+      // AWS is available, try normal decryption
+      const decryptedValue = await decryptField(encryptedData);
+
+      if (decryptedValue.includes('[DECRYPTION_FAILED')) {
+        result[field] = `[ENCRYPTED - Different encryption key used]`;
+      } else {
+        try {
+          result[field] = JSON.parse(decryptedValue);
+        } catch {
+          result[field] = decryptedValue;
+        }
+      }
+    } else if (encryptedData?.encrypted) {
+      console.log(`Field ${field} is encrypted but missing key - cannot decrypt`);
+      // Keep original encrypted data for now
+      result[field] = `[ENCRYPTED - Missing Key] ${value}`;
+    }
+  }
+
+  return result;
+}

@@ -100,10 +100,10 @@ async function verifySetup() {
     console.log('   ✅ Database connection working');
 
     // Test encryption
-    const { encryptField, decryptField } = await import('../app/lib/encryption');
+    const { encryptField, decryptField } = await import('@/app/lib/encryption');
     const test = 'test-data';
-    const encrypted = encryptField(test);
-    const decrypted = decryptField(encrypted);
+    const encrypted = await encryptField(test);
+    const decrypted = await decryptField(encrypted);
     
     if (test === decrypted) {
       console.log('   ✅ Encryption/decryption working');

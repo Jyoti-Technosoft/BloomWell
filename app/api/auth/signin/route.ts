@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { postgresDb } from '../../../lib/postgres-db';
+import { decryptSensitiveFields } from '@/app/lib/encryption';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
@@ -44,7 +45,22 @@ export async function POST(request: Request) {
 
     // Create response with user data (without password)
     const { password_hash, ...userWithoutPassword } = user;
-    const response = NextResponse.json(userWithoutPassword, { status: 200 });
+    
+    // Map database field names to encryption field names
+    const mappedUser = {
+      fullName: userWithoutPassword.full_name,
+      phoneNumber: userWithoutPassword.phone_number,
+      dateOfBirth: userWithoutPassword.date_of_birth,
+      healthcarePurpose: userWithoutPassword.healthcarePurpose,
+      email: userWithoutPassword.email,
+      id: userWithoutPassword.id,
+      created_at: userWithoutPassword.created_at
+    };
+    
+    // Decrypt sensitive fields before returning
+    const decryptedUser = await decryptSensitiveFields(mappedUser);
+    
+    const response = NextResponse.json({ user: decryptedUser }, { status: 200 });
 
     // Set HTTP-only cookie
     response.cookies.set({
@@ -56,7 +72,9 @@ export async function POST(request: Request) {
       path: '/',
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });
-    response.headers.set('x-user', JSON.stringify(userWithoutPassword));
+
+    // Set x-user header with decrypted data
+    response.headers.set('x-user', JSON.stringify(decryptedUser));
 
     return response;
   } catch (error) {

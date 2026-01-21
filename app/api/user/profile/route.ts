@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import { query } from '../../../lib/postgres';
 import { logger, auditLog } from '../../../lib/secure-logger';
+import { decryptSensitiveFields, encryptSensitiveFields } from '../../../lib/encryption';
 import pool from '@/app/lib/postgres';
 
 export async function GET(request: NextRequest) {
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
         full_name,
         phone_number,
         date_of_birth,
-        healthcarePurpose,
+        healthcare_purpose,
         address,
         city,
         state,
@@ -65,6 +65,29 @@ export async function GET(request: NextRequest) {
 
     const user = result.rows[0];
     
+    // Map database field names to encryption field names
+    const mappedUser = {
+      fullName: user.full_name,
+      phoneNumber: user.phone_number,
+      dateOfBirth: user.date_of_birth,
+      address: user.address,
+      city: user.city,
+      state: user.state,
+      zipCode: user.zip_code,
+      emergencyPhone: user.emergency_phone,
+      allergies: user.allergies,
+      medications: user.medications,
+      medicalHistory: user.medical_history,
+      healthcarePurpose: user.healthcare_purpose,
+      email: user.email,
+      id: user.id,
+      created_at: user.created_at,
+      updated_at: user.updated_at
+    };
+    
+    // Decrypt sensitive fields before returning
+    const decryptedUser = await decryptSensitiveFields(mappedUser);
+    
     // Log successful profile access
     await auditLog({
       userId: token.id,
@@ -72,25 +95,25 @@ export async function GET(request: NextRequest) {
       resource: 'user_profile',
       timestamp: new Date(),
       success: true,
-      details: { profileFields: Object.keys(user).length }
+      details: { profileFields: Object.keys(decryptedUser).length }
     });
     
     const profileData = {
-      fullName: user.full_name || '',
-      email: user.email || '',
-      phone: user.phone_number || '',
-      dateOfBirth: user.date_of_birth || '',
-      healthcarePurpose: user.healthcarePurpose || '',
-      address: user.address || '',
-      city: user.city || '',
-      state: user.state || '',
-      zipCode: user.zip_code || '',
-      emergencyPhone: user.emergency_phone || '',
-      allergies: user.allergies || '',
-      medications: user.medications || '',
-      medicalHistory: user.medical_history || '',
-      createdAt: user.created_at,
-      updatedAt: user.updated_at
+      fullName: decryptedUser.fullName || '',
+      email: decryptedUser.email || '',
+      phone: decryptedUser.phoneNumber || '',
+      dateOfBirth: decryptedUser.dateOfBirth || '',
+      healthcarePurpose: decryptedUser.healthcarePurpose || '',
+      address: decryptedUser.address || '',
+      city: decryptedUser.city || '',
+      state: decryptedUser.state || '',
+      zipCode: decryptedUser.zipCode || '',
+      emergencyPhone: decryptedUser.emergencyPhone || '',
+      allergies: decryptedUser.allergies || '',
+      medications: decryptedUser.medications || '',
+      medicalHistory: decryptedUser.medicalHistory || '',
+      createdAt: decryptedUser.created_at,
+      updatedAt: decryptedUser.updated_at
     };
 
     return NextResponse.json(profileData);
@@ -143,6 +166,22 @@ export async function PUT(request: NextRequest) {
       medicalHistory
     } = body;
 
+    // Encrypt sensitive fields before updating
+    const encryptedData = await encryptSensitiveFields({
+      fullName,
+      phone,
+      dateOfBirth,
+      healthcarePurpose,
+      address,
+      city,
+      state,
+      zipCode,
+      emergencyPhone,
+      allergies,
+      medications,
+      medicalHistory
+    });
+
     // First check if user exists
     const userCheck = await pool.query('SELECT id FROM users WHERE email = $1', [token.email]);
     if (userCheck.rows.length === 0) {
@@ -158,7 +197,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Update user profile in the unified users table
+    // Update user profile in unified users table
     logger.info('Updating user profile', { userId: token.id });
     const result = await pool.query(
       `UPDATE users SET
@@ -182,18 +221,19 @@ export async function PUT(request: NextRequest) {
                 allergies, medications, medical_history, created_at, updated_at`,
       [
         token.email,
-        phone,
-        dateOfBirth,
-        healthcarePurpose,
-        address,
-        city,
-        state,
-        zipCode,
-        emergencyPhone,
-        allergies,
-        medications,
-        medicalHistory,
-        fullName
+        encryptedData.phoneNumber,
+        encryptedData.dateOfBirth,
+        encryptedData.healthcarePurpose,
+        encryptedData.address,
+        encryptedData.city,
+        encryptedData.state,
+        encryptedData.zipCode,
+        emergencyPhone, // emergency_contact is not encrypted
+        encryptedData.emergencyPhone,
+        encryptedData.allergies,
+        encryptedData.medications,
+        encryptedData.medicalHistory,
+        encryptedData.fullName
       ]
     );
 
