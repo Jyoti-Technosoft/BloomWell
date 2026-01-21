@@ -38,7 +38,7 @@ async function testEncryptionOnly() {
 
     // 2. Encrypt the data
     console.log('\n2️⃣ Encrypting sensitive fields...');
-    const encryptedData = encryptSensitiveFields(testData);
+    const encryptedData = await encryptSensitiveFields(testData);
     console.log('   🔐 Encrypted data:', JSON.stringify(encryptedData, null, 2));
 
     // 3. Verify encryption
@@ -118,7 +118,7 @@ async function testEncryptionOnly() {
 
     // 5. Test decryption
     console.log('6️⃣ Testing decryption...');
-    const decryptedData = decryptSensitiveFields(encryptedData);
+    const decryptedData = await decryptSensitiveFields(encryptedData);
     console.log('   🔓 Decrypted data:', JSON.stringify(decryptedData, null, 2));
 
     // 6. Verify decryption matches original

@@ -183,7 +183,7 @@ async function testEncryptedFields() {
 
     // 7. Test decryption
     console.log('7️⃣ Testing decryption...');
-    const decryptedData = decryptSensitiveFields(storedData);
+    const decryptedData = await decryptSensitiveFields(storedData);
     console.log('   🔓 Decrypted data:', JSON.stringify(decryptedData, null, 2));
 
     // 8. Verify decryption matches original
