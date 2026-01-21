@@ -1,10 +1,8 @@
 // scripts/test-hipaa-compliance.ts
 // Comprehensive HIPAA Compliance Testing Script
-import { execSync } from 'child_process';
 import { readFileSync, existsSync } from 'fs';
 import { query } from '../app/lib/postgres';
-import { encryptSensitiveFields, decryptSensitiveFields } from '../app/lib/encryption';
-import { auditLog } from '../app/lib/secure-logger';
+import { encryptSensitiveFields, decryptSensitiveFields } from '@/app/lib/encryption';
 
 interface ComplianceTest {
   name: string;
@@ -182,7 +180,7 @@ class HIPAAComplianceTester {
       
       const testData = { testField: 'SSN-123-45-6789' };
       const encrypted = encryptSensitiveFields(testData);
-      const decrypted = decryptSensitiveFields(encrypted);
+      const decrypted = await decryptSensitiveFields(encrypted);
       return testData.testField === decrypted.testField;
     } catch (error) {
       return false;
