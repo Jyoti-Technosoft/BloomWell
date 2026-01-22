@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
+import { v4 as uuidv4 } from 'uuid';
 import pool from '../../lib/postgres';
 import { logger, auditLog } from '../../lib/secure-logger';
-import { encryptSensitiveFields, decryptSensitiveFields } from '../../lib/encryption';
+import { encryptField } from '../../lib/encryption';
 
 interface EvaluationData {
   medicineId: string;
@@ -140,80 +141,82 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get user from authenticated session
-    // Create evaluation record in PostgreSQL with encryption
-    const encryptedResponses = encryptSensitiveFields({
-      birthday: evaluationData.birthday,
-      pregnant: evaluationData.pregnant,
-      currentlyUsingMedicines: evaluationData.currentlyUsingMedicines,
-      hasDiabetes: evaluationData.hasDiabetes,
-      seenDoctorLastTwoYears: evaluationData.seenDoctorLastTwoYears,
-      medicalConditions: evaluationData.medicalConditions,
-      height: evaluationData.height,
-      weight: evaluationData.weight,
-      targetWeight: evaluationData.targetWeight,
-      goals: evaluationData.goals,
-      allergies: evaluationData.allergies,
-      currentMedications: evaluationData.currentMedications || '',
-      additionalInfo: evaluationData.additionalInfo || '',
-      lastFourSSN: evaluationData.lastFourSSN,
-      primaryGoal: evaluationData.primaryGoal,
-      triedWeightLossMethods: evaluationData.triedWeightLossMethods,
-      activityLevel: evaluationData.activityLevel,
-      sleepHours: evaluationData.sleepHours,
-      stressLevel: evaluationData.stressLevel,
-      dietaryRestrictions: evaluationData.dietaryRestrictions,
-      currentWeightliftingRoutine: evaluationData.currentWeightliftingRoutine,
-      proteinIntake: evaluationData.proteinIntake,
-      workoutFrequency: evaluationData.workoutFrequency,
-      healthConcerns: evaluationData.healthConcerns,
-      sleepIssues: evaluationData.sleepIssues,
-      stressTriggers: evaluationData.stressTriggers,
-      stressManagementTechniques: evaluationData.stressManagementTechniques
-    });
+    const evaluationFields = [
+      'birthday', 'pregnant', 'currentlyUsingMedicines', 'hasDiabetes', 
+      'seenDoctorLastTwoYears', 'medicalConditions', 'height', 'weight', 
+      'targetWeight', 'goals', 'allergies', 'currentMedications', 
+      'additionalInfo', 'lastFourSSN', 'primaryGoal', 'triedWeightLossMethods',
+      'activityLevel', 'sleepHours', 'stressLevel', 'dietaryRestrictions',
+      'currentWeightliftingRoutine', 'proteinIntake', 'workoutFrequency',
+      'healthConcerns', 'sleepIssues', 'stressTriggers', 'stressManagementTechniques'
+    ];
 
-    const result = await pool.query(
-      `INSERT INTO evaluations (
-        user_id, medicine_id, medicine_name, evaluation_type, responses, status
-      ) VALUES ($1, $2, $3, $4, $5)
-      RETURNING id`,
-      [
-        userId,
-        evaluationData.medicineId,
-        evaluationData.medicineName,
-        evaluationData.primaryGoal.toLowerCase().replace(' ', '-'),
-        JSON.stringify(encryptedResponses),
-        'pending_review'
-      ]
-    );
-
-    const evaluationRecord = { id: result.rows[0].id };
-
-    // Log successful evaluation submission
-    await auditLog({
-      userId: userId,
-      action: 'EVALUATION_SUBMITTED',
-      resource: 'evaluation',
-      timestamp: new Date(),
-      success: true,
-      details: { 
-        evaluationId: evaluationRecord.id,
-        medicineId: evaluationData.medicineId,
-        evaluationType: evaluationData.primaryGoal.toLowerCase().replace(' ', '-')
+    const manualEncryptedResponses: { [key: string]: any } = {};
+    for (const field of evaluationFields) {
+      const value = (evaluationData as any)[field];
+      // Include empty strings to avoid NULL values in database
+      if (value !== undefined && value !== null) {
+        if (Array.isArray(value)) {
+          manualEncryptedResponses[field] = await encryptField(JSON.stringify(value));
+        } else {
+          manualEncryptedResponses[field] = await encryptField(String(value));
+        }
       }
-    });
+    }
 
-    // In a real application, you would:
-    // 1. Send notification to medical team
-    // 2. Create patient record if needed
-    // 3. Schedule consultation
-    // 4. Send confirmation email
+    try {
+      // Generate UUID for evaluation ID
+      const evaluationId = uuidv4();
+      
+      const result = await pool.query(
+        `INSERT INTO evaluations (
+          id, user_id, medicine_id, medicine_name, evaluation_type, responses, status
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING id`,
+        [
+          evaluationId, // Generated UUID
+          userId || null, // Ensure userId is handled properly
+          evaluationData.medicineId || 'unknown', // Provide default if null
+          evaluationData.medicineName || 'Unknown Medicine', // Provide default if null
+          evaluationData.primaryGoal?.toLowerCase().replace(' ', '-') || 'general', // Provide default if null
+          JSON.stringify(manualEncryptedResponses), // Use manual encrypted data
+          'pending_review'
+        ]
+      );
 
-    return NextResponse.json({
-      success: true,
-      message: 'Evaluation submitted successfully',
-      evaluationId: evaluationRecord.id
-    });
+      const evaluationRecord = { id: result.rows[0].id };
+
+      // Log successful evaluation submission
+      if (userId) {
+        await auditLog({
+          userId: userId,
+          action: 'EVALUATION_SUBMITTED',
+          resource: 'evaluation',
+          timestamp: new Date(),
+          success: true,
+          details: { 
+            evaluationId: evaluationRecord.id,
+            medicineId: evaluationData.medicineId,
+            evaluationType: evaluationData.primaryGoal?.toLowerCase().replace(' ', '-') || 'general'
+          }
+        });
+      }
+
+      // In a real application, you would:
+      // 1. Send notification to medical team
+      // 2. Create patient record if needed
+      // 3. Schedule consultation
+      // 4. Send confirmation email
+
+      return NextResponse.json({
+        success: true,
+        message: 'Evaluation submitted successfully',
+        evaluationId: evaluationRecord.id
+      });
+    } catch (insertError) {
+      console.error('Database INSERT error:', insertError);
+      throw insertError;
+    }
 
   } catch (error) {
     logger.error('Evaluation submission error', { 

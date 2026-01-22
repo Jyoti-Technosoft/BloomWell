@@ -4,7 +4,6 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDownIcon, UserIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
-import LogoutButton from '../auth/LogoutButton';
 
 interface NavItem {
   name: string;
@@ -42,6 +41,7 @@ export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const { data: session, status } = useSession();
 
   const toggleMobileMenu = () => {
@@ -244,6 +244,7 @@ export default function Header() {
                         </Link>
                         <div className="border-t border-gray-100 my-1"></div>
                         <div 
+                          onClick={() => setShowConfirmDialog(true)}
                           className="block w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-linear-to-r hover:from-red-50 hover:to-pink-50 rounded-lg cursor-pointer transition-all duration-200 ease-in-out"
                         >
                           <div className="flex items-center">
@@ -252,7 +253,7 @@ export default function Header() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                               </svg>
                             </div>
-                            <LogoutButton />
+                            <span className="text-sm font-medium">Logout</span>
                           </div>
                         </div>
                       </div>
@@ -343,13 +344,16 @@ export default function Header() {
                         </div>
                         Booking Info
                       </Link>
-                      <div className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer">
+                      <div 
+                        onClick={() => setShowConfirmDialog(true)}
+                        className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer"
+                      >
                         <div className="h-8 w-8 rounded-lg bg-linear-to-br from-red-100 to-pink-100 flex items-center justify-center mr-3">
                           <svg className="h-4 w-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                           </svg>
                         </div>
-                        <span className="text-base font-medium">Logout</span>
+                        Logout
                       </div>
                     </div>
                   </div>
@@ -451,6 +455,41 @@ export default function Header() {
           )}
         </AnimatePresence>
       </nav>
+
+      {/* Logout Confirmation Dialog */}
+      {showConfirmDialog && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Do you want to logout?
+            </h3>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowConfirmDialog(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    await fetch('/api/auth/signout', {
+                      method: 'POST',
+                    });
+                    window.location.href = '/auth/signin';
+                  } catch (error) {
+                    console.error('Logout failed:', error);
+                    window.location.href = '/auth/signin';
+                  }
+                }}
+                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
