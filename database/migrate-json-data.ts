@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { postgresDb } from '../app/lib/postgres-db';
+import pool from '../app/lib/postgres';
 
 interface JsonData {
   users: Array<{
@@ -58,21 +58,17 @@ async function migrateData() {
     for (const user of jsonData.users) {
       try {
         // Check if user already exists
-        const existingUser = await postgresDb.users.findByEmail(user.email);
-        if (existingUser) {
-          userIdMap[user.id] = existingUser.id;
-          console.log(`✓ Found existing user: ${user.email} (ID: ${user.id} -> ${existingUser.id})`);
+        const existingUserResult = await pool.query('SELECT id FROM users WHERE email = $1', [user.email]);
+        if (existingUserResult.rows.length > 0) {
+          userIdMap[user.id] = existingUserResult.rows[0].id;
+          console.log(`✓ Found existing user: ${user.email} (ID: ${user.id} -> ${existingUserResult.rows[0].id})`);
         } else {
-          const newUser = await postgresDb.users.create({
-            email: user.email,
-            password_hash: user.password,
-            full_name: user.fullName,
-            date_of_birth: user.dateOfBirth,
-            phone_number: user.phoneNumber,
-            healthcarePurpose: user.healthcarePurpose
-          });
-          userIdMap[user.id] = newUser.id;
-          console.log(`✓ Migrated user: ${user.email} (ID: ${user.id} -> ${newUser.id})`);
+          const newUserResult = await pool.query(
+            'INSERT INTO users (id, email, password_hash, full_name, date_of_birth, phone_number, healthcare_purpose, created_at) VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP) RETURNING id',
+            [user.id, user.email, user.password, user.fullName, user.dateOfBirth, user.phoneNumber, user.healthcarePurpose]
+          );
+          userIdMap[user.id] = newUserResult.rows[0].id;
+          console.log(`✓ Migrated user: ${user.email} (ID: ${user.id} -> ${newUserResult.rows[0].id})`);
         }
       } catch (error) {
         console.log(`⚠ User ${user.email} may already exist or failed:`, error instanceof Error ? error.message : String(error));
@@ -82,11 +78,10 @@ async function migrateData() {
     // Migrate contacts
     for (const contact of jsonData.contacts) {
       try {
-        await postgresDb.contacts.create({
-          name: contact.name,
-          email: contact.email,
-          message: contact.message
-        });
+        await pool.query(
+          'INSERT INTO contacts (name, email, message) VALUES ($1, $2, $3)',
+          [contact.name, contact.email, contact.message]
+        );
         console.log(`✓ Migrated contact: ${contact.name}`);
       } catch (error) {
         console.log(`⚠ Contact ${contact.name} failed:`, error instanceof Error ? error.message : String(error));
@@ -102,15 +97,10 @@ async function migrateData() {
           continue;
         }
         
-        await postgresDb.consultations.create({
-          user_id: newUserId,
-          doctor_name: consultation.doctorName,
-          doctor_specialty: consultation.doctorSpecialty,
-          consultation_date: consultation.date,
-          consultation_time: consultation.time,
-          reason: consultation.reason,
-          status: consultation.status
-        });
+        await pool.query(
+          'INSERT INTO consultations (user_id, doctor_name, doctor_specialty, consultation_date, consultation_time, reason, status, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP)',
+          [newUserId, consultation.doctorName, consultation.doctorSpecialty, consultation.date, consultation.time, consultation.reason, consultation.status]
+        );
         console.log(`✓ Migrated consultation for user: ${consultation.userId} -> ${newUserId}`);
       } catch (error) {
         console.log(`⚠ Consultation ${consultation.id} failed:`, error instanceof Error ? error.message : String(error));
@@ -120,14 +110,12 @@ async function migrateData() {
     // Migrate evaluations
     for (const evaluation of jsonData.evaluations) {
       try {
-        await postgresDb.evaluations.create({
-          user_id: evaluation.userId === 'anonymous' ? null : evaluation.userId,
-          medicine_id: evaluation.medicineId,
-          medicine_name: evaluation.medicineName,
-          evaluation_type: 'general', // Default to 'general' for migrated data
-          responses: evaluation.responses,
-          status: evaluation.status
-        });
+        const evalUserId = evaluation.userId === 'anonymous' ? null : userIdMap[evaluation.userId];
+        
+        await pool.query(
+          'INSERT INTO evaluations (user_id, medicine_id, medicine_name, evaluation_type, responses, status, created_at) VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP)',
+          [evalUserId, evaluation.medicineId, evaluation.medicineName, 'general', evaluation.responses, evaluation.status]
+        );
         console.log(`✓ Migrated evaluation: ${evaluation.medicineName}`);
       } catch (error) {
         console.log(`⚠ Evaluation ${evaluation.id} failed:`, error instanceof Error ? error.message : String(error));

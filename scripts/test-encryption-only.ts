@@ -3,8 +3,10 @@
 import dotenv from 'dotenv';
 import { encryptSensitiveFields, decryptSensitiveFields } from '../app/lib/encryption';
 
-// Load environment variables from .env.local
-dotenv.config({ path: '.env.local' });
+// Load environment variables based on NODE_ENV
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config({ path: '.env.local' });
+}
 
 interface TestData {
   lastFourSSN: string;

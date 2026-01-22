@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import { postgresDb } from '../../lib/postgres-db';
+import pool from '../../lib/postgres';
 import { logger, auditLog } from '../../lib/secure-logger';
-import { encryptSensitiveFields } from '../../lib/encryption';
+import { encryptSensitiveFields, decryptSensitiveFields } from '../../lib/encryption';
 
 interface EvaluationData {
   medicineId: string;
@@ -64,14 +64,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user from database
-    const user = await postgresDb.users.findByEmail(userEmail);
+    const userResult = await pool.query('SELECT id FROM users WHERE email = $1', [userEmail]);
     
-    if (!user) {
+    if (userResult.rows.length === 0) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
       );
     }
+
+    const userId = userResult.rows[0].id;
 
     const evaluationData: EvaluationData = await request.json();
 
@@ -139,8 +141,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user from authenticated session
-    const userId = user.id;
-
     // Create evaluation record in PostgreSQL with encryption
     const encryptedResponses = encryptSensitiveFields({
       birthday: evaluationData.birthday,
@@ -172,14 +172,22 @@ export async function POST(request: NextRequest) {
       stressManagementTechniques: evaluationData.stressManagementTechniques
     });
 
-    const evaluationRecord = await postgresDb.evaluations.create({
-      user_id: userId,
-      medicine_id: evaluationData.medicineId,
-      medicine_name: evaluationData.medicineName,
-      evaluation_type: evaluationData.primaryGoal.toLowerCase().replace(' ', '-'),
-      responses: encryptedResponses,
-      status: 'pending_review'
-    });
+    const result = await pool.query(
+      `INSERT INTO evaluations (
+        user_id, medicine_id, medicine_name, evaluation_type, responses, status
+      ) VALUES ($1, $2, $3, $4, $5)
+      RETURNING id`,
+      [
+        userId,
+        evaluationData.medicineId,
+        evaluationData.medicineName,
+        evaluationData.primaryGoal.toLowerCase().replace(' ', '-'),
+        JSON.stringify(encryptedResponses),
+        'pending_review'
+      ]
+    );
+
+    const evaluationRecord = { id: result.rows[0].id };
 
     // Log successful evaluation submission
     await auditLog({
@@ -255,17 +263,28 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user from database
-    const user = await postgresDb.users.findByEmail(userEmail);
+    const userResult = await pool.query('SELECT id FROM users WHERE email = $1', [userEmail]);
     
-    if (!user) {
+    if (userResult.rows.length === 0) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
       );
     }
     
+    const user = { id: userResult.rows[0].id };
+    
     // Get evaluations for authenticated user
-    const evaluations = await postgresDb.evaluations.findByUserId(user.id);
+    const evaluationsResult = await pool.query('SELECT * FROM evaluations WHERE user_id = $1 ORDER BY created_at DESC', [user.id]);
+    const evaluations = evaluationsResult.rows.map(row => ({
+      id: row.id,
+      medicineId: row.medicine_id,
+      medicineName: row.medicine_name,
+      evaluationType: row.evaluation_type,
+      responses: row.responses,
+      status: row.status,
+      createdAt: row.created_at
+    }));
     return NextResponse.json({ evaluations });
 
   } catch (error) {

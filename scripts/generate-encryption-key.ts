@@ -2,6 +2,12 @@
 // Generate proper 64-character hex encryption key for HIPAA compliance
 import { writeFileSync, readFileSync } from 'fs';
 import { randomBytes } from 'crypto';
+import dotenv from 'dotenv';
+
+// Load environment variables based on NODE_ENV
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config({ path: '.env.local' });
+}
 
 function generateEncryptionKey() {
   console.log('🔐 Generating HIPAA-compliant encryption key...');
@@ -20,8 +26,10 @@ function generateEncryptionKey() {
     
     // Update .env.local file
     let envContent = '';
+    const envPath = process.env.NODE_ENV === 'production' ? '.env.prod' : '.env.local';
+    
     try {
-      envContent = readFileSync('.env.local', 'utf8');
+      envContent = readFileSync(envPath, 'utf8');
     } catch (error) {
       // File doesn't exist, create new one
       envContent = '';
@@ -35,9 +43,9 @@ function generateEncryptionKey() {
     filteredLines.push(`ENCRYPTION_KEY=${key}`);
     
     // Write back to file
-    writeFileSync('.env.local', filteredLines.join('\n'));
+    writeFileSync(envPath, filteredLines.join('\n'));
     
-    console.log('✅ ENCRYPTION_KEY updated in .env.local');
+    console.log('✅ ENCRYPTION_KEY updated in .env');
     console.log('🔄 Please restart your application to load the new key.');
     
     return true;

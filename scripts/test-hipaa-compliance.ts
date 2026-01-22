@@ -3,6 +3,12 @@
 import { readFileSync, existsSync } from 'fs';
 import { query } from '../app/lib/postgres';
 import { encryptSensitiveFields, decryptSensitiveFields } from '@/app/lib/encryption';
+import dotenv from 'dotenv';
+
+// Load environment variables based on NODE_ENV
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config({ path: '.env.local' });
+}
 
 interface ComplianceTest {
   name: string;

@@ -1,6 +1,12 @@
 // scripts/inspect-database-encryption.ts
 // Inspect existing database data to verify encryption
 import { query } from '../app/lib/postgres';
+import dotenv from 'dotenv';
+
+// Load environment variables based on NODE_ENV
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config({ path: '.env.local' });
+}
 
 async function inspectDatabaseEncryption() {
   console.log('🔍 Inspecting Database Encryption...\n');

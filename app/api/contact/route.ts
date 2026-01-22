@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { postgresDb } from '../../lib/postgres-db';
+import pool from '../../lib/postgres';
 
 export async function POST(request: Request) {
   try {
@@ -14,13 +14,12 @@ export async function POST(request: Request) {
     }
 
     // Save contact form submission to PostgreSQL
-    const contact = await postgresDb.contacts.create({
-      name,
-      email,
-      message,
-    });
+    const result = await pool.query(
+      'INSERT INTO contacts (name, email, message) VALUES ($1, $2, $3) RETURNING *',
+      [name, email, message]
+    );
 
-    return NextResponse.json(contact, { status: 201 });
+    return NextResponse.json(result.rows[0], { status: 201 });
   } catch (error) {
     console.error('Contact form error:', error);
     return NextResponse.json(

@@ -1,6 +1,6 @@
 // lib/postgres-db.ts
 // PostgreSQL data access layer - mirrors the JSON db interface
-import { query, queryOne, transaction } from './postgres';
+import { query, queryOne } from './postgres';
 
 // Types matching the database schema
 export interface User {

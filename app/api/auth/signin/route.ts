@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { postgresDb } from '../../../lib/postgres-db';
+import pool from '../../../lib/postgres';
 import { decryptSensitiveFields } from '@/app/lib/encryption';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
@@ -19,13 +19,19 @@ export async function POST(request: Request) {
     }
 
     // Find user
-    const user = await postgresDb.users.findByEmail(email);
-    if (!user) {
+    const result = await pool.query(
+      'SELECT id, email, password_hash, full_name, phone_number, date_of_birth, healthcare_purpose, created_at FROM users WHERE email = $1',
+      [email]
+    );
+    
+    if (result.rows.length === 0) {
       return NextResponse.json(
         { error: 'No account found with this email address' },
         { status: 401 }
       );
     }
+    
+    const user = result.rows[0];
 
     // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);

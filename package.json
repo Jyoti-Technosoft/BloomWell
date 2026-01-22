@@ -17,6 +17,7 @@
     "test:encrypted-fields": "tsx scripts/test-encrypted-fields.ts",
     "test:encryption-only": "tsx scripts/test-encryption-only.ts",
     "inspect:encryption": "tsx scripts/inspect-database-encryption.ts",
+    "migrate:encryption": "tsx scripts/migrate-encryption.ts",
     "setup:hipaa": "tsx scripts/setup-hipaa-compliance.ts"
   },
   "dependencies": {

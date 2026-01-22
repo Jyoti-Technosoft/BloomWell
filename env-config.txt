@@ -8,11 +8,11 @@ DB_PASSWORD=db_password
 JWT_SECRET=secret-jwt-key
 NODE_ENV=development
 
+# NEON Database URL
 NEON_DATABASE_URL=neon_database_url
 
+# Third party api to connect audio/video calls
 DAILY_API_KEY=daily_api_key
-
-ENCRYPTION_KEY=encryption_key
 
 NEXTAUTH_URL=http://localhost:3000
 
@@ -21,3 +21,8 @@ SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
+
+# Encryption Key
+ENCRYPTION_KEY=encryption_key
+# AWS_REGION=us-east-1
+# AWS_KMS_KEY_ID=arn:aws:kms:ap-southeast-1:123456789012:key/your-kms-key-id
