@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import { logger, auditLog } from '../../../lib/secure-logger';
-import { decryptSensitiveFields, encryptSensitiveFields } from '../../../lib/encryption';
+import { logger, auditLog } from '@/app/lib/secure-logger';
+import { decryptSensitiveFields, encryptSensitiveFields } from '@/app/lib/encryption';
 import pool from '@/app/lib/postgres';
 
 export async function GET(request: NextRequest) {

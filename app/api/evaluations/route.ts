@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { v4 as uuidv4 } from 'uuid';
-import pool from '../../lib/postgres';
-import { logger, auditLog } from '../../lib/secure-logger';
-import { encryptField } from '../../lib/encryption';
+import pool from '@/app/lib/postgres';
+import { logger, auditLog } from '@/app/lib/secure-logger';
+import { encryptField } from '@/app/lib/encryption';
 
 interface EvaluationData {
   medicineId: string;

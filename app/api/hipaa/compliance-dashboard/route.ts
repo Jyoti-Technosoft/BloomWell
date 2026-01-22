@@ -2,11 +2,11 @@
 // HIPAA Compliance Dashboard API
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
-import { query } from '../../../lib/postgres';
-import { logger, auditLog } from '../../../lib/secure-logger';
-import { getBreachStatistics } from '../../../lib/breach-notification';
-import { getRetentionStatistics } from '../../../lib/data-retention';
-import { getConsentStatistics } from '../../../lib/patient-consent';
+import { query } from '@/app/lib/postgres';
+import { logger, auditLog } from '@/app/lib/secure-logger';
+import { getBreachStatistics } from '@/app/lib/breach-notification';
+import { getRetentionStatistics } from '@/app/lib/data-retention';
+import { getConsentStatistics } from '@/app/lib/patient-consent';
 
 export async function GET(request: NextRequest) {
   try {

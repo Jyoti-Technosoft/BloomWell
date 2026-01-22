@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
-import pool from '../../lib/postgres';
+import pool from '@/app/lib/postgres';
 
 export async function POST(request: Request) {
   try {
