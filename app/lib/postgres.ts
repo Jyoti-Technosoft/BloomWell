@@ -25,9 +25,9 @@ if (process.env.NODE_ENV !== 'production') {
 // });
 
 // Connection pool configuration for Neon
-if (!process.env.NEON_DATABASE_URL) {
-  throw new Error('❌ NEON_DATABASE_URL is not defined in environment variables');
-}
+// if (!process.env.NEON_DATABASE_URL) {
+//   throw new Error('❌ NEON_DATABASE_URL is not defined in environment variables');
+// }
 const pool = new Pool({
   connectionString: process.env.NEON_DATABASE_URL, // Neon pooled URL
   ssl: true,
