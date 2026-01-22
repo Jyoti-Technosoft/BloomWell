@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { v4 as uuidv4 } from 'uuid';
 import pool from '../../lib/postgres';
 
 export async function POST(request: Request) {
@@ -14,9 +15,10 @@ export async function POST(request: Request) {
     }
 
     // Save contact form submission to PostgreSQL
+    const contactId = uuidv4();
     const result = await pool.query(
-      'INSERT INTO contacts (name, email, message) VALUES ($1, $2, $3) RETURNING *',
-      [name, email, message]
+      'INSERT INTO contacts (id, name, email, message) VALUES ($1, $2, $3, $4) RETURNING *',
+      [contactId, name, email, message]
     );
 
     return NextResponse.json(result.rows[0], { status: 201 });
