@@ -1,7 +1,5 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { postgresDb } from '../../../lib/postgres-db';
-import bcrypt from 'bcryptjs';
 
 declare module 'next-auth' {
   interface Session {
@@ -34,8 +32,7 @@ const handler = NextAuth({
 
         try {
           // Call signin API to get decrypted user data
-          const baseUrl = process.env.NEXTAUTH_URL || 
-            (process.env.PROD_URL ? `https://${process.env.PROD_URL}` : 'http://localhost:3000');
+          const baseUrl = process.env.NEXTAUTH_URL;
           const response = await fetch(`${baseUrl}/api/auth/signin`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

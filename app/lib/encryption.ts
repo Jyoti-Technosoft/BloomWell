@@ -3,7 +3,7 @@
 import crypto from 'crypto';
 
 // Check if AWS credentials are available
-const AWS_AVAILABLE = !!(process.env.AWS_REGION && process.env.AWS_KMS_KEY_ID);
+const AWS_AVAILABLE = false;
 
 let kms: any = null;
 
@@ -214,27 +214,9 @@ export async function decryptSensitiveFields(data: any) {
         continue;
       }
     }
-    if (encryptedData?.encrypted && (!AWS_AVAILABLE)) {
-      // When AWS is not available, check if this data can be decrypted with fallback key
-      if (encryptedData.key === 'fallback') {
-        // This is fallback-encrypted data, try fallback decryption
-        const decryptedValue = await decryptField(encryptedData);
-
-        if (decryptedValue.includes('[DECRYPTION_FAILED')) {
-          result[field] = `[ENCRYPTED - Different encryption key used]`;
-        } else {
-          try {
-            result[field] = JSON.parse(decryptedValue);
-          } catch {
-            result[field] = decryptedValue;
-          }
-        }
-      } else {
-        // This was AWS-encrypted data (no key field or non-fallback key), can't decrypt with fallback key
-        result[field] = `[ENCRYPTED - Requires AWS KMS to decrypt]`;
-      }
-    } else if (encryptedData?.encrypted && AWS_AVAILABLE) {
-      // AWS is available, try normal decryption
+    
+    if (encryptedData?.encrypted) {
+      // Try to decrypt regardless of AWS availability
       const decryptedValue = await decryptField(encryptedData);
 
       if (decryptedValue.includes('[DECRYPTION_FAILED')) {

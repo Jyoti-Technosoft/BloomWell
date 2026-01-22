@@ -1,4 +1,12 @@
 import { query } from "../app/lib/postgres";
+import dotenv from 'dotenv';
+
+// Load environment variables based on NODE_ENV
+if (process.env.NODE_ENV === 'production') {
+  dotenv.config({ path: '.env.prod' });
+} else {
+  dotenv.config({ path: '.env.local' });
+}
 
 const physicians = [
     {

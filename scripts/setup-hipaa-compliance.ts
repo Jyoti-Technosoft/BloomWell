@@ -3,6 +3,14 @@
 import { execSync } from 'child_process';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { query } from '../app/lib/postgres';
+import dotenv from 'dotenv';
+
+// Load environment variables based on NODE_ENV
+if (process.env.NODE_ENV === 'production') {
+  dotenv.config({ path: '.env.prod' });
+} else {
+  dotenv.config({ path: '.env.local' });
+}
 
 async function setupHIPAACompliance() {
   console.log('🔒 Setting up HIPAA Compliance...\n');
@@ -34,7 +42,7 @@ async function setupHIPAACompliance() {
 }
 
 async function checkEnvironmentVariables() {
-  const envPath = '.env.local';
+  const envPath = process.env.NODE_ENV === 'production' ? '.env.prod' : '.env.local';
   let envContent = '';
   
   if (existsSync(envPath)) {
@@ -65,7 +73,7 @@ async function checkEnvironmentVariables() {
 
   if (updated) {
     writeFileSync(envPath, envContent);
-    console.log('   💾 Updated .env.local file');
+    console.log('   💾 Updated .env file');
     console.log('   🔄 Please restart your application to load new variables');
   }
 }
@@ -85,9 +93,13 @@ async function createHIPAATables() {
 }
 
 async function setupEncryption() {
-  if (!process.env.ENCRYPTION_KEY) {
-    console.log('   ⚠️  ENCRYPTION_KEY not set. Please add it to .env.local');
-    console.log('   💡 Run: openssl rand -hex 32');
+  const envPath = process.env.NODE_ENV === 'production' ? '.env.prod' : '.env.local';
+  const envContent = readFileSync(envPath, 'utf8');
+  
+  if (!envContent.includes('ENCRYPTION_KEY=')) {
+    console.log('   ⚠️  ENCRYPTION_KEY not set. Please add it to environment variables.');
+    console.log(`   💡 Run: openssl rand -hex 32`);
+    console.log(`   📝 Then add: ENCRYPTION_KEY=<generated-key> to ${envPath}`);
   } else {
     console.log('   ✅ ENCRYPTION_KEY is set');
   }
