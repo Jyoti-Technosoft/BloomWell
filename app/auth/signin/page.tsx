@@ -49,8 +49,10 @@ function SignInContent() {
 
       if (result?.ok) {
         setError(null);
-        // Redirect to dashboard or callback URL after successful signin
-        window.location.href = callbackUrl;
+        setTimeout(() => {
+          router.push(callbackUrl);
+          router.refresh();
+        }, 100);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign in failed');
