@@ -4,9 +4,7 @@ import dotenv from 'dotenv';
 import { encryptSensitiveFields, decryptSensitiveFields } from '../app/lib/encryption';
 
 // Load environment variables based on NODE_ENV
-if (process.env.NODE_ENV === 'production') {
-  dotenv.config({ path: '.env.prod' });
-} else {
+if (process.env.NODE_ENV !== 'production') {
   dotenv.config({ path: '.env.local' });
 }
 
