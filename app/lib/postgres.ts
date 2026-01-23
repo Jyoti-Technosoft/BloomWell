@@ -30,7 +30,7 @@ if (process.env.NODE_ENV !== 'production') {
 // }
 const pool = new Pool({
   connectionString: process.env.NEON_DATABASE_URL, // Neon pooled URL
-  ssl: true,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false, // SSL only in production
   max: 20, // Maximum number of connections in the pool
   idleTimeoutMillis: 30000, // How long a client is allowed to remain idle before being closed
   connectionTimeoutMillis: 10000, // How long to wait when connecting a new client (reduced from 2000)

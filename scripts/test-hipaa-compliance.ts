@@ -184,11 +184,20 @@ class HIPAAComplianceTester {
         return false;
       }
       
-      const testData = { testField: 'SSN-123-45-6789' };
-      const encrypted = encryptSensitiveFields(testData);
+      // Test encryption without database calls
+      const testData = { lastFourSSN: '1234' };
+      const encrypted = await encryptSensitiveFields(testData);
+      
+      // Check if the field was actually encrypted (should be an object with encrypted property)
+      if (!encrypted.lastFourSSN || typeof encrypted.lastFourSSN !== 'object' || !encrypted.lastFourSSN.encrypted) {
+        return false;
+      }
+      
+      // Test decryption
       const decrypted = await decryptSensitiveFields(encrypted);
-      return testData.testField === decrypted.testField;
+      return testData.lastFourSSN === String(decrypted.lastFourSSN);
     } catch (error) {
+      console.error('Encryption test error:', error);
       return false;
     }
   }

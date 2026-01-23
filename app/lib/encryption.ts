@@ -171,6 +171,7 @@ export const SENSITIVE_FIELDS = [
   'medications',
   'medicalHistory',
   'healthcarePurpose',
+  'lastFourSSN',
 ];
 
 export async function encryptSensitiveFields(data: any) {
