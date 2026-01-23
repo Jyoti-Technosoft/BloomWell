@@ -35,7 +35,6 @@ const getNavItems = (isAuthenticated: boolean): NavItem[] => [
   },
   { name: 'About', href: '/about' },
   { name: 'Reviews', href: '/reviews' },
-  ...(isAuthenticated ? [{ name: 'My Evaluations', href: '/evaluations' }] : []),
 ];
 
 export default function Header() {
@@ -243,6 +242,20 @@ export default function Header() {
                             Booking Info
                           </div>
                         </Link>
+                        <Link
+                          href="/evaluations"
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="block px-4 py-3 text-sm text-gray-700 hover:bg-linear-to-r hover:from-indigo-50 hover:to-purple-50 rounded-lg transition-all duration-200 ease-in-out"
+                        >
+                          <div className="flex items-center">
+                            <div className="h-8 w-8 rounded-lg bg-linear-to-br from-blue-100 to-cyan-100 flex items-center justify-center mr-3">
+                              <svg className="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                            </div>
+                            My Evaluations
+                          </div>
+                        </Link>
                         <div className="border-t border-gray-100 my-1"></div>
                         <div 
                           onClick={() => setShowConfirmDialog(true)}
@@ -344,6 +357,18 @@ export default function Header() {
                           </svg>
                         </div>
                         Booking Info
+                      </Link>
+                      <Link
+                        href="/evaluations"
+                        onClick={closeMobileMenu}
+                        className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg"
+                      >
+                        <div className="h-8 w-8 rounded-lg bg-linear-to-br from-blue-100 to-cyan-100 flex items-center justify-center mr-3">
+                          <svg className="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                        </div>
+                        My Evaluations
                       </Link>
                       <div 
                         onClick={() => setShowConfirmDialog(true)}
