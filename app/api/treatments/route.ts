@@ -1,6 +1,73 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/app/lib/postgres';
 
+// Fallback treatments data when database is not available
+const fallbackTreatments = [
+  {
+    id: 'semaglutide',
+    name: 'Semaglutide',
+    description: 'Advanced GLP-1 medication for sustainable weight management and blood sugar control.',
+    category: 'weight-loss',
+    image: '/default-treatment.jpg',
+    overview: 'Semaglutide is a once-weekly injection that helps with weight loss by regulating appetite.',
+    howItWorks: 'Mimics GLP-1 hormone to regulate blood sugar and reduce appetite.',
+    benefits: [
+      'Significant weight loss',
+      'Blood sugar control',
+      'Once-weekly dosing'
+    ],
+    faqs: [
+      {
+        question: 'How long does it take to see results?',
+        answer: 'Most patients see results within 12-16 weeks.'
+      }
+    ],
+    medicines: ['semaglutide-1mg', 'semaglutide-2mg']
+  },
+  {
+    id: 'erectile-dysfunction',
+    name: 'Erectile Dysfunction',
+    description: 'Effective treatments for ED to improve sexual health and performance.',
+    category: 'ed-treatments',
+    image: '/default-treatment.jpg',
+    overview: 'Comprehensive solutions for men experiencing erectile dysfunction.',
+    benefits: [
+      'Improved sexual performance',
+      'Increased confidence',
+      'Various treatment options'
+    ],
+    howItWorks: 'Treatments work by increasing blood flow to penis or addressing underlying causes.',
+    faqs: [
+      {
+        question: 'What treatments are available?',
+        answer: 'Oral medications, injections, and lifestyle changes are common approaches.'
+      }
+    ],
+    medicines: ['sildenafil-50mg', 'tadalafil-20mg']
+  },
+  {
+    id: 'testosterone-therapy',
+    name: 'Testosterone Therapy',
+    description: 'Hormone replacement therapy for low testosterone levels.',
+    category: 'hormone-therapy',
+    image: '/default-treatment.jpg',
+    overview: 'Testosterone therapy helps restore normal hormone levels in men with low testosterone.',
+    benefits: [
+      'Increased energy',
+      'Improved muscle mass',
+      'Better mood'
+    ],
+    howItWorks: 'Supplements testosterone to restore normal levels.',
+    faqs: [
+      {
+        question: 'Is testosterone therapy safe?',
+        answer: 'When monitored by medical professionals, testosterone therapy is generally safe.'
+      }
+    ],
+    medicines: ['testo-cypionate', 'testo-gel']
+  }
+];
+
 export async function GET(request: NextRequest) {
   try {
     const result = await query('SELECT * FROM treatments ORDER BY id');
@@ -55,11 +122,11 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(treatments);
   } catch (error) {
-    console.error('Error fetching treatments:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch treatments', details: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+    console.error('Error fetching treatments from database:', error);
+    console.log('Returning fallback treatments data');
+    
+    // Return fallback data when database is not available
+    return NextResponse.json(fallbackTreatments);
   }
 }
 

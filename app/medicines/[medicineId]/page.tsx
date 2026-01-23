@@ -17,6 +17,8 @@ import Toast from '../../components/Toast';
 import MedicalQuestionnaire from '../../components/MedicalQuestionnaire';
 import IdentityVerification from '../../components/IdentityVerification';
 import TreatmentRecommendation from '../../components/TreatmentRecommendation';
+import EvaluationStatus from '../../../components/EvaluationStatus';
+import PaymentModal from '../../../components/PaymentModal';
 import { Medicine } from '../../lib/types';
 
 export default function MedicinePage({ params }: { params: Promise<{ medicineId: string }> }) {
@@ -32,14 +34,17 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const [showIdentityVerification, setShowIdentityVerification] = useState(false);
   const [showRecommendation, setShowRecommendation] = useState(false);
+  const [showEvaluationStatus, setShowEvaluationStatus] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
   const [questionnaireData, setQuestionnaireData] = useState<any>(null);
+  const [currentEvaluationId, setCurrentEvaluationId] = useState<string | null>(null);
+  const [pendingEvaluations, setPendingEvaluations] = useState<string[]>([]);
 
   const handleCloseToast = () => {
     setToast(null);
   };
 
-  useEffect(() => {
-    const fetchMedicine = async () => {
+  const fetchMedicine = async () => {
       try {
         // Try to fetch from API first
         const response = await fetch('/api/medicines');
@@ -54,8 +59,32 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
       }
     };
 
+  useEffect(() => {
     fetchMedicine();
   }, [medicineId]);
+
+  // Check for pending/approved evaluations
+  useEffect(() => {
+    if (user) {
+      const checkPendingEvaluations = async () => {
+        try {
+          const response = await fetch('/api/evaluations');
+          const data = await response.json();
+          
+          if (data.evaluations) {
+            const pending = data.evaluations.filter((evaluation: any) => 
+              evaluation.status === 'pending_review' || evaluation.status === 'approved'
+            );
+            setPendingEvaluations(pending.map((evaluation: any) => evaluation.id));
+          }
+        } catch (error) {
+          console.error('Error checking pending evaluations:', error);
+        }
+      };
+
+      checkPendingEvaluations();
+    }
+  }, [user]);
 
   if (loading) {
     return (
@@ -90,7 +119,7 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
     );
   }
 
-  const treatmentCategory = medicine.category;
+  // const treatmentCategory = medicine.category;
 
   const handleClaimEvaluation = () => {
     // Check if medicine data is available
@@ -104,6 +133,15 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
 
     if (!user) {
       router.push(`/auth/signin?callbackUrl=/medicines/${medicineId}`);
+      return;
+    }
+
+    // Check if user has pending or approved evaluations
+    if (pendingEvaluations.length > 0) {
+      setToast({
+        message: 'You have pending or approved evaluations. Please complete the existing evaluation process before starting a new one.',
+        type: 'error'
+      });
       return;
     }
 
@@ -125,6 +163,11 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
     setShowRecommendation(true);
   };
 
+  const handleIdentityVerificationBack = () => {
+    setShowIdentityVerification(false);
+    setShowQuestionnaire(true);
+  };
+
   const handleRecommendationProceed = async () => {
     try {
       // Submit the evaluation data to the backend
@@ -133,11 +176,10 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include',
         body: JSON.stringify({
-          medicineId,
-          medicineName: medicine?.name || 'Unknown Medicine',
-          ...questionnaireData
+          ...questionnaireData,
+          medicineId: medicineId,
+          medicineName: medicine?.name || 'Unknown Medicine'
         }),
       });
 
@@ -146,7 +188,12 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
         throw new Error(errorData.error || 'Failed to submit evaluation');
       }
 
+      const result = await response.json();
+      setCurrentEvaluationId(result.evaluationId);
+      
       setShowRecommendation(false);
+      setShowEvaluationStatus(true);
+
       setToast({
         message: 'Evaluation submitted successfully! Our medical team will review your information.',
         type: 'success'
@@ -165,6 +212,58 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
     setShowQuestionnaire(false);
     setShowIdentityVerification(false);
     setShowRecommendation(false);
+    setShowEvaluationStatus(false);
+    setShowPayment(false);
+  };
+
+  const handleEvaluationStatusPayment = (evaluationData: any) => {
+    setShowEvaluationStatus(false);
+    setShowPayment(true);
+  };
+
+  const handlePaymentSuccess = async (paymentData: any) => {
+    try {
+      // Create order after successful payment
+      const orderResponse = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          evaluationId: currentEvaluationId,
+          medicineId: medicineId,
+          medicineName: medicine?.name || 'Unknown Medicine',
+          amount: paymentData.amount,
+          paymentId: paymentData.paymentId,
+          paymentStatus: 'completed'
+        }),
+      });
+
+      if (orderResponse.ok) {
+        const orderResult = await orderResponse.json();
+        setToast({
+          message: `Order #${orderResult.order.id} placed successfully! Your order will be processed soon.`,
+          type: 'success'
+        });
+        // Here you could redirect to order confirmation page
+        // router.push(`/orders/${orderResult.order.id}`);
+      } else {
+        throw new Error('Failed to create order');
+      }
+    } catch (error) {
+      console.error('Order creation error:', error);
+      setToast({
+        message: 'Payment successful but order creation failed. Please contact support.',
+        type: 'error'
+      });
+    }
+  };
+
+  const handlePaymentError = (error: string) => {
+    setToast({
+      message: error,
+      type: 'error'
+    });
   };
 
   if (!medicine) {
@@ -458,6 +557,7 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
           isOpen={showQuestionnaire}
           onClose={handleCloseAllModals}
           onComplete={handleQuestionnaireComplete}
+          initialData={questionnaireData}
         />
       )}
 
@@ -465,6 +565,7 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
         <IdentityVerification
           isOpen={showIdentityVerification}
           onClose={handleCloseAllModals}
+          onBack={handleIdentityVerificationBack}
           onComplete={handleIdentityVerificationComplete}
         />
       )}
@@ -477,6 +578,28 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
           isOpen={showRecommendation}
           onClose={handleCloseAllModals}
           onProceed={handleRecommendationProceed}
+        />
+      )}
+
+      {medicine && showEvaluationStatus && currentEvaluationId && (
+        <EvaluationStatus
+          evaluationId={currentEvaluationId}
+          isOpen={showEvaluationStatus}
+          onClose={handleCloseAllModals}
+          onPaymentRequired={handleEvaluationStatusPayment}
+        />
+      )}
+
+      {medicine && showPayment && (
+        <PaymentModal
+          isOpen={showPayment}
+          onClose={handleCloseAllModals}
+          medicineId={medicineId}
+          medicineName={medicine.name}
+          amount={medicine.price}
+          userId={user?.id || ''}
+          onSuccess={handlePaymentSuccess}
+          onError={handlePaymentError}
         />
       )}
     </div>

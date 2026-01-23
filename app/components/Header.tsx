@@ -16,7 +16,7 @@ interface NavItem {
   }>;
 }
 
-const navItems: NavItem[] = [
+const getNavItems = (isAuthenticated: boolean): NavItem[] => [
   {
     name: 'Women\'s Health',
     href: '/treatments',
@@ -35,6 +35,7 @@ const navItems: NavItem[] = [
   },
   { name: 'About', href: '/about' },
   { name: 'Reviews', href: '/reviews' },
+  ...(isAuthenticated ? [{ name: 'My Evaluations', href: '/evaluations' }] : []),
 ];
 
 export default function Header() {
@@ -92,7 +93,7 @@ export default function Header() {
             </div>
 
             <div className="hidden md:ml-10 md:flex md:space-x-8 items-center">
-              {navItems.map((item) => (
+              {getNavItems(status === 'authenticated').map((item: NavItem) => (
                 <div key={item.name} className="relative">
                   {item.dropdown ? (
                     <div
@@ -124,7 +125,7 @@ export default function Header() {
                             }}
                           >
                             <div className="py-1">
-                              {item.dropdown?.map((subItem) => (
+                              {item.dropdown?.map((subItem: any) => (
                                 <div key={subItem.name}>
                                   {item.name === 'Physicians' ? (
                                     <Link
@@ -359,7 +360,7 @@ export default function Header() {
                   </div>
                 )}
 
-                {navItems.map((item) => (
+                {getNavItems(status === 'authenticated').map((item: NavItem) => (
                   <div key={item.name}>
                     {item.dropdown ? (
                       <div>

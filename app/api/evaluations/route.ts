@@ -3,7 +3,7 @@ import { getToken } from 'next-auth/jwt';
 import { v4 as uuidv4 } from 'uuid';
 import pool from '@/app/lib/postgres';
 import { logger, auditLog } from '@/app/lib/secure-logger';
-import { encryptField } from '@/app/lib/encryption';
+import { encryptField, decryptField } from '@/app/lib/encryption';
 
 interface EvaluationData {
   medicineId: string;
@@ -279,15 +279,57 @@ export async function GET(request: NextRequest) {
     
     // Get evaluations for authenticated user
     const evaluationsResult = await pool.query('SELECT * FROM evaluations WHERE user_id = $1 ORDER BY created_at DESC', [user.id]);
-    const evaluations = evaluationsResult.rows.map(row => ({
-      id: row.id,
-      medicineId: row.medicine_id,
-      medicineName: row.medicine_name,
-      evaluationType: row.evaluation_type,
-      responses: row.responses,
-      status: row.status,
-      createdAt: row.created_at
-    }));
+
+    const evaluations = await Promise.all(
+      evaluationsResult.rows.map(async (row) => {
+        let decryptedResponses: { [key: string]: any } = {};
+        try {
+          let responses;
+          if (typeof row.responses === 'string') {
+            try {
+              responses = JSON.parse(row.responses);
+            } catch (parseError) {
+              console.error('Failed to parse responses as JSON:', parseError);
+              console.error('Raw responses:', row.responses);
+              responses = {};
+            }
+          } else if (typeof row.responses === 'object') {
+            responses = row.responses;
+          } else {
+            console.error('Unexpected responses format:', typeof row.responses, row.responses);
+            responses = {};
+          }
+          
+          for (const [key, value] of Object.entries(responses)) {
+            if (value && typeof value === 'object' && 'encrypted' in value) {
+              const decryptedValue = await decryptField(value as any);
+              try {
+                const parsed = JSON.parse(decryptedValue);
+                decryptedResponses[key] = parsed;
+              } catch (e) {
+                decryptedResponses[key] = decryptedValue;
+              }
+            } else {
+              decryptedResponses[key] = value;
+            }
+          }
+        } catch (error) {
+          console.error('Error processing evaluation responses:', error);
+          console.error('Row data:', row);
+          decryptedResponses = { error: 'Failed to process responses' };
+        }
+        
+        return {
+          id: row.id,
+          medicineId: row.medicine_id,
+          medicineName: row.medicine_name,
+          evaluationType: row.evaluation_type,
+          responses: decryptedResponses,
+          status: row.status,
+          createdAt: row.created_at
+        };
+      })
+    );
     return NextResponse.json({ evaluations });
 
   } catch (error) {

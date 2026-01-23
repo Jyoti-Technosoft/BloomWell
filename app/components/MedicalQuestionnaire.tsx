@@ -49,6 +49,7 @@ interface MedicalQuestionnaireProps {
   isOpen: boolean;
   onClose: () => void;
   onComplete: (formData: FormData) => void;
+  initialData?: Partial<FormData>;
 }
 
 const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
@@ -56,7 +57,8 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
   medicineName,
   isOpen,
   onClose,
-  onComplete
+  onComplete,
+  initialData
 }) => {
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -96,41 +98,41 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
   // Simplified effect - only handle component open/close
   useEffect(() => {
     if (isOpen) {
-      // Reset when opening
+      // Use initialData if available, otherwise reset
       setCurrentStep(0);
       setErrors({});
       setFormData({
-        birthday: '',
-        pregnant: '',
-        currentlyUsingMedicines: '',
-        hasDiabetes: '',
-        seenDoctorLastTwoYears: '',
-        medicalConditions: [],
-        height: '',
-        weight: '',
-        targetWeight: '',
-        goals: [],
-        allergies: '',
-        currentMedications: '',
-        additionalInfo: '',
-        lastFourSSN: '',
-        primaryGoal: '',
-        triedWeightLossMethods: '',
-        activityLevel: '',
-        sleepHours: '',
-        stressLevel: '',
-        dietaryRestrictions: [],
-        currentWeightliftingRoutine: '',
-        proteinIntake: '',
-        workoutFrequency: '',
-        healthConcerns: [],
-        sleepIssues: [],
-        stressTriggers: [],
-        stressManagementTechniques: []
+        birthday: initialData?.birthday || '',
+        pregnant: initialData?.pregnant || '',
+        currentlyUsingMedicines: initialData?.currentlyUsingMedicines || '',
+        hasDiabetes: initialData?.hasDiabetes || '',
+        seenDoctorLastTwoYears: initialData?.seenDoctorLastTwoYears || '',
+        medicalConditions: initialData?.medicalConditions || [],
+        height: initialData?.height || '',
+        weight: initialData?.weight || '',
+        targetWeight: initialData?.targetWeight || '',
+        goals: initialData?.goals || [],
+        allergies: initialData?.allergies || '',
+        currentMedications: initialData?.currentMedications || '',
+        additionalInfo: initialData?.additionalInfo || '',
+        lastFourSSN: initialData?.lastFourSSN || '',
+        primaryGoal: initialData?.primaryGoal || '',
+        triedWeightLossMethods: initialData?.triedWeightLossMethods || '',
+        activityLevel: initialData?.activityLevel || '',
+        sleepHours: initialData?.sleepHours || '',
+        stressLevel: initialData?.stressLevel || '',
+        dietaryRestrictions: initialData?.dietaryRestrictions || [],
+        currentWeightliftingRoutine: initialData?.currentWeightliftingRoutine || '',
+        proteinIntake: initialData?.proteinIntake || '',
+        workoutFrequency: initialData?.workoutFrequency || '',
+        healthConcerns: initialData?.healthConcerns || [],
+        sleepIssues: initialData?.sleepIssues || [],
+        stressTriggers: initialData?.stressTriggers || [],
+        stressManagementTechniques: initialData?.stressManagementTechniques || []
       });
       setRelevantSteps([0, 1, 2, 3, 4, 5, 7, 9, 10, 11, 13]);
     }
-  }, [isOpen]);
+  }, [isOpen, initialData]);
 
   // Handle primary goal changes with a simple approach
   const handlePrimaryGoalChange = (goal: string) => {

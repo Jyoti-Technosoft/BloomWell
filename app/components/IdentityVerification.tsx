@@ -7,12 +7,14 @@ import { ShieldCheckIcon, CheckCircleIcon, ExclamationTriangleIcon } from '@hero
 interface IdentityVerificationProps {
   isOpen: boolean;
   onClose: () => void;
+  onBack?: () => void;
   onComplete: (ssnLast4: string) => void;
 }
 
 const IdentityVerification: React.FC<IdentityVerificationProps> = ({
   isOpen,
   onClose,
+  onBack,
   onComplete
 }) => {
   const [lastFourSSN, setLastFourSSN] = useState('');
@@ -136,7 +138,7 @@ const IdentityVerification: React.FC<IdentityVerificationProps> = ({
             <div className="flex space-x-3">
               <button
                 type="button"
-                onClick={onClose}
+                onClick={onBack || onClose}
                 className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 Cancel

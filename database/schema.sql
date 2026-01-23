@@ -171,6 +171,23 @@ CREATE TABLE IF NOT EXISTS evaluations (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
+-- Orders table (for tracking medicine orders)
+CREATE TABLE IF NOT EXISTS orders (
+    id VARCHAR(255) PRIMARY KEY,
+    user_id VARCHAR(255) NOT NULL,
+    evaluation_id VARCHAR(255) NOT NULL,
+    medicine_id VARCHAR(255) NOT NULL,
+    medicine_name VARCHAR(255) NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    payment_id VARCHAR(255) NOT NULL,
+    payment_status VARCHAR(50) DEFAULT 'pending',
+    order_status VARCHAR(50) DEFAULT 'processing',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (evaluation_id) REFERENCES evaluations(id) ON DELETE CASCADE
+);
+
 -- Medicines table
 CREATE TABLE IF NOT EXISTS medicines (
     id VARCHAR(255) PRIMARY KEY,
@@ -246,6 +263,12 @@ CREATE INDEX IF NOT EXISTS idx_evaluations_user_id ON evaluations(user_id);
 CREATE INDEX IF NOT EXISTS idx_evaluations_status ON evaluations(status);
 CREATE INDEX IF NOT EXISTS idx_evaluations_medicine_id ON evaluations(medicine_id);
 CREATE INDEX IF NOT EXISTS idx_evaluations_type ON evaluations(evaluation_type);
+
+CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);
+CREATE INDEX IF NOT EXISTS idx_orders_evaluation_id ON orders(evaluation_id);
+CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(order_status);
+CREATE INDEX IF NOT EXISTS idx_orders_payment_status ON orders(payment_status);
+
 CREATE INDEX IF NOT EXISTS idx_medicines_category ON medicines(category);
 CREATE INDEX IF NOT EXISTS idx_treatments_category ON treatments(category);
 CREATE INDEX IF NOT EXISTS idx_physicians_specialties ON physicians(specialties);
