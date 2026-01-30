@@ -29,8 +29,8 @@ export async function POST(request: NextRequest) {
       key_secret: keySecret,
     });
 
-    // Create receipt
-    const receipt = `order_${medicineId}_${userId}_${Date.now()}`;
+    // Create receipt (max 40 characters)
+    const receipt = `ord_${medicineId.slice(0, 8)}_${Date.now()}`;
 
     // Create Razorpay order
     const order = await razorpay.orders.create({
@@ -52,8 +52,12 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error creating payment order:', error);
+    
     return NextResponse.json(
-      { error: 'Failed to create payment order' },
+      { 
+        error: 'Failed to create payment order',
+        details: error.message
+      },
       { status: 500 }
     );
   }
