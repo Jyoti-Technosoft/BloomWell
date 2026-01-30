@@ -10,6 +10,7 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline';
 import { useUser } from '../context/UserContext';
+import { useUserProfile } from '../hooks/useUserProfile';
 import Toast from '../components/Toast';
 import PaymentModal from '../../components/PaymentModal';
 
@@ -25,6 +26,7 @@ interface Evaluation {
 
 export default function EvaluationsPage() {
   const { user } = useUser();
+  const { profile } = useUserProfile();
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -399,6 +401,11 @@ export default function EvaluationsPage() {
           medicineName={paymentEvaluation.medicineName}
           amount={99}
           userId={user.id}
+          customerData={{
+            name: profile?.fullName || user.fullName || 'User',
+            email: profile?.email || user.email || '',
+            phone: profile?.phone || ''
+          }}
           onSuccess={handlePaymentSuccess}
           onError={handlePaymentError}
         />

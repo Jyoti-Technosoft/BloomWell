@@ -1,14 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 const Razorpay = require('razorpay');
+import { createOrUpdateCustomer, createOrder, createPaymentTransaction } from '@/app/lib/database-operations';
 
 export async function POST(request: NextRequest) {
   try {
-    const { amount, currency = 'INR', medicineId, userId } = await request.json();
+    const { 
+      amount, 
+      currency = 'INR', 
+      medicineId, 
+      medicineName,
+      userId,
+      customerName,
+      customerEmail,
+      customerPhone 
+    } = await request.json();
 
     // Validate input
-    if (!amount || !medicineId || !userId) {
+    if (!amount || !medicineId || !userId || !customerName || !customerEmail) {
       return NextResponse.json(
-        { error: 'Missing required fields: amount, medicineId, userId' },
+        { error: 'Missing required fields: amount, medicineId, userId, customerName, customerEmail' },
         { status: 400 }
       );
     }
@@ -29,6 +39,14 @@ export async function POST(request: NextRequest) {
       key_secret: keySecret,
     });
 
+    // Create or update customer in database
+    const customer = await createOrUpdateCustomer({
+      userId,
+      name: customerName,
+      email: customerEmail,
+      phone: customerPhone
+    });
+
     // Create receipt (max 40 characters)
     const receipt = `ord_${medicineId.slice(0, 8)}_${Date.now()}`;
 
@@ -38,7 +56,44 @@ export async function POST(request: NextRequest) {
       currency,
       receipt,
       payment_capture: 1, // Auto capture payment
+      notes: {
+        customer_id: customer.id,
+        medicine_id: medicineId,
+        medicine_name: medicineName,
+        user_id: userId
+      }
     });
+
+    // Save order and transaction to database sequentially to avoid conflicts
+    try {
+      await createOrder({
+        razorpayOrderId: order.id,
+        customerId: customer.id,
+        medicineId,
+        medicineName,
+        amount: amount * 100,
+        currency,
+        receipt
+      });
+
+      // Create initial payment transaction record
+      await createPaymentTransaction({
+        razorpayOrderId: order.id,
+        customerId: customer.id,
+        medicineId,
+        medicineName,
+        amount: amount * 100,
+        currency,
+        status: 'created',
+        email: customerEmail,
+        contact: customerPhone,
+        description: `Payment for ${medicineName}`,
+        notes: order.notes
+      });
+    } catch (dbError) {
+      console.error('Database error after Razorpay order creation:', dbError);
+      // Continue with response even if DB save fails - Razorpay order is created
+    }
 
     return NextResponse.json({
       success: true,
@@ -49,6 +104,11 @@ export async function POST(request: NextRequest) {
         receipt: order.receipt,
       },
       keyId: keyId,
+      customer: {
+        id: customer.id,
+        name: customer.name,
+        email: customer.email
+      }
     });
   } catch (error) {
     console.error('Error creating payment order:', error);
@@ -56,7 +116,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         error: 'Failed to create payment order',
-        details: error.message
+        details: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }
     );

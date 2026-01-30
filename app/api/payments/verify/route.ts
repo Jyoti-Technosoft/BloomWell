@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+const Razorpay = require('razorpay');
+import { updatePaymentTransaction, getTransactionByPaymentId } from '@/app/lib/database-operations';
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,22 +41,55 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Here you would typically:
-    // 1. Update your database with payment status
-    // 2. Send confirmation email
-    // 3. Update order status
-    // 4. Trigger any post-payment workflows
+    // Initialize Razorpay to fetch payment details
+    const razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: keySecret,
+    });
+
+    // Fetch payment details from Razorpay
+    const payment = await razorpay.payments.fetch(paymentId);
+    
+    // Update transaction in database with payment details
+    const updatedTransaction = await updatePaymentTransaction(paymentId, {
+      status: payment.status === 'captured' ? 'paid' : payment.status,
+      payment_method: payment.method,
+      bank: payment.bank,
+      wallet: payment.wallet,
+      vpa: payment.vpa,
+      fee: payment.fee,
+      tax: payment.tax
+    });
+
+    // Get complete transaction details
+    const transaction = await getTransactionByPaymentId(paymentId);
 
     return NextResponse.json({
       success: true,
       message: 'Payment verified successfully',
       paymentId,
       orderId,
+      transaction: {
+        id: transaction?.id,
+        status: transaction?.status,
+        amount: transaction?.amount,
+        payment_method: transaction?.payment_method,
+        bank: transaction?.bank,
+        wallet: transaction?.wallet,
+        vpa: transaction?.vpa,
+        fee: transaction?.fee,
+        tax: transaction?.tax,
+        created_at: transaction?.created_at
+      }
     });
   } catch (error) {
     console.error('Error verifying payment:', error);
+    
     return NextResponse.json(
-      { error: 'Failed to verify payment' },
+      { 
+        error: 'Failed to verify payment',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }

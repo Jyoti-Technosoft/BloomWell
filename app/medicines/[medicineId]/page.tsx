@@ -13,6 +13,7 @@ import {
   UserIcon
 } from '@heroicons/react/24/outline';
 import { useUser } from '../../context/UserContext';
+import { useUserProfile } from '../../hooks/useUserProfile';
 import Toast from '../../components/Toast';
 import MedicalQuestionnaire from '../../components/MedicalQuestionnaire';
 import IdentityVerification from '../../components/IdentityVerification';
@@ -26,6 +27,7 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
   const medicineId = resolvedParams.medicineId;
   const router = useRouter();
   const { user } = useUser();
+  const { profile } = useUserProfile();
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [medicine, setMedicine] = useState<Medicine | null>(null);
   const [loading, setLoading] = useState(true);
@@ -598,6 +600,11 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
           medicineName={medicine.name}
           amount={medicine.price}
           userId={user?.id || ''}
+          customerData={{
+            name: profile?.fullName || user?.fullName || 'User',
+            email: profile?.email || user?.email || '',
+            phone: profile?.phone || ''
+          }}
           onSuccess={handlePaymentSuccess}
           onError={handlePaymentError}
         />

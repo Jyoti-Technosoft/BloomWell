@@ -10,6 +10,11 @@ interface PaymentModalProps {
   medicineName: string;
   amount: number;
   userId: string;
+  customerData?: {
+    name: string;
+    email: string;
+    phone: string;
+  };
   onSuccess: (paymentData: any) => void;
   onError: (error: string) => void;
 }
@@ -27,6 +32,7 @@ export default function PaymentModal({
   medicineName,
   amount,
   userId,
+  customerData,
   onSuccess,
   onError,
 }: PaymentModalProps) {
@@ -55,7 +61,7 @@ export default function PaymentModal({
     setLoading(true);
 
     try {
-      // Create order
+      // Create order with customer details
       const response = await fetch('/api/payments/create-order', {
         method: 'POST',
         headers: {
@@ -64,7 +70,11 @@ export default function PaymentModal({
         body: JSON.stringify({
           amount,
           medicineId,
+          medicineName,
           userId,
+          customerName: customerData?.name || 'User',
+          customerEmail: customerData?.email || '',
+          customerPhone: customerData?.phone || ''
         }),
       });
 
@@ -106,6 +116,7 @@ export default function PaymentModal({
                 amount: amount,
                 medicineId,
                 medicineName,
+                transaction: verifyData.transaction
               });
               onClose();
             } else {
@@ -117,9 +128,9 @@ export default function PaymentModal({
           }
         },
         prefill: {
-          name: '',
-          email: '',
-          contact: '',
+          name: customerData?.name || '',
+          email: customerData?.email || '',
+          contact: customerData?.phone || '',
         },
         theme: {
           color: '#4F46E5',
