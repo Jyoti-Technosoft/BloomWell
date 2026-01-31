@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCustomerTransactions, createOrUpdateCustomer } from '@/app/lib/database-operations';
+import { getCustomerTransactions, createOrUpdateCustomer, getCustomerBalance } from '@/app/lib/database-operations';
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,6 +23,9 @@ export async function GET(request: NextRequest) {
     // Get customer transactions
     const transactions = await getCustomerTransactions(customer.id);
 
+    // Get customer balance
+    const balance = await getCustomerBalance(customer.id);
+
     return NextResponse.json({
       success: true,
       customer: {
@@ -32,6 +35,14 @@ export async function GET(request: NextRequest) {
         email: customer.email,
         phone: customer.phone,
         createdAt: customer.created_at
+      },
+      balance: {
+        totalTransactions: parseInt(balance.total_transactions),
+        successfulTransactions: parseInt(balance.successful_transactions),
+        totalPaid: parseInt(balance.total_paid),
+        netBalance: parseInt(balance.net_balance),
+        totalFees: parseInt(balance.total_fees),
+        totalTaxes: parseInt(balance.total_taxes)
       },
       transactions: transactions.map(t => ({
         id: t.id,

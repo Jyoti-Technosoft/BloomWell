@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 const Razorpay = require('razorpay');
 import { updatePaymentTransaction, getTransactionByPaymentId } from '@/app/lib/database-operations';
+import { Pool } from 'pg';
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -60,6 +65,21 @@ export async function POST(request: NextRequest) {
       fee: payment.fee,
       tax: payment.tax
     });
+
+    // Also update the razorpay_payment_id if it's not already set
+    if (updatedTransaction && !updatedTransaction.razorpay_payment_id) {
+      const client = await pool.connect();
+      try {
+        await client.query(
+          `UPDATE payment_transactions 
+           SET razorpay_payment_id = $1, updated_at = CURRENT_TIMESTAMP
+           WHERE razorpay_order_id = $2`,
+          [paymentId, orderId]
+        );
+      } finally {
+        client.release();
+      }
+    }
 
     // Get complete transaction details
     const transaction = await getTransactionByPaymentId(paymentId);

@@ -211,3 +211,24 @@ export async function getTransactionByPaymentId(paymentId: string) {
     client.release();
   }
 }
+
+export async function getCustomerBalance(customerId: number) {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      `SELECT 
+         COUNT(*) as total_transactions,
+         COUNT(CASE WHEN status = 'paid' THEN 1 END) as successful_transactions,
+         COALESCE(SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END), 0) as total_paid,
+         COALESCE(SUM(CASE WHEN status = 'paid' THEN (amount - fee - tax) ELSE 0 END), 0) as net_balance,
+         COALESCE(SUM(fee), 0) as total_fees,
+         COALESCE(SUM(tax), 0) as total_taxes
+       FROM payment_transactions 
+       WHERE customer_id = $1`,
+      [customerId]
+    );
+    return result.rows[0];
+  } finally {
+    client.release();
+  }
+}

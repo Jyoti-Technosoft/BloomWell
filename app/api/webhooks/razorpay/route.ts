@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { updatePaymentTransaction, getTransactionByPaymentId } from '@/app/lib/database-operations';
+import { Pool } from 'pg';
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -69,6 +74,20 @@ export async function POST(request: NextRequest) {
 async function handlePaymentCaptured(event: any) {
   const payment = event.payload.payment.entity;
   
+  // First update the payment transaction with payment_id
+  const client = await pool.connect();
+  try {
+    await client.query(
+      `UPDATE payment_transactions 
+       SET razorpay_payment_id = $1, updated_at = CURRENT_TIMESTAMP
+       WHERE razorpay_order_id = $2 AND razorpay_payment_id IS NULL`,
+      [payment.id, payment.order_id]
+    );
+  } finally {
+    client.release();
+  }
+  
+  // Then update all payment details
   await updatePaymentTransaction(payment.id, {
     status: 'paid',
     payment_method: payment.method,
@@ -86,6 +105,20 @@ async function handlePaymentCaptured(event: any) {
 async function handlePaymentFailed(event: any) {
   const payment = event.payload.payment.entity;
   
+  // First update the payment transaction with payment_id
+  const client = await pool.connect();
+  try {
+    await client.query(
+      `UPDATE payment_transactions 
+       SET razorpay_payment_id = $1, updated_at = CURRENT_TIMESTAMP
+       WHERE razorpay_order_id = $2 AND razorpay_payment_id IS NULL`,
+      [payment.id, payment.order_id]
+    );
+  } finally {
+    client.release();
+  }
+  
+  // Then update status
   await updatePaymentTransaction(payment.id, {
     status: 'failed'
   });

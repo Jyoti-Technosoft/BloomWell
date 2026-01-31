@@ -47,11 +47,30 @@ export async function POST(request: NextRequest) {
       phone: customerPhone
     });
 
+    // Also create customer in Razorpay to ensure correct data
+    let razorpayCustomerId;
+    try {
+      const razorpayCustomer = await razorpay.customers.create({
+        name: customerName,
+        email: customerEmail,
+        contact: customerPhone,
+        fail_existing: '0', // Don't fail if customer already exists
+        notes: {
+          app_user_id: userId
+        }
+      });
+      razorpayCustomerId = razorpayCustomer.id;
+      console.log('✅ Razorpay customer created:', razorpayCustomerId);
+    } catch (customerError) {
+      console.error('⚠️ Failed to create Razorpay customer:', customerError);
+      // Continue without Razorpay customer - order will still work
+    }
+
     // Create receipt (max 40 characters)
     const receipt = `ord_${medicineId.slice(0, 8)}_${Date.now()}`;
 
-    // Create Razorpay order
-    const order = await razorpay.orders.create({
+    // Create Razorpay order with customer ID
+    const orderData: any = {
       amount: amount * 100, // Razorpay expects amount in paise
       currency,
       receipt,
@@ -60,9 +79,18 @@ export async function POST(request: NextRequest) {
         customer_id: customer.id,
         medicine_id: medicineId,
         medicine_name: medicineName,
-        user_id: userId
+        user_id: userId,
+        app_customer_name: customerName,
+        app_customer_email: customerEmail
       }
-    });
+    };
+
+    // Add customer_id if we have it
+    if (razorpayCustomerId) {
+      orderData.customer_id = razorpayCustomerId;
+    }
+
+    const order = await razorpay.orders.create(orderData);
 
     // Save order and transaction to database sequentially to avoid conflicts
     try {
@@ -102,6 +130,7 @@ export async function POST(request: NextRequest) {
         amount: order.amount,
         currency: order.currency,
         receipt: order.receipt,
+        created_at: order.created_at, // Add timestamp for age tracking
       },
       keyId: keyId,
       customer: {
