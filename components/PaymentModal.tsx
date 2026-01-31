@@ -202,6 +202,11 @@ export default function PaymentModal({
           email: customerData?.email || '',
           contact: customerData?.phone || '',
         },
+        // Add configuration to prevent browser autofill
+        readonly: {
+          email: false,
+          contact: false
+        },
         // Add modal configuration to prevent autofill
         modal: {
           ondismiss: function () {
@@ -211,13 +216,16 @@ export default function PaymentModal({
           escape: true,
           handleback: true,
           confirm_close: true,
+          // Prevent browser autofill
+          animation: 'slide',
         },
         // Add notes to track app user data
         notes: {
           app_user_name: customerData?.name || '',
           app_user_email: customerData?.email || '',
           app_user_id: userId,
-          source: 'bloomwell_app'
+          source: 'bloomwell_app',
+          timestamp: Date.now()
         }
       };
 

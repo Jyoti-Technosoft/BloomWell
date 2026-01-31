@@ -29,6 +29,7 @@ export default function EvaluationsPage() {
   const { profile } = useUserProfile();
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
+  const [medicines, setMedicines] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedEvaluation, setSelectedEvaluation] = useState<Evaluation | null>(null);
   const [showPayment, setShowPayment] = useState(false);
@@ -37,8 +38,35 @@ export default function EvaluationsPage() {
   useEffect(() => {
     if (user) {
       fetchEvaluations();
+      fetchMedicines();
     }
   }, [user]);
+
+  const fetchMedicines = async () => {
+    try {
+      const response = await fetch('/api/medicines');
+      const data = await response.json();
+ 
+      // Handle different response structures
+      let medicinesArray = [];
+      if (Array.isArray(data)) {
+        // Response is directly an array
+        medicinesArray = data;
+      } else if (data && data.medicines && Array.isArray(data.medicines)) {
+        // Response has medicines property
+        medicinesArray = data.medicines;
+      } else if (data && Array.isArray(data.data)) {
+        // Response has data property
+        medicinesArray = data.data;
+      } else {
+        console.log('⚠️ Unexpected response structure:', data);
+      }
+      setMedicines(medicinesArray);
+      
+    } catch (error) {
+      console.error('❌ Error fetching medicines:', error);
+    }
+  };
 
   const fetchEvaluations = async () => {
     try {
@@ -136,6 +164,15 @@ export default function EvaluationsPage() {
     setPaymentEvaluation(null);
   };
 
+  const getMedicinePrice = (medicineId: string) => { 
+    const medicine = medicines.find(m => m.id === medicineId);
+    if (medicine) {
+      return medicine.price;
+    } else {
+      return 99; // Fallback to 99 if not found
+    }
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -221,11 +258,17 @@ export default function EvaluationsPage() {
                   </div>
                 </div>
                 
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
                   <div>
                     <p className="text-gray-500">Type</p>
                     <p className="font-medium text-gray-900">
                       {evaluation.evaluationType.replace('-', ' ')}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Price</p>
+                    <p className="font-medium text-green-600">
+                      ₹{getMedicinePrice(evaluation.medicineId)}
                     </p>
                   </div>
                   <div>
@@ -235,10 +278,10 @@ export default function EvaluationsPage() {
                     </p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Last Updated</p>
-                    <p className="font-medium text-gray-900">
-                      {new Date(evaluation.createdAt).toLocaleDateString()}
-                    </p>
+                    <p className="text-gray-500">Status</p>
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(evaluation.status)}`}>
+                      {getStatusText(evaluation.status)}
+                    </span>
                   </div>
                 </div>
 
@@ -294,6 +337,10 @@ export default function EvaluationsPage() {
                       <div>
                         <span className="font-medium text-gray-700">Medicine:</span>
                         <span className="text-gray-900">{selectedEvaluation.medicineName}</span>
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-700">Price:</span>
+                        <span className="text-gray-900 font-semibold">₹{getMedicinePrice(selectedEvaluation.medicineId)}</span>
                       </div>
                       <div>
                         <span className="font-medium text-gray-700">Type:</span>
@@ -399,7 +446,7 @@ export default function EvaluationsPage() {
           onClose={handleClosePayment}
           medicineId={paymentEvaluation.medicineId}
           medicineName={paymentEvaluation.medicineName}
-          amount={99}
+          amount={getMedicinePrice(paymentEvaluation.medicineId)}
           userId={user.id}
           customerData={{
             name: profile?.fullName || user.fullName || 'User',
