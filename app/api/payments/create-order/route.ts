@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-const Razorpay = require('razorpay');
+import Razorpay from 'razorpay';
+import { Pool } from 'pg';
 import { createOrUpdateCustomer, createOrder, createPaymentTransaction } from '@/app/lib/database-operations';
+
+const pool = new Pool({
+  connectionString: process.env.NEON_DATABASE_URL,
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,6 +14,7 @@ export async function POST(request: NextRequest) {
       currency = 'INR', 
       medicineId, 
       medicineName,
+      evaluationId,
       userId,
       customerName,
       customerEmail,
@@ -16,9 +22,9 @@ export async function POST(request: NextRequest) {
     } = await request.json();
 
     // Validate input
-    if (!amount || !medicineId || !userId || !customerName || !customerEmail) {
+    if (!amount || !medicineId || !evaluationId || !userId || !customerName || !customerEmail) {
       return NextResponse.json(
-        { error: 'Missing required fields: amount, medicineId, userId, customerName, customerEmail' },
+        { error: 'Missing required fields: amount, medicineId, evaluationId, userId, customerName, customerEmail' },
         { status: 400 }
       );
     }
@@ -39,42 +45,57 @@ export async function POST(request: NextRequest) {
       key_secret: keySecret,
     });
 
-    // Create or update customer in database
-    const customer = await createOrUpdateCustomer({
-      userId,
-      name: customerName,
-      email: customerEmail,
-      phone: customerPhone
-    });
-
-    // Also create customer in Razorpay to ensure correct data
-    let razorpayCustomerId;
+    // Create or update customer in database with error handling
+    let customer;
     try {
-      const razorpayCustomer = await razorpay.customers.create({
+      customer = await createOrUpdateCustomer({
+        userId,
         name: customerName,
         email: customerEmail,
-        contact: customerPhone,
-        fail_existing: '0', // Don't fail if customer already exists
-        notes: {
-          app_user_id: userId
-        }
+        phone: customerPhone
       });
-      razorpayCustomerId = razorpayCustomer.id;
-      console.log('✅ Razorpay customer created:', razorpayCustomerId);
     } catch (customerError) {
-      console.error('⚠️ Failed to create Razorpay customer:', customerError);
-      // Continue without Razorpay customer - order will still work
+      console.error('Customer creation failed:', customerError);
+      return NextResponse.json(
+        { error: 'Failed to create customer record' },
+        { status: 500 }
+      );
+    }
+
+    // Create Razorpay customer if not exists
+    let razorpayCustomerId = customer.razorpay_customer_id;
+    if (!razorpayCustomerId) {
+      try {
+        const razorpayCustomer = await razorpay.customers.create({
+          name: customerName,
+          email: customerEmail,
+          contact: customerPhone,
+          fail_existing: '0' as any
+        });
+        razorpayCustomerId = (razorpayCustomer as any).id;
+        
+        // Update database with Razorpay customer ID
+        const client = await pool.connect();
+        try {
+          await client.query(
+            'UPDATE customers SET razorpay_customer_id = $1 WHERE id = $2',
+            [razorpayCustomerId, customer.id]
+          );
+        } finally {
+          client.release();
+        }
+      } catch (razorpayError) {
+        console.error('Razorpay customer creation failed:', razorpayError);
+      }
     }
 
     // Create receipt (max 40 characters)
     const receipt = `ord_${medicineId.slice(0, 8)}_${Date.now()}`;
-
-    // Create Razorpay order with customer ID
     const orderData: any = {
-      amount: amount * 100, // Razorpay expects amount in paise
+      amount: amount * 100,
       currency,
       receipt,
-      payment_capture: 1, // Auto capture payment
+      payment_capture: 1,
       notes: {
         customer_id: customer.id,
         medicine_id: medicineId,
@@ -85,43 +106,42 @@ export async function POST(request: NextRequest) {
       }
     };
 
-    // Add customer_id if we have it
-    if (razorpayCustomerId) {
-      orderData.customer_id = razorpayCustomerId;
-    }
-
-    const order = await razorpay.orders.create(orderData);
-
-    // Save order and transaction to database sequentially to avoid conflicts
+    let order;
     try {
-      await createOrder({
-        razorpayOrderId: order.id,
-        customerId: customer.id,
-        medicineId,
-        medicineName,
-        amount: amount * 100,
-        currency,
-        receipt
-      });
-
-      // Create initial payment transaction record
-      await createPaymentTransaction({
-        razorpayOrderId: order.id,
-        customerId: customer.id,
-        medicineId,
-        medicineName,
-        amount: amount * 100,
-        currency,
-        status: 'created',
-        email: customerEmail,
-        contact: customerPhone,
-        description: `Payment for ${medicineName}`,
-        notes: order.notes
-      });
-    } catch (dbError) {
-      console.error('Database error after Razorpay order creation:', dbError);
-      // Continue with response even if DB save fails - Razorpay order is created
+      order = await razorpay.orders.create(orderData);
+    } catch (orderError) {
+      console.error('Razorpay order creation failed:', orderError);
+      throw orderError;
     }
+
+    // Save order and transaction to database
+    const testClient = await pool.connect();
+    await testClient.query('SELECT NOW()');
+    testClient.release();
+    
+    const createdOrder = await createOrder({
+      razorpayOrderId: order.id,
+      customerId: customer.id,
+      medicineId,
+      medicineName,
+      amount: amount * 100,
+      currency,
+      receipt
+    });
+    
+    const transaction = await createPaymentTransaction({
+      razorpayOrderId: order.id,
+      customerId: customer.id,
+      medicineId: evaluationId, // Use evaluationId instead of medicineId for payment tracking
+      medicineName,
+      amount: amount * 100,
+      currency,
+      status: 'created',
+      email: customerEmail,
+      contact: customerPhone,
+      description: `Payment for ${medicineName}`,
+      notes: order.notes
+    });
 
     return NextResponse.json({
       success: true,

@@ -65,25 +65,53 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
     fetchMedicine();
   }, [medicineId]);
 
+  const checkPendingEvaluations = async () => {
+    try {
+      const response = await fetch('/api/evaluations');
+      const data = await response.json();
+      
+      if (data.evaluations) {
+        // Filter evaluations that are pending_review OR approved but not yet paid
+        const pending = await Promise.all(
+          data.evaluations.map(async (evaluation: any) => {
+            // Include pending_review evaluations
+            if (evaluation.status === 'pending_review') {
+              return evaluation;
+            }
+            
+            // For approved evaluations, check if payment is completed
+            if (evaluation.status === 'approved') {
+              try {
+                const paymentResponse = await fetch(`/api/payments/check-payment?evaluationId=${evaluation.id}`);
+                const paymentData = await paymentResponse.json();
+                
+                // Only include approved evaluations that haven't been paid for
+                if (!paymentData.hasPayment) {
+                  return evaluation;
+                }
+              } catch (error) {
+                console.error('Error checking payment for evaluation:', evaluation.id, error);
+                // If we can't check payment status, include it to be safe
+                return evaluation;
+              }
+            }
+            
+            return null;
+          })
+        );
+        
+        // Filter out null values and get IDs
+        const validPendingEvaluations = pending.filter(evaluation => evaluation !== null);
+        setPendingEvaluations(validPendingEvaluations.map((evaluation: any) => evaluation.id));
+      }
+    } catch (error) {
+      console.error('Error checking pending evaluations:', error);
+    }
+  };
+
   // Check for pending/approved evaluations
   useEffect(() => {
     if (user) {
-      const checkPendingEvaluations = async () => {
-        try {
-          const response = await fetch('/api/evaluations');
-          const data = await response.json();
-          
-          if (data.evaluations) {
-            const pending = data.evaluations.filter((evaluation: any) => 
-              evaluation.status === 'pending_review' || evaluation.status === 'approved'
-            );
-            setPendingEvaluations(pending.map((evaluation: any) => evaluation.id));
-          }
-        } catch (error) {
-          console.error('Error checking pending evaluations:', error);
-        }
-      };
-
       checkPendingEvaluations();
     }
   }, [user]);
@@ -172,12 +200,15 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
 
   const handleRecommendationProceed = async () => {
     try {
-      // Submit the evaluation data to the backend
+      // Submit the evaluation data to the backend with authentication
       const response = await fetch('/api/evaluations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          // Add authentication - cookies are automatically sent by browser
+          'Cookie': document.cookie || '',
         },
+        credentials: 'include', // Ensure cookies are sent
         body: JSON.stringify({
           ...questionnaireData,
           medicineId: medicineId,
@@ -247,6 +278,26 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
           message: `Order #${orderResult.order.id} placed successfully! Your order will be processed soon.`,
           type: 'success'
         });
+        
+        // Refresh evaluation status to update payment status
+        if (currentEvaluationId) {
+          setTimeout(async () => {
+            try {
+              const response = await fetch(`/api/payments/check-payment?evaluationId=${currentEvaluationId}`);
+              const data = await response.json();
+              if (data.hasPayment) {
+                // Force a re-render by updating state
+                setShowEvaluationStatus(true);
+                
+                // Refresh pending evaluations to remove this evaluation from the list
+                await checkPendingEvaluations();
+              }
+            } catch (error) {
+              console.error('Error refreshing payment status:', error);
+            }
+          }, 1500);
+        }
+        
         // Here you could redirect to order confirmation page
         // router.push(`/orders/${orderResult.order.id}`);
       } else {
@@ -600,6 +651,7 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
           medicineName={medicine.name}
           amount={medicine.price}
           userId={user?.id || ''}
+          evaluationId={currentEvaluationId || ''}
           customerData={{
             name: profile?.fullName || user?.fullName || 'User',
             email: profile?.email || user?.email || '',

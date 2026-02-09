@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { updatePaymentTransaction, getTransactionByPaymentId } from '@/app/lib/database-operations';
+import { updatePaymentTransaction, getTransactionByPaymentId, updateUserCustomerId } from '@/app/lib/database-operations';
 import { Pool } from 'pg';
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.NEON_DATABASE_URL,
 });
 
 export async function POST(request: NextRequest) {
@@ -41,7 +41,6 @@ export async function POST(request: NextRequest) {
     }
 
     const event = JSON.parse(body);
-    console.log('Webhook event received:', event.event);
 
     // Handle different webhook events
     switch (event.event) {
@@ -58,7 +57,7 @@ export async function POST(request: NextRequest) {
         break;
       
       default:
-        console.log('Unhandled webhook event:', event.event);
+        return NextResponse.json({ message: 'Unhandled webhook event' });
     }
 
     return NextResponse.json({ success: true });
@@ -98,8 +97,29 @@ async function handlePaymentCaptured(event: any) {
     tax: payment.tax
   });
 
-  // Send confirmation email, update order status, etc.
-  console.log('Payment captured:', payment.id);
+  // Link user to customer
+  try {
+    const transaction = await getTransactionByPaymentId(payment.id);
+    if (transaction) {
+      const customerClient = await pool.connect();
+      try {
+        const customerResult = await customerClient.query(
+          'SELECT user_id FROM customers WHERE id = $1',
+          [transaction.customer_id]
+        );
+        
+        if (customerResult.rows.length > 0) {
+          const userId = customerResult.rows[0].user_id;
+          await updateUserCustomerId(userId, transaction.customer_id);
+          console.log(`✅ Webhook linked user ${userId} to customer ${transaction.customer_id}`);
+        }
+      } finally {
+        customerClient.release();
+      }
+    }
+  } catch (error) {
+    console.error('Error in webhook user linking:', error);
+  }
 }
 
 async function handlePaymentFailed(event: any) {

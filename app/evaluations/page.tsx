@@ -34,6 +34,7 @@ export default function EvaluationsPage() {
   const [selectedEvaluation, setSelectedEvaluation] = useState<Evaluation | null>(null);
   const [showPayment, setShowPayment] = useState(false);
   const [paymentEvaluation, setPaymentEvaluation] = useState<Evaluation | null>(null);
+  const [paymentStatuses, setPaymentStatuses] = useState<{[key: string]: 'none' | 'paid'}>({});
 
   useEffect(() => {
     if (user) {
@@ -75,6 +76,32 @@ export default function EvaluationsPage() {
       
       if (data.evaluations) {
         setEvaluations(data.evaluations);
+        
+        // Check payment status for each approved evaluation
+        const approvedEvaluations = data.evaluations.filter((evaluation: Evaluation) => evaluation.status === 'approved');
+        const paymentChecks = approvedEvaluations.map(async (evaluation: Evaluation) => {
+          try {
+            const paymentResponse = await fetch(`/api/payments/check-payment?evaluationId=${evaluation.id}`);
+            
+            if (!paymentResponse.ok) {
+              console.error(`Payment check failed for ${evaluation.id}:`, paymentResponse.status);
+              return { id: evaluation.id, status: 'none' };
+            }
+            
+            const paymentData = await paymentResponse.json();
+            return { id: evaluation.id, status: paymentData.hasPayment ? 'paid' : 'none' };
+          } catch (error) {
+            console.error(`Error checking payment for ${evaluation.id}:`, error);
+            return { id: evaluation.id, status: 'none' };
+          }
+        });
+        
+        const paymentResults = await Promise.all(paymentChecks);
+        const statusMap: {[key: string]: 'none' | 'paid'} = {};
+        paymentResults.forEach(result => {
+          statusMap[result.id] = result.status;
+        });
+        setPaymentStatuses(statusMap);
       }
     } catch (error) {
       console.error('Error fetching evaluations:', error);
@@ -149,7 +176,11 @@ export default function EvaluationsPage() {
     });
     setShowPayment(false);
     setPaymentEvaluation(null);
-    await fetchEvaluations();
+    
+    // Add delay to ensure database is updated before refreshing
+    setTimeout(async () => {
+      await fetchEvaluations();
+    }, 1500);
   };
 
   const handlePaymentError = (error: string) => {
@@ -195,8 +226,19 @@ export default function EvaluationsPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold text-gray-900">My Medical Evaluations</h1>
-          <p className="text-gray-600">Track the status of your medical evaluations</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">My Medical Evaluations</h1>
+              <p className="text-gray-600">Track the status of your medical evaluations</p>
+            </div>
+            <button
+              onClick={() => fetchEvaluations()}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+            >
+              <ClockIcon className="h-4 w-4 mr-2" />
+              Refresh Status
+            </button>
+          </div>
         </div>
       </div>
 
@@ -286,13 +328,20 @@ export default function EvaluationsPage() {
                 </div>
 
                 <div className="mt-4 flex space-x-3">
-                  {evaluation.status === 'approved' && (
+                  {evaluation.status === 'approved' && paymentStatuses[evaluation.id] !== 'paid' && (
                     <button
                       onClick={() => handleProceedToPayment(evaluation)}
                       className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
                     >
                       Proceed to Payment
                     </button>
+                  )}
+                  
+                  {evaluation.status === 'approved' && paymentStatuses[evaluation.id] === 'paid' && (
+                    <div className="inline-flex items-center px-4 py-2 bg-green-100 text-green-800 rounded-md">
+                      <CheckCircleIcon className="h-4 w-4 mr-2" />
+                      Payment Completed
+                    </div>
                   )}
                   
                   <button
@@ -331,30 +380,30 @@ export default function EvaluationsPage() {
                     <h3 className="text-lg font-semibold text-gray-900 mb-3">Basic Information</h3>
                     <div className="space-y-2">
                       <div>
-                        <span className="font-medium text-gray-700">Evaluation ID:</span>
+                        <span className="font-medium text-gray-700">Evaluation ID: </span>
                         <span className="text-gray-900">{selectedEvaluation.id}</span>
                       </div>
                       <div>
-                        <span className="font-medium text-gray-700">Medicine:</span>
+                        <span className="font-medium text-gray-700">Medicine: </span>
                         <span className="text-gray-900">{selectedEvaluation.medicineName}</span>
                       </div>
                       <div>
-                        <span className="font-medium text-gray-700">Price:</span>
+                        <span className="font-medium text-gray-700">Price: </span>
                         <span className="text-gray-900 font-semibold">₹{getMedicinePrice(selectedEvaluation.medicineId)}</span>
                       </div>
                       <div>
-                        <span className="font-medium text-gray-700">Type:</span>
+                        <span className="font-medium text-gray-700">Type: </span>
                         <span className="text-gray-900">{selectedEvaluation.evaluationType?.replace('-', ' ') || 'General'}</span>
                       </div>
                       <div>
-                        <span className="font-medium text-gray-700">Status:</span>
+                        <span className="font-medium text-gray-700">Status: </span>
                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedEvaluation.status)}`}>
                           {getStatusIcon(selectedEvaluation.status)}
                           <span className="ml-2">{getStatusText(selectedEvaluation.status)}</span>
                         </span>
                       </div>
                       <div>
-                        <span className="font-medium text-gray-700">Submitted:</span>
+                        <span className="font-medium text-gray-700">Submitted: </span>
                         <span className="text-gray-900">{new Date(selectedEvaluation.createdAt).toLocaleDateString()}</span>
                       </div>
                     </div>
@@ -400,7 +449,7 @@ export default function EvaluationsPage() {
                               <React.Fragment key={key}>
                                 <div className="border-l-4 border-gray-200 pl-4">
                                   <span className="font-medium text-gray-700 capitalize">
-                                    {key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}:
+                                    {key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}: 
                                   </span>
                                   <span className="text-gray-900">{JSON.stringify(value)}</span>
                                 </div>
@@ -426,7 +475,7 @@ export default function EvaluationsPage() {
               </div>
             </div>
 
-            {selectedEvaluation.status === 'approved' && (
+            {selectedEvaluation.status === 'approved' && paymentStatuses[selectedEvaluation.id] !== 'paid' && (
               <div className="px-6 py-4 border-t border-gray-200">
                 <button
                   onClick={() => handleProceedToPayment(selectedEvaluation)}
@@ -434,6 +483,15 @@ export default function EvaluationsPage() {
                 >
                   Proceed to Payment
                 </button>
+              </div>
+            )}
+            
+            {selectedEvaluation.status === 'approved' && paymentStatuses[selectedEvaluation.id] === 'paid' && (
+              <div className="px-6 py-4 border-t border-gray-200">
+                <div className="w-full bg-green-100 text-green-800 px-4 py-3 rounded-lg font-medium flex items-center justify-center">
+                  <CheckCircleIcon className="h-5 w-5 mr-2" />
+                  Payment Completed
+                </div>
               </div>
             )}
           </div>
@@ -448,6 +506,7 @@ export default function EvaluationsPage() {
           medicineName={paymentEvaluation.medicineName}
           amount={getMedicinePrice(paymentEvaluation.medicineId)}
           userId={user.id}
+          evaluationId={paymentEvaluation.id}
           customerData={{
             name: profile?.fullName || user.fullName || 'User',
             email: profile?.email || user.email || '',

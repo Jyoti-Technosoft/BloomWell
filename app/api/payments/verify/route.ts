@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-const Razorpay = require('razorpay');
-import { updatePaymentTransaction, getTransactionByPaymentId } from '@/app/lib/database-operations';
+import Razorpay from 'razorpay';
 import { Pool } from 'pg';
+import { updatePaymentTransaction, getTransactionByPaymentId, updateUserCustomerId } from '@/app/lib/database-operations';
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.NEON_DATABASE_URL,
 });
 
 export async function POST(request: NextRequest) {
   try {
-    const { orderId, paymentId, signature } = await request.json();
+    const requestBody = await request.json();
+    
+    const { orderId, paymentId, signature } = requestBody;
 
     // Validate input
     if (!orderId || !paymentId || !signature) {
@@ -31,10 +33,10 @@ export async function POST(request: NextRequest) {
 
     // Verify payment signature
     const crypto = require('crypto');
-    const body = orderId + '|' + paymentId;
+    const signatureBody = orderId + '|' + paymentId;
     const expectedSignature = crypto
       .createHmac('sha256', keySecret)
-      .update(body.toString())
+      .update(signatureBody.toString())
       .digest('hex');
 
     const isValidSignature = expectedSignature === signature;
@@ -46,25 +48,92 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Initialize Razorpay to fetch payment details
+    // Fetch payment details from Razorpay
     const razorpay = new Razorpay({
       key_id: process.env.RAZORPAY_KEY_ID,
       key_secret: keySecret,
     });
 
-    // Fetch payment details from Razorpay
     const payment = await razorpay.payments.fetch(paymentId);
     
+    // First, update the payment transaction with the payment_id
+    const client = await pool.connect();
+    try {
+      const updateResult = await client.query(
+        `UPDATE payment_transactions 
+         SET razorpay_payment_id = $1, updated_at = CURRENT_TIMESTAMP
+         WHERE razorpay_order_id = $2
+         RETURNING *`,
+        [paymentId, orderId]
+      );
+      
+      if (updateResult.rows.length > 0) {
+        // Payment transaction updated successfully
+      } else {
+        console.error('No transaction found for order_id:', orderId);
+      }
+    } catch (error) {
+      console.error('Failed to update payment_id:', error);
+    } finally {
+      client.release();
+    }
+    
     // Update transaction in database with payment details
-    const updatedTransaction = await updatePaymentTransaction(paymentId, {
-      status: payment.status === 'captured' ? 'paid' : payment.status,
-      payment_method: payment.method,
-      bank: payment.bank,
-      wallet: payment.wallet,
-      vpa: payment.vpa,
-      fee: payment.fee,
-      tax: payment.tax
-    });
+    let updatedTransaction;
+    try {
+      updatedTransaction = await updatePaymentTransaction(paymentId, {
+        status: payment.status === 'captured' ? 'paid' : payment.status,
+        payment_method: payment.method,
+        bank: payment.bank || undefined,
+        wallet: payment.wallet || undefined,
+        vpa: payment.vpa || undefined,
+        fee: payment.fee || 0,
+        tax: payment.tax || 0
+      });
+      
+      if (updatedTransaction) {
+        // Payment transaction updated successfully
+      } else {
+        console.error('No transaction found to update - payment transaction was never created during order creation');
+        console.error('This means the create-order API failed or was not called');
+      }
+    } catch (dbError) {
+      console.error('Failed to update payment transaction:', dbError);      
+      // Continue with response even if DB update fails
+      console.log('Continuing without database update');
+    }
+
+    // Link user to customer on first successful payment
+    if (payment.status === 'captured' && updatedTransaction) {
+      try {
+        // Get the transaction details to find user_id and customer_id
+        const client = await pool.connect();
+        
+        const transactionResult = await client.query(
+          `SELECT pt.*, c.user_id 
+           FROM payment_transactions pt
+           JOIN customers c ON pt.customer_id = c.id
+           WHERE pt.id = $1`,
+          [updatedTransaction.id]
+        );
+        
+        if (transactionResult.rows.length > 0) {
+          const transaction = transactionResult.rows[0];
+          const userId = transaction.user_id;
+          const customerId = transaction.customer_id;
+          
+          // Use the proper function to update user's customer_id
+          await updateUserCustomerId(userId, customerId);
+          
+          console.log(`✅ Linked user ${userId} to customer ${customerId}`);
+        }
+        
+        client.release();
+      } catch (error) {
+        console.error('Error linking user to customer:', error);
+        // Don't fail the payment if user linking fails
+      }
+    }
 
     // Also update the razorpay_payment_id if it's not already set
     if (updatedTransaction && !updatedTransaction.razorpay_payment_id) {
@@ -84,7 +153,7 @@ export async function POST(request: NextRequest) {
     // Get complete transaction details
     const transaction = await getTransactionByPaymentId(paymentId);
 
-    return NextResponse.json({
+    const response = {
       success: true,
       message: 'Payment verified successfully',
       paymentId,
@@ -101,7 +170,9 @@ export async function POST(request: NextRequest) {
         tax: transaction?.tax,
         created_at: transaction?.created_at
       }
-    });
+    };
+    
+    return NextResponse.json(response);
   } catch (error) {
     console.error('Error verifying payment:', error);
     

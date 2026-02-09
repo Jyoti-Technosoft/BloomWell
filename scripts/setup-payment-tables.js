@@ -4,7 +4,7 @@ const path = require('path');
 
 async function setupPaymentTables() {
   const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: process.env.NEON_DATABASE_URL,
   });
 
   try {

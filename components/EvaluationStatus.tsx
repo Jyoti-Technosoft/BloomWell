@@ -33,12 +33,29 @@ export default function EvaluationStatus({
 }: EvaluationStatusProps) {
   const [evaluation, setEvaluation] = useState<EvaluationData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [paymentStatus, setPaymentStatus] = useState<'none' | 'paid'>('none');
 
   useEffect(() => {
     if (isOpen && evaluationId) {
       fetchEvaluationStatus();
     }
   }, [isOpen, evaluationId]);
+
+  // Refresh payment status when modal opens
+  useEffect(() => {
+    if (isOpen && evaluation) {
+      checkPaymentStatus(evaluation.id);
+    }
+  }, [isOpen, evaluation?.id]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      setEvaluation(null);
+      setPaymentStatus('none');
+      setLoading(false);
+    };
+  }, []);
 
   const fetchEvaluationStatus = async () => {
     try {
@@ -49,11 +66,38 @@ export default function EvaluationStatus({
       if (data.evaluations) {
         const userEvaluation = data.evaluations.find((evaluation: EvaluationData) => evaluation.id === evaluationId);
         setEvaluation(userEvaluation || null);
+        
+        // Check payment status if evaluation exists
+        if (userEvaluation) {
+          await checkPaymentStatus(userEvaluation.id);
+        }
       }
     } catch (error) {
       console.error('Error fetching evaluation status:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const checkPaymentStatus = async (evalId: string) => {
+    try {
+      const response = await fetch(`/api/payments/check-payment?evaluationId=${evalId}`);
+      const data = await response.json();
+      
+      if (data.hasPayment) {
+        setPaymentStatus('paid');
+      } else {
+        setPaymentStatus('none');
+      }
+    } catch (error) {
+      console.error('Error checking payment status:', error);
+      setPaymentStatus('none');
+    }
+  };
+
+  const handleRefreshStatus = async () => {
+    if (evaluation) {
+      await fetchEvaluationStatus();
     }
   };
 
@@ -155,26 +199,54 @@ export default function EvaluationStatus({
                 <div className="rounded-lg bg-gray-50 p-4">
                   <h4 className="font-medium text-gray-900 mb-2">Evaluation Details</h4>
                   <div className="space-y-1 text-sm text-gray-600">
-                    <p><span className="font-medium">Evaluation ID:</span> {evaluation.id}</p>
-                    <p><span className="font-medium">Medicine:</span> {evaluation.medicineName}</p>
-                    <p><span className="font-medium">Submitted:</span> {new Date(evaluation.createdAt).toLocaleDateString()}</p>
-                    <p><span className="font-medium">Status:</span> {evaluation.status.replace('_', ' ')}</p>
+                    <p><span className="font-medium">Evaluation ID: </span> {evaluation.id}</p>
+                    <p><span className="font-medium">Medicine: </span> {evaluation.medicineName}</p>
+                    <p><span className="font-medium">Submitted: </span> {new Date(evaluation.createdAt).toLocaleDateString()}</p>
+                    <p><span className="font-medium">Status: </span> {evaluation.status.replace('_', ' ')}</p>
                   </div>
                 </div>
 
                 {/* Action Buttons */}
-                {evaluation.status === 'approved' && onPaymentRequired && (
+                {evaluation.status === 'approved' && (
                   <div className="space-y-3">
-                    <button
-                      onClick={handleProceedToPayment}
-                      className="w-full flex items-center justify-center px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-                    >
-                      <CreditCardIcon className="h-5 w-5 mr-2" />
-                      Proceed to Payment
-                    </button>
-                    <p className="text-xs text-gray-500 text-center">
-                      Click to complete your order and proceed to secure payment
-                    </p>
+                    {paymentStatus === 'paid' ? (
+                      // Show purchased status
+                      <div className="rounded-lg bg-green-50 border border-green-200 p-4">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0">
+                            <CheckCircleIcon className="h-6 w-6 text-green-600" />
+                          </div>
+                          <div className="ml-3">
+                            <h4 className="text-sm font-medium text-green-900">Payment Completed ✅</h4>
+                            <p className="text-sm text-green-700 mt-1">
+                              Your payment has been successfully processed. Your order is being prepared for shipment.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ) : onPaymentRequired ? (
+                      // Show payment button
+                      <>
+                        <button
+                          onClick={handleProceedToPayment}
+                          className="w-full flex items-center justify-center px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                        >
+                          <CreditCardIcon className="h-5 w-5 mr-2" />
+                          Proceed to Payment
+                        </button>
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-gray-500">
+                            Click to complete your order and proceed to secure payment
+                          </p>
+                          <button
+                            onClick={handleRefreshStatus}
+                            className="text-xs text-indigo-600 hover:text-indigo-800 underline"
+                          >
+                            Refresh Status
+                          </button>
+                        </div>
+                      </>
+                    ) : null}
                   </div>
                 )}
 
@@ -201,6 +273,21 @@ export default function EvaluationStatus({
                         <li>• If approved, you can proceed to payment</li>
                         <li>• Typical review time: 1-2 business hours</li>
                       </ul>
+                    </div>
+                    
+                    <div className="rounded-lg bg-yellow-50 border border-yellow-200 p-4">
+                      <h4 className="font-medium text-yellow-900 mb-2">💳 Payment Information</h4>
+                      <div className="text-sm text-yellow-800 space-y-2">
+                        <p>Once your evaluation is approved, you'll need to complete payment to proceed with your treatment.</p>
+                        <div className="bg-yellow-100 rounded p-2">
+                          <p className="font-medium mb-1">📍 <strong>Where to pay:</strong></p>
+                          <ul className="text-xs space-y-1">
+                            <li>• Check your status in "My Evaluations" page</li>
+                            <li>• Find your approved evaluation</li>
+                            <li>• Click "Proceed to Payment" when ready</li>
+                          </ul>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}

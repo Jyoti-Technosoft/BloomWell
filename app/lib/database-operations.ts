@@ -46,6 +46,102 @@ export async function createOrUpdateCustomer(userData: {
   }
 }
 
+// Update user's customer_id after first payment
+export async function updateUserCustomerId(userId: string, customerId: number) {
+  let client;
+  try {
+    client = await pool.connect();
+    
+    // Check which database we're connected to
+    const dbCheck = await client.query('SELECT current_database(), current_user');
+    console.log('🔍 Database connection info:', dbCheck.rows);
+    
+    // Check all tables in the database
+    const tableCheck = await client.query(
+      `SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'`
+    );
+    console.log('🔍 Available tables:', tableCheck.rows.map(row => row.table_name));
+    
+    // Check users table structure
+    const usersTableCheck = await client.query(
+      `SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'users' ORDER BY ordinal_position`
+    );
+    console.log('🔍 Users table structure:', usersTableCheck.rows);
+    
+    // First, check if the column exists
+    const columnCheck = await client.query(
+      `SELECT column_name 
+       FROM information_schema.columns 
+       WHERE table_name = 'users' AND column_name = 'customer_id'`
+    );
+    
+    console.log('🔍 Column check result:', columnCheck.rows);
+    
+    if (columnCheck.rows.length === 0) {
+      console.error('❌ customer_id column does not exist in users table');
+      console.log('🔧 Available columns in users table:', usersTableCheck.rows.map(row => `${row.column_name} (${row.data_type})`));
+      throw new Error('customer_id column does not exist in users table');
+    }
+    
+    // Check if user exists
+    const userCheck = await client.query(
+      `SELECT id, customer_id FROM users WHERE id = $1`,
+      [userId]
+    );
+    
+    console.log('🔍 User check result:', userCheck.rows);
+    
+    if (userCheck.rows.length === 0) {
+      console.error('❌ User not found:', userId);
+      throw new Error(`User not found: ${userId}`);
+    }
+    
+    // Update the user
+    const result = await client.query(
+      `UPDATE users 
+       SET customer_id = $1
+       WHERE id = $2
+       RETURNING *`,
+      [customerId, userId]
+    );
+    
+    console.log(`✅ Updated user ${userId} with customer_id ${customerId}, rows affected: ${result.rowCount}`);
+    console.log('🔍 Updated user data:', result.rows[0]);
+    
+    return result.rows[0];
+  } catch (error) {
+    console.error('Error in updateUserCustomerId:', error);
+    throw error;
+  } finally {
+    if (client) {
+      client.release();
+    }
+  }
+}
+
+// Get user with customer information
+export async function getUserWithCustomerInfo(userId: string) {
+  let client;
+  try {
+    client = await pool.connect();
+    const result = await client.query(
+      `SELECT u.*, c.id as customer_exists, c.razorpay_customer_id
+       FROM users u
+       LEFT JOIN customers c ON u.customer_id = c.id
+       WHERE u.id = $1`,
+      [userId]
+    );
+    return result.rows[0];
+  } catch (error) {
+    console.error('Error in getUserWithCustomerInfo:', error);
+    throw error;
+  } finally {
+    if (client) {
+      client.release();
+    }
+  }
+}
+
 // Order operations
 export async function createOrder(orderData: {
   razorpayOrderId: string;
@@ -58,7 +154,19 @@ export async function createOrder(orderData: {
 }) {
   let client;
   try {
+    console.log('🔄 Creating order with data:', {
+      razorpayOrderId: orderData.razorpayOrderId,
+      customerId: orderData.customerId,
+      medicineId: orderData.medicineId,
+      medicineName: orderData.medicineName,
+      amount: orderData.amount,
+      currency: orderData.currency,
+      receipt: orderData.receipt
+    });
+    
     client = await pool.connect();
+    console.log('✅ Database connected for order creation');
+    
     const result = await client.query(
       `INSERT INTO orders (razorpay_order_id, customer_id, medicine_id, medicine_name, amount, currency, receipt)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -73,13 +181,25 @@ export async function createOrder(orderData: {
         orderData.receipt
       ]
     );
+    
+    console.log('✅ Order created successfully:', result.rows[0]);
     return result.rows[0];
   } catch (error) {
-    console.error('Error in createOrder:', error);
+    console.error('❌ Error in createOrder:', error);
+    console.error('🔧 Error details:', {
+      message: (error as Error).message,
+      code: (error as any).code,
+      detail: (error as any).detail,
+      constraint: (error as any).constraint,
+      table: (error as any).table,
+      column: (error as any).column,
+      severity: (error as any).severity
+    });
     throw error;
   } finally {
     if (client) {
       client.release();
+      console.log('🔄 Database connection released for order creation');
     }
   }
 }
@@ -108,7 +228,22 @@ export async function createPaymentTransaction(transactionData: {
 }) {
   let client;
   try {
+    console.log('🔄 Creating payment transaction with data:', {
+      razorpayOrderId: transactionData.razorpayOrderId,
+      razorpayPaymentId: transactionData.razorpayPaymentId,
+      customerId: transactionData.customerId,
+      medicineId: transactionData.medicineId,
+      medicineName: transactionData.medicineName,
+      amount: transactionData.amount,
+      currency: transactionData.currency,
+      status: transactionData.status,
+      email: transactionData.email,
+      contact: transactionData.contact
+    });
+    
     client = await pool.connect();
+    console.log('✅ Database connected for payment transaction creation');
+    
     const result = await client.query(
       `INSERT INTO payment_transactions (
         razorpay_order_id, razorpay_payment_id, razorpay_signature,
@@ -139,13 +274,25 @@ export async function createPaymentTransaction(transactionData: {
         transactionData.tax || 0
       ]
     );
+    
+    console.log('✅ Payment transaction created successfully:', result.rows[0]);
     return result.rows[0];
   } catch (error) {
-    console.error('Error in createPaymentTransaction:', error);
+    console.error('❌ Error in createPaymentTransaction:', error);
+    console.error('🔧 Error details:', {
+      message: (error as Error).message,
+      code: (error as any).code,
+      detail: (error as any).detail,
+      constraint: (error as any).constraint,
+      table: (error as any).table,
+      column: (error as any).column,
+      severity: (error as any).severity
+    });
     throw error;
   } finally {
     if (client) {
       client.release();
+      console.log('🔄 Database connection released for payment transaction creation');
     }
   }
 }

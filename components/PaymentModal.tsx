@@ -10,6 +10,7 @@ interface PaymentModalProps {
   medicineName: string;
   amount: number;
   userId: string;
+  evaluationId: string;
   customerData?: {
     name: string;
     email: string;
@@ -32,6 +33,7 @@ export default function PaymentModal({
   medicineName,
   amount,
   userId,
+  evaluationId,
   customerData,
   onSuccess,
   onError,
@@ -57,10 +59,8 @@ export default function PaymentModal({
     script.crossOrigin = 'anonymous';
     
     script.onload = () => {
-      console.log('✅ Razorpay script loaded successfully');
       // Verify the script loaded properly
       if (typeof window.Razorpay !== 'undefined') {
-        console.log('✅ Razorpay global object available');
         setRazorpayLoaded(true);
       } else {
         console.error('❌ Razorpay script loaded but global object not available');
@@ -99,10 +99,8 @@ export default function PaymentModal({
     setLoading(true);
 
     try {
-      console.log(`🔄 Payment attempt ${retryCount + 1}`);
-      
-      // Create order only when Pay Now is clicked
-      console.log('🔄 Creating order...');
+      // Always create a new Razorpay order for each payment attempt
+      // Razorpay orders should NEVER be reused - one order = one payment attempt
       const response = await fetch('/api/payments/create-order', {
         method: 'POST',
         headers: {
@@ -112,58 +110,56 @@ export default function PaymentModal({
           amount,
           medicineId,
           medicineName,
+          evaluationId,
           userId,
-          customerName: customerData?.name || 'User',
+          customerName: customerData?.name || '',
           customerEmail: customerData?.email || '',
           customerPhone: customerData?.phone || ''
         }),
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Create order API error:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorText: errorText
+        });
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      const orderData = await response.json();
+      const newOrderData = await response.json();
+      console.log('✅ Order creation response:', newOrderData);
 
-      if (!orderData.success) {
-        throw new Error(orderData.error || 'Failed to create payment order');
+      if (!newOrderData.success) {
+        throw new Error(newOrderData.error || 'Failed to create payment order');
       }
 
-      console.log('✅ Order created successfully:', orderData.order.id);
-
-      // Debug: Log customer data to ensure correct user info
-      console.log('👤 Customer data being used:', {
-        name: customerData?.name,
-        email: customerData?.email,
-        phone: customerData?.phone
-      });
-
       // Validate order data before using it
-      if (!orderData.keyId || !orderData.order?.id || !orderData.order?.amount) {
+      if (!newOrderData.keyId || !newOrderData.order?.id || !newOrderData.order?.amount) {
         throw new Error('Invalid order data received from server');
       }
 
       // Clean and validate the key ID
-      const cleanKeyId = orderData.keyId.toString().trim();
+      const cleanKeyId = newOrderData.keyId.toString().trim();
       if (!cleanKeyId.startsWith('rzp_')) {
         throw new Error('Invalid Razorpay key format');
       }
 
       // Initialize Razorpay payment with enhanced error handling
-      console.log('🔧 Initializing Razorpay with validated order data');
-      
       // Create the most minimal Razorpay options to avoid session_token issues
       const options = {
         key: cleanKeyId,
-        amount: parseInt(orderData.order.amount),
-        currency: orderData.order.currency || 'INR',
+        amount: parseInt(newOrderData.order.amount),
+        currency: newOrderData.order.currency || 'INR',
         name: 'BloomWell',
         description: `Payment for ${medicineName}`,
-        order_id: orderData.order.id.toString().trim(),
+        order_id: newOrderData.order.id.toString().trim(),
         handler: async function (response: any) {
           console.log('✅ Payment successful:', response);
+          
           try {
-            // Verify payment
+            // Verify payment            
             const verifyResponse = await fetch('/api/payments/verify', {
               method: 'POST',
               headers: {
@@ -176,19 +172,39 @@ export default function PaymentModal({
               }),
             });
 
+            console.log('📊 Verification API response status:', verifyResponse.status);
+            
+            if (!verifyResponse.ok) {
+              const errorText = await verifyResponse.text();
+              console.error('❌ Verification API error:', {
+                status: verifyResponse.status,
+                statusText: verifyResponse.statusText,
+                errorText: errorText
+              });
+              throw new Error(`Payment verification failed: ${verifyResponse.status} ${errorText}`);
+            }
+
             const verifyData = await verifyResponse.json();
+            console.log('✅ Payment verification successful:', verifyData);
+            console.log('📊 Transaction details:', verifyData.transaction);
+            console.log('📊 Payment ID:', verifyData.paymentId);
+            console.log('📊 Order ID:', verifyData.orderId);
 
             if (verifyData.success) {
-              onSuccess({
-                paymentId: response.razorpay_payment_id,
-                orderId: response.razorpay_order_id,
-                amount: amount,
-                medicineId,
-                medicineName,
-                transaction: verifyData.transaction
-              });
-              onClose();
               setRetryCount(0); // Reset retry count on success
+              
+              // Add small delay to ensure database is updated
+              setTimeout(() => {
+                onSuccess({
+                  paymentId: response.razorpay_payment_id,
+                  orderId: response.razorpay_order_id,
+                  amount: amount,
+                  medicineId,
+                  medicineName,
+                  transaction: verifyData.transaction
+                });
+                onClose();
+              }, 1000);
             } else {
               throw new Error(verifyData.error || 'Payment verification failed');
             }
@@ -210,7 +226,6 @@ export default function PaymentModal({
         // Add modal configuration to prevent autofill
         modal: {
           ondismiss: function () {
-            console.log('❌ Payment modal dismissed');
             setLoading(false);
           },
           escape: true,
@@ -219,7 +234,9 @@ export default function PaymentModal({
           // Prevent browser autofill
           animation: 'slide',
         },
-        // Add notes to track app user data
+        // Add event handlers for debugging
+        callback_url: `${process.env.RAZORPAY_WEBHOOK_DOMAIN || window.location.origin}/api/payments/verify`,
+        redirect: false,
         notes: {
           app_user_name: customerData?.name || '',
           app_user_email: customerData?.email || '',
@@ -229,19 +246,11 @@ export default function PaymentModal({
         }
       };
 
-      console.log('🔧 Validated Razorpay options:', {
-        key: options.key.substring(0, 8) + '...',
-        amount: options.amount,
-        currency: options.currency,
-        order_id: options.order_id
-      });
-
       try {
         // Create Razorpay instance with error boundary
         let razorpay;
         try {
           razorpay = new window.Razorpay(options);
-          console.log('✅ Razorpay instance created successfully');
         } catch (constructorError) {
           console.error('❌ Razorpay constructor failed:', constructorError);
           throw new Error('Failed to initialize payment gateway. Please refresh the page.');
@@ -257,7 +266,6 @@ export default function PaymentModal({
           
           // Handle specific "Invalid Token" error with retry logic
           if (errorCode === 'BAD_REQUEST_ERROR' && errorDescription.includes('Invalid token')) {
-            console.log('🔍 Invalid token detected, attempting retry...');
             
             if (retryCount < 2) { // Allow up to 2 retries
               setRetryCount(prev => prev + 1);
@@ -265,13 +273,11 @@ export default function PaymentModal({
               
               // Wait a moment before retrying
               setTimeout(() => {
-                console.log(`🔄 Retrying payment (attempt ${retryCount + 2})`);
                 handlePayment();
               }, 1000 * (retryCount + 1)); // Exponential backoff
               
               return;
             } else {
-              console.log('❌ Max retries reached for Invalid Token error');
               onError('Invalid payment token detected. Please refresh the page and try again.');
               setRetryCount(0);
             }
@@ -285,7 +291,6 @@ export default function PaymentModal({
         // Try to open the modal with error handling
         try {
           razorpay.open();
-          console.log('🚀 Razorpay modal opened successfully');
         } catch (openError) {
           console.error('❌ Failed to open Razorpay modal:', openError);
           throw new Error('Failed to open payment modal. Please try again.');
@@ -296,7 +301,6 @@ export default function PaymentModal({
         
         // If initialization fails, try to reload the script and retry
         if (retryCount < 1) {
-          console.log('🔄 Attempting to reload Razorpay script...');
           setRazorpayLoaded(false);
           setRetryCount(prev => prev + 1);
           
@@ -306,7 +310,6 @@ export default function PaymentModal({
           script.async = true;
           script.crossOrigin = 'anonymous';
           script.onload = () => {
-            console.log('✅ Razorpay script reloaded');
             if (typeof window.Razorpay !== 'undefined') {
               setRazorpayLoaded(true);
               setTimeout(() => handlePayment(), 1000);
