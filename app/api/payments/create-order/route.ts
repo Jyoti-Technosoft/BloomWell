@@ -115,20 +115,29 @@ export async function POST(request: NextRequest) {
     }
 
     // Save order and transaction to database
-    const testClient = await pool.connect();
-    await testClient.query('SELECT NOW()');
-    testClient.release();
+    let testClient;
+    try {
+      testClient = await pool.connect();
+      await testClient.query('SELECT NOW()');
+      testClient.release();
+    } catch (dbTestError) {
+      throw new Error(`Database connection failed: ${dbTestError instanceof Error ? dbTestError.message : 'Unknown error'}`);
+    }
     
-    const createdOrder = await createOrder({
-      razorpayOrderId: order.id,
-      customerId: customer.id,
-      medicineId,
-      medicineName,
-      amount: amount * 100,
-      currency,
-      receipt
-    });
-    
+    let createdOrder;
+    try {
+      createdOrder = await createOrder({
+        razorpayOrderId: order.id,
+        customerId: customer.id,
+        medicineId,
+        medicineName,
+        amount: amount * 100,
+        currency,
+        receipt
+      });
+    } catch (orderError) {
+      throw new Error(`Order creation failed: ${orderError instanceof Error ? orderError.message : 'Unknown error'}`);
+    }
     let transaction;
     try {
       transaction = await createPaymentTransaction({
