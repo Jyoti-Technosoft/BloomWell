@@ -62,9 +62,9 @@ console.log('Encrypted object:', encryptedData);
 
 ### Manual Test
 1. Login to the application
-2. Wait 15 minutes
-3. Try to access a protected page
-4. Should be redirected to login page
+2. Wait 60 minutes
+3. Try to access a protected route
+4. Should be automatically logged out
 
 ### Automated Test
 ```javascript
@@ -74,7 +74,7 @@ setTimeout(() => {
     .then(res => res.json())
     .then(data => console.log('Session still active:', data))
     .catch(err => console.log('Session expired:', err));
-}, 16 * 60 * 1000); // 16 minutes
+}, 61 * 60 * 1000); // 61 minutes (after 60 min timeout)
 ```
 
 ## 4. Test Audit Logging
@@ -171,7 +171,7 @@ echo $JWT_SECRET
 ### ✅ Working Correctly
 - No PHI in console logs
 - All sensitive data encrypted in database
-- Sessions timeout after 15 minutes
+- Sessions timeout after 60 minutes
 - Audit trail created for all PHI access
 - Privacy policy shows HIPAA compliance
 

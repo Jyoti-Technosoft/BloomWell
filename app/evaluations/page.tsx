@@ -65,7 +65,7 @@ export default function EvaluationsPage() {
       setMedicines(medicinesArray);
       
     } catch (error) {
-      console.error('❌ Error fetching medicines:', error);
+      console.error('Error fetching medicines:', error);
     }
   };
 
@@ -380,30 +380,30 @@ export default function EvaluationsPage() {
                     <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">Basic Information</h3>
                     <div className="space-y-2">
                       <div className="flex flex-col sm:flex-row sm:items-start">
-                        <span className="font-medium text-gray-700 sm:min-w-[120px]">Evaluation ID: </span>
+                        <span className="font-medium text-gray-700 sm:min-w-30">Evaluation ID: </span>
                         <span className="text-gray-900 text-sm break-all">{selectedEvaluation.id}</span>
                       </div>
                       <div className="flex flex-col sm:flex-row sm:items-start">
-                        <span className="font-medium text-gray-700 sm:min-w-[120px]">Medicine: </span>
+                        <span className="font-medium text-gray-700 sm:min-w-30">Medicine: </span>
                         <span className="text-gray-900">{selectedEvaluation.medicineName}</span>
                       </div>
                       <div className="flex flex-col sm:flex-row sm:items-start">
-                        <span className="font-medium text-gray-700 sm:min-w-[120px]">Price: </span>
+                        <span className="font-medium text-gray-700 sm:min-w-30">Price: </span>
                         <span className="text-gray-900 font-semibold">₹{getMedicinePrice(selectedEvaluation.medicineId)}</span>
                       </div>
                       <div className="flex flex-col sm:flex-row sm:items-start">
-                        <span className="font-medium text-gray-700 sm:min-w-[120px]">Type: </span>
+                        <span className="font-medium text-gray-700 sm:min-w-30">Type: </span>
                         <span className="text-gray-900">{selectedEvaluation.evaluationType?.replace('-', ' ') || 'General'}</span>
                       </div>
                       <div className="flex flex-col sm:flex-row sm:items-start">
-                        <span className="font-medium text-gray-700 sm:min-w-[120px]">Status: </span>
+                        <span className="font-medium text-gray-700 sm:min-w-30">Status: </span>
                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedEvaluation.status)}`}>
                           {getStatusIcon(selectedEvaluation.status)}
                           <span className="ml-2">{getStatusText(selectedEvaluation.status)}</span>
                         </span>
                       </div>
                       <div className="flex flex-col sm:flex-row sm:items-start">
-                        <span className="font-medium text-gray-700 sm:min-w-[120px]">Submitted: </span>
+                        <span className="font-medium text-gray-700 sm:min-w-30">Submitted: </span>
                         <span className="text-gray-900">{new Date(selectedEvaluation.createdAt).toLocaleDateString()}</span>
                       </div>
                     </div>

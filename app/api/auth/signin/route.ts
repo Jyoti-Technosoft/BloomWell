@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     const token = jwt.sign(
       { userId: user.id, email: user.email },
       JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: '60m' } // 60 minutes session timeout
     );
 
     // Create response with user data (without password)
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: 60 * 60, // 60 minutes session timeout
     });
 
     // Set x-user header with decrypted data

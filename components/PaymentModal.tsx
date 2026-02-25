@@ -63,13 +63,13 @@ export default function PaymentModal({
       if (typeof window.Razorpay !== 'undefined') {
         setRazorpayLoaded(true);
       } else {
-        console.error('❌ Razorpay script loaded but global object not available');
+        console.error('Razorpay script loaded but global object not available');
         setRazorpayLoaded(false);
       }
     };
     
     script.onerror = (error) => {
-      console.error('❌ Failed to load Razorpay script:', error);
+      console.error('Failed to load Razorpay script:', error);
       setRazorpayLoaded(false);
     };
 
@@ -91,7 +91,7 @@ export default function PaymentModal({
 
     // Double-check Razorpay is available
     if (typeof window.Razorpay === 'undefined') {
-      console.error('❌ Razorpay not available when trying to make payment');
+      console.error('Razorpay not available when trying to make payment');
       onError('Payment gateway not available. Please refresh the page and try again.');
       return;
     }
@@ -120,7 +120,7 @@ export default function PaymentModal({
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ Create order API error:', {
+        console.error('Create order API error:', {
           status: response.status,
           statusText: response.statusText,
           errorText: errorText
@@ -129,7 +129,6 @@ export default function PaymentModal({
       }
 
       const newOrderData = await response.json();
-      console.log('✅ Order creation response:', newOrderData);
 
       if (!newOrderData.success) {
         throw new Error(newOrderData.error || 'Failed to create payment order');
@@ -156,8 +155,6 @@ export default function PaymentModal({
         description: `Payment for ${medicineName}`,
         order_id: newOrderData.order.id.toString().trim(),
         handler: async function (response: any) {
-          console.log('✅ Payment successful:', response);
-          
           try {
             // Verify payment            
             const verifyResponse = await fetch('/api/payments/verify', {
@@ -172,11 +169,9 @@ export default function PaymentModal({
               }),
             });
 
-            console.log('📊 Verification API response status:', verifyResponse.status);
-            
             if (!verifyResponse.ok) {
               const errorText = await verifyResponse.text();
-              console.error('❌ Verification API error:', {
+              console.error('Verification API error:', {
                 status: verifyResponse.status,
                 statusText: verifyResponse.statusText,
                 errorText: errorText
@@ -185,11 +180,6 @@ export default function PaymentModal({
             }
 
             const verifyData = await verifyResponse.json();
-            console.log('✅ Payment verification successful:', verifyData);
-            console.log('📊 Transaction details:', verifyData.transaction);
-            console.log('📊 Payment ID:', verifyData.paymentId);
-            console.log('📊 Order ID:', verifyData.orderId);
-
             if (verifyData.success) {
               setRetryCount(0); // Reset retry count on success
               
@@ -252,13 +242,13 @@ export default function PaymentModal({
         try {
           razorpay = new window.Razorpay(options);
         } catch (constructorError) {
-          console.error('❌ Razorpay constructor failed:', constructorError);
+          console.error('Razorpay constructor failed:', constructorError);
           throw new Error('Failed to initialize payment gateway. Please refresh the page.');
         }
         
         // Add comprehensive error handling for payment failures
         razorpay.on('payment.failed', function (response: any) {
-          console.error('❌ Payment failed:', response);
+          console.error('Payment failed:', response);
           const errorDescription = response.error?.description || 'Payment failed';
           const errorCode = response.error?.code || 'UNKNOWN_ERROR';
           console.error('Error code:', errorCode);
@@ -292,12 +282,12 @@ export default function PaymentModal({
         try {
           razorpay.open();
         } catch (openError) {
-          console.error('❌ Failed to open Razorpay modal:', openError);
+          console.error('Failed to open Razorpay modal:', openError);
           throw new Error('Failed to open payment modal. Please try again.');
         }
         
       } catch (razorpayError) {
-        console.error('❌ Razorpay initialization error:', razorpayError);
+        console.error('Razorpay initialization error:', razorpayError);
         
         // If initialization fails, try to reload the script and retry
         if (retryCount < 1) {
@@ -320,7 +310,7 @@ export default function PaymentModal({
             }
           };
           script.onerror = () => {
-            console.error('❌ Failed to reload Razorpay script');
+            console.error('Failed to reload Razorpay script');
             onError('Payment gateway initialization failed. Please refresh the page and try again.');
             setRetryCount(0);
             setLoading(false);

@@ -30,6 +30,8 @@ interface FormData {
   lastFourSSN: string;
   primaryGoal: string;
   triedWeightLossMethods: string;
+  weightLossMethods: string[];
+  otherWeightLossMethods: string;
   activityLevel: string;
   sleepHours: string;
   stressLevel: string;
@@ -79,6 +81,8 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
     lastFourSSN: '',
     primaryGoal: '',
     triedWeightLossMethods: '',
+    weightLossMethods: [],
+    otherWeightLossMethods: '',
     activityLevel: '',
     sleepHours: '',
     stressLevel: '',
@@ -118,6 +122,8 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
         lastFourSSN: initialData?.lastFourSSN || '',
         primaryGoal: initialData?.primaryGoal || '',
         triedWeightLossMethods: initialData?.triedWeightLossMethods || '',
+        weightLossMethods: initialData?.weightLossMethods || [],
+        otherWeightLossMethods: initialData?.otherWeightLossMethods || '',
         activityLevel: initialData?.activityLevel || '',
         sleepHours: initialData?.sleepHours || '',
         stressLevel: initialData?.stressLevel || '',
@@ -140,12 +146,12 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
     
     // Update relevant steps based on goal
     const baseSteps = [0, 1, 2, 3, 4, 5];
-    const commonSteps = [9, 10, 11, 13];
+    const commonSteps = [10, 11, 12, 13];
     
     let goalSpecificSteps: number[] = [];
     switch (goal) {
       case 'Weight Loss':
-        goalSpecificSteps = [7, 8];
+        goalSpecificSteps = [7, 8, 9];
         break;
       case 'Muscle Gain':
         goalSpecificSteps = [7, 14];
@@ -248,13 +254,13 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
         }
         break;
       case 9: 
-        if (formData.goals.length === 0) {
-          newErrors.goals = 'Please select at least one goal';
+        if (formData.triedWeightLossMethods === 'Yes' && formData.weightLossMethods.length === 0) {
+          newErrors.weightLossMethods = 'Please select at least one weight loss method or specify other methods';
         }
         break;
       case 10: 
-        if (!formData.allergies.trim()) {
-          newErrors.allergies = 'Please provide allergy information';
+        if (formData.goals.length === 0) {
+          newErrors.goals = 'Please select at least one goal';
         }
         break;
       case 11: 
@@ -268,15 +274,13 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
         }
         break;
       case 13: 
-        if (formData.dietaryRestrictions.length === 0) {
-          newErrors.dietaryRestrictions = 'Please select at least one option';
+        if (!formData.allergies.trim()) {
+          newErrors.allergies = 'Please provide allergy information';
         }
         break;
       case 14: 
-        if (!formData.currentWeightliftingRoutine.trim() || !formData.workoutFrequency || !formData.proteinIntake) {
-          if (!formData.currentWeightliftingRoutine.trim()) newErrors.currentWeightliftingRoutine = 'Please describe your routine';
-          if (!formData.workoutFrequency) newErrors.workoutFrequency = 'Please select frequency';
-          if (!formData.proteinIntake) newErrors.proteinIntake = 'Please select protein intake';
+        if (formData.dietaryRestrictions.length === 0) {
+          newErrors.dietaryRestrictions = 'Please select at least one option';
         }
         break;
       case 15: 
@@ -325,12 +329,12 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
       case 6: return formData.medicalConditions.length > 0;
       case 7: return !!(formData.height && formData.weight && formData.targetWeight);
       case 8: return formData.triedWeightLossMethods !== '';
-      case 9: return formData.goals.length > 0;
-      case 10: return formData.allergies.trim() !== '';
-      case 11: return true;
+      case 9: return formData.triedWeightLossMethods === 'No' || formData.weightLossMethods.length > 0;
+      case 10: return formData.goals.length > 0;
+      case 11: return true; // Additional Info is optional
       case 12: return !!(formData.activityLevel && formData.sleepHours && formData.stressLevel);
-      case 13: return formData.dietaryRestrictions.length > 0;
-      case 14: return !!(formData.currentWeightliftingRoutine && formData.workoutFrequency && formData.proteinIntake);
+      case 13: return formData.allergies.trim() !== '';
+      case 14: return formData.dietaryRestrictions.length > 0;
       case 15: return formData.healthConcerns.length > 0;
       case 16: return formData.sleepIssues.length > 0;
       case 17: return formData.stressTriggers.length > 0 && formData.stressManagementTechniques.length > 0;
@@ -687,6 +691,76 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
             className="space-y-6"
           >
             <div className="text-center">
+              <DocumentTextIcon className="h-12 w-12 text-indigo-600 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Which weight loss methods have you tried?</h3>
+              <p className="text-gray-600">Select all that apply. This helps us understand what has worked for you.</p>
+            </div>
+            
+            {/* Common weight loss methods */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-3">
+                {[
+                  'Diet changes (calorie counting, meal plans, etc.)',
+                  'Exercise programs (gym, cardio, strength training)',
+                  'Weight loss supplements/pills',
+                  'Meal replacement shakes/bars',
+                  'Intermittent fasting',
+                  'Keto or low-carb diets',
+                  'Weight loss apps or tracking programs',
+                  'Commercial weight loss programs (Weight Watchers, Noom, etc.)',
+                  'Medical weight loss programs',
+                  'Other methods'
+                ].map(method => (
+                  <label key={method} className="flex items-start p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                    <input
+                      type="checkbox"
+                      checked={formData.weightLossMethods.includes(method)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          handleInputChange('weightLossMethods', [...formData.weightLossMethods, method]);
+                        } else {
+                          handleInputChange('weightLossMethods', formData.weightLossMethods.filter(m => m !== method));
+                        }
+                      }}
+                      className="mr-3 mt-1"
+                    />
+                    <span className="text-gray-700 text-sm">{method}</span>
+                  </label>
+                ))}
+              </div>
+              
+              {/* Other methods text input */}
+              {formData.weightLossMethods.includes('Other methods') && (
+                <div className="mt-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Please specify other methods you've tried:
+                  </label>
+                  <textarea
+                    value={formData.otherWeightLossMethods || ''}
+                    onChange={(e) => handleInputChange('otherWeightLossMethods', e.target.value)}
+                    placeholder="Describe other weight loss methods you've tried..."
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    rows={3}
+                  />
+                </div>
+              )}
+            </div>
+            
+            {errors.weightLossMethods && (
+              <div className="text-red-600 text-sm mt-2">{errors.weightLossMethods}</div>
+            )}
+          </motion.div>
+        );
+
+      case 10:
+        return (
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            className="space-y-6"
+          >
+            <div className="text-center">
               <HeartIcon className="h-12 w-12 text-indigo-600 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">Which of the following apply to you?</h3>
               <p className="text-gray-600">Select all that apply (select "No, none of these apply to me" if none apply)</p>
@@ -716,7 +790,7 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
           </motion.div>
         );
 
-      case 10:
+      case 13:
         return (
           <motion.div
             initial={{ opacity: 0, x: 50 }}
