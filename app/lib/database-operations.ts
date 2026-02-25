@@ -1,7 +1,7 @@
 import { Pool } from 'pg';
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.NEON_DATABASE_URL,
   max: 20, // Maximum number of connections in the pool
   idleTimeoutMillis: 30000, // How long a client is allowed to remain idle before being closed
   connectionTimeoutMillis: 2000, // How long to wait when connecting a new client
@@ -21,7 +21,7 @@ export async function createOrUpdateCustomer(userData: {
   phone?: string;
 }) {
   let client;
-  try {    
+  try {
     client = await pool.connect();
 
     // Check if customer already exists first
