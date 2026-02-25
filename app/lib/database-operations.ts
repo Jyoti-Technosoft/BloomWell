@@ -52,7 +52,22 @@ export async function createOrUpdateCustomer(userData: {
     
     return result.rows[0];
   } catch (error) {
-    console.error('Error in createOrUpdateCustomer:', error);
+    // console.error('Error in createOrUpdateCustomer:', error);
+      console.error('❌ Error in createOrUpdateCustomer:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      code: (error as any).code,
+      detail: (error as any).detail,
+      constraint: (error as any).constraint,
+      table: (error as any).table,
+      hint: (error as any).hint,
+      where: (error as any).where,
+      userData: {
+        userId: userData.userId,
+        name: userData.name,
+        email: userData.email,
+        phone: userData.phone
+      }
+    });
     throw error;
   } finally {
     if (client) {
