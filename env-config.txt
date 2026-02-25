@@ -30,4 +30,5 @@ ENCRYPTION_KEY=encryption_key
 # Razorpay credentials
 RAZORPAY_KEY_ID=razorpay_key_id
 RAZORPAY_KEY_SECRET=razorpay_key_secret
+RAZORPAY_WEBHOOK_DOMAIN=razorpay_webhook_domain
 RAZORPAY_WEBHOOK_SECRET=razorpay_webhook_secret

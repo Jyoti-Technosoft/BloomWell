@@ -21,20 +21,35 @@ export async function createOrUpdateCustomer(userData: {
   phone?: string;
 }) {
   let client;
-  try {
+  try {    
     client = await pool.connect();
-    const result = await client.query(
-      `INSERT INTO customers (user_id, name, email, phone)
-       VALUES ($1, $2, $3, $4)
-       ON CONFLICT (user_id) 
-       DO UPDATE SET 
-         name = EXCLUDED.name,
-         email = EXCLUDED.email,
-         phone = EXCLUDED.phone,
-         updated_at = CURRENT_TIMESTAMP
-       RETURNING *`,
-      [userData.userId, userData.name, userData.email, userData.phone]
+
+    // Check if customer already exists first
+    const existingCustomer = await client.query(
+      'SELECT id, user_id, name, email FROM customers WHERE user_id = $1',
+      [userData.userId]
     );
+    
+    let result;
+    if (existingCustomer.rows.length > 0) {
+      // Update existing customer
+      result = await client.query(
+        `UPDATE customers 
+         SET name = $1, email = $2, phone = $3, updated_at = CURRENT_TIMESTAMP
+         WHERE user_id = $4
+         RETURNING *`,
+        [userData.name, userData.email, userData.phone, userData.userId]
+      );
+    } else {
+      // Insert new customer
+      result = await client.query(
+        `INSERT INTO customers (user_id, name, email, phone)
+         VALUES ($1, $2, $3, $4)
+         RETURNING *`,
+        [userData.userId, userData.name, userData.email, userData.phone]
+      );
+    }
+    
     return result.rows[0];
   } catch (error) {
     console.error('Error in createOrUpdateCustomer:', error);
