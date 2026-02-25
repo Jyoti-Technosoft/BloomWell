@@ -76,6 +76,16 @@ async function handlePaymentCaptured(event: any) {
   // First update the payment transaction with payment_id
   const client = await pool.connect();
   try {
+    // Check if transaction exists
+    const checkResult = await client.query(
+      'SELECT id FROM payment_transactions WHERE razorpay_order_id = $1',
+      [payment.order_id]
+    );
+    if (checkResult.rows.length === 0) {
+      console.log('No transaction found for order_id:', payment.order_id);
+      return;
+    }
+    
     await client.query(
       `UPDATE payment_transactions 
        SET razorpay_payment_id = $1, updated_at = CURRENT_TIMESTAMP
@@ -111,7 +121,7 @@ async function handlePaymentCaptured(event: any) {
         if (customerResult.rows.length > 0) {
           const userId = customerResult.rows[0].user_id;
           await updateUserCustomerId(userId, transaction.customer_id);
-          console.log(`✅ Webhook linked user ${userId} to customer ${transaction.customer_id}`);
+          console.log(`Webhook linked user ${userId} to customer ${transaction.customer_id}`);
         }
       } finally {
         customerClient.release();

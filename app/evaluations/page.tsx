@@ -360,60 +360,60 @@ export default function EvaluationsPage() {
 
       {selectedEvaluation && (
         <div className="fixed inset-0 z-50 bg-black/50 overflow-y-auto">
-          <div className="flex min-h-screen items-center justify-center p-4">
+          <div className="flex min-h-full items-center justify-center p-4 sm:p-6">
             <div onClick={handleCloseDetailsModal} />
 
-            <div className="relative w-full max-w-4xl rounded-lg bg-white shadow-xl max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between border-b border-gray-200 p-6">
-                <h2 className="text-2xl font-semibold text-gray-900">Evaluation Details</h2>
+            <div className="relative w-full max-w-4xl rounded-lg bg-white shadow-xl max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto">
+              <div className="flex items-center justify-between border-b border-gray-200 p-4 sm:p-6">
+                <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">Evaluation Details</h2>
                 <button
                   onClick={handleCloseDetailsModal}
                   className="rounded-md p-2 text-gray-400 hover:text-gray-500"
                 >
-                  <XMarkIcon className="h-6 w-6" />
+                  <XMarkIcon className="h-5 w-5 sm:h-6 sm:w-6" />
                 </button>
               </div>
 
-              <div className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Basic Information</h3>
+              <div className="p-4 sm:p-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                  <div className="space-y-3 sm:space-y-4">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">Basic Information</h3>
                     <div className="space-y-2">
-                      <div>
-                        <span className="font-medium text-gray-700">Evaluation ID: </span>
-                        <span className="text-gray-900">{selectedEvaluation.id}</span>
+                      <div className="flex flex-col sm:flex-row sm:items-start">
+                        <span className="font-medium text-gray-700 sm:min-w-[120px]">Evaluation ID: </span>
+                        <span className="text-gray-900 text-sm break-all">{selectedEvaluation.id}</span>
                       </div>
-                      <div>
-                        <span className="font-medium text-gray-700">Medicine: </span>
+                      <div className="flex flex-col sm:flex-row sm:items-start">
+                        <span className="font-medium text-gray-700 sm:min-w-[120px]">Medicine: </span>
                         <span className="text-gray-900">{selectedEvaluation.medicineName}</span>
                       </div>
-                      <div>
-                        <span className="font-medium text-gray-700">Price: </span>
+                      <div className="flex flex-col sm:flex-row sm:items-start">
+                        <span className="font-medium text-gray-700 sm:min-w-[120px]">Price: </span>
                         <span className="text-gray-900 font-semibold">₹{getMedicinePrice(selectedEvaluation.medicineId)}</span>
                       </div>
-                      <div>
-                        <span className="font-medium text-gray-700">Type: </span>
+                      <div className="flex flex-col sm:flex-row sm:items-start">
+                        <span className="font-medium text-gray-700 sm:min-w-[120px]">Type: </span>
                         <span className="text-gray-900">{selectedEvaluation.evaluationType?.replace('-', ' ') || 'General'}</span>
                       </div>
-                      <div>
-                        <span className="font-medium text-gray-700">Status: </span>
+                      <div className="flex flex-col sm:flex-row sm:items-start">
+                        <span className="font-medium text-gray-700 sm:min-w-[120px]">Status: </span>
                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedEvaluation.status)}`}>
                           {getStatusIcon(selectedEvaluation.status)}
                           <span className="ml-2">{getStatusText(selectedEvaluation.status)}</span>
                         </span>
                       </div>
-                      <div>
-                        <span className="font-medium text-gray-700">Submitted: </span>
+                      <div className="flex flex-col sm:flex-row sm:items-start">
+                        <span className="font-medium text-gray-700 sm:min-w-[120px]">Submitted: </span>
                         <span className="text-gray-900">{new Date(selectedEvaluation.createdAt).toLocaleDateString()}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Detailed Responses */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3">Evaluation Responses</h3>
+                  <div className="space-y-3 sm:space-y-4">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">Evaluation Responses</h3>
                     {selectedEvaluation.responses && (
-                      <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+                      <div className="space-y-2 sm:space-y-3 max-h-80 sm:max-h-96 overflow-y-auto pr-2">
                         {Object.entries(selectedEvaluation.responses).map(([key, value]) => {
                           // Skip empty values
                           if (!value || (typeof value === 'string' && value.trim() === '')) {
@@ -428,14 +428,14 @@ export default function EvaluationsPage() {
                           if (Array.isArray(value)) {
                             return (
                               <React.Fragment key={key}>
-                                <div className="border-l-4 border-gray-200 pl-4">
-                                  <span className="font-medium text-gray-700 capitalize">
+                                <div className="border-l-4 border-gray-200 pl-3 sm:pl-4">
+                                  <span className="font-medium text-gray-700 capitalize text-sm sm:text-base">
                                     {key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}:
                                   </span>
-                                  <div className="mt-2 space-y-1">
+                                  <div className="mt-1 sm:mt-2 space-y-1">
                                     {value.map((item: string, index: number) => (
-                                      <div key={index} className="flex items-center">
-                                        <span className="text-gray-900">• {item}</span>
+                                      <div key={index} className="flex items-start">
+                                        <span className="text-gray-900 text-sm sm:text-base">• {item}</span>
                                       </div>
                                     ))}
                                   </div>
@@ -447,11 +447,11 @@ export default function EvaluationsPage() {
                           if (typeof value === 'object' && value !== null) {
                             return (
                               <React.Fragment key={key}>
-                                <div className="border-l-4 border-gray-200 pl-4">
-                                  <span className="font-medium text-gray-700 capitalize">
+                                <div className="border-l-4 border-gray-200 pl-3 sm:pl-4">
+                                  <span className="font-medium text-gray-700 capitalize text-sm sm:text-base">
                                     {key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}: 
                                   </span>
-                                  <span className="text-gray-900">{JSON.stringify(value)}</span>
+                                  <span className="text-gray-900 text-sm sm:text-base break-all">{JSON.stringify(value)}</span>
                                 </div>
                               </React.Fragment>
                             );
@@ -459,11 +459,11 @@ export default function EvaluationsPage() {
 
                           return (
                             <React.Fragment key={key}>
-                              <div className="border-l-4 border-gray-200 pl-4">
-                                <span className="font-medium text-gray-700 capitalize">
+                              <div className="border-l-4 border-gray-200 pl-3 sm:pl-4">
+                                <span className="font-medium text-gray-700 capitalize text-sm sm:text-base">
                                   {key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}:
                                 </span>
-                                <span className="text-gray-900">{String(value)}</span>
+                                <span className="text-gray-900 text-sm sm:text-base break-all">{String(value)}</span>
                               </div>
                             </React.Fragment>
                           );
@@ -473,27 +473,26 @@ export default function EvaluationsPage() {
                   </div>
                 </div>
               </div>
-            </div>
 
-            {selectedEvaluation.status === 'approved' && paymentStatuses[selectedEvaluation.id] !== 'paid' && (
-              <div className="px-6 py-4 border-t border-gray-200">
-                <button
-                  onClick={() => handleProceedToPayment(selectedEvaluation)}
-                  className="w-full bg-indigo-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
-                >
-                  Proceed to Payment
-                </button>
+              {/* Payment Section */}
+              <div className="border-t border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
+                {selectedEvaluation.status === 'approved' && paymentStatuses[selectedEvaluation.id] !== 'paid' && (
+                  <button
+                    onClick={() => handleProceedToPayment(selectedEvaluation)}
+                    className="w-full bg-indigo-600 text-white px-4 py-2 sm:py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors text-sm sm:text-base"
+                  >
+                    Proceed to Payment
+                  </button>
+                )}
+                
+                {selectedEvaluation.status === 'approved' && paymentStatuses[selectedEvaluation.id] === 'paid' && (
+                  <div className="w-full bg-green-100 text-green-800 px-4 py-2 sm:py-3 rounded-lg font-medium flex items-center justify-center text-sm sm:text-base">
+                    <CheckCircleIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                    Payment Completed
+                  </div>
+                )}
               </div>
-            )}
-            
-            {selectedEvaluation.status === 'approved' && paymentStatuses[selectedEvaluation.id] === 'paid' && (
-              <div className="px-6 py-4 border-t border-gray-200">
-                <div className="w-full bg-green-100 text-green-800 px-4 py-3 rounded-lg font-medium flex items-center justify-center">
-                  <CheckCircleIcon className="h-5 w-5 mr-2" />
-                  Payment Completed
-                </div>
-              </div>
-            )}
+            </div>
           </div>
         </div>
       )}

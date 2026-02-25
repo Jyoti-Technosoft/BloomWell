@@ -129,19 +129,24 @@ export async function POST(request: NextRequest) {
       receipt
     });
     
-    const transaction = await createPaymentTransaction({
-      razorpayOrderId: order.id,
-      customerId: customer.id,
-      medicineId: evaluationId, // Use evaluationId instead of medicineId for payment tracking
-      medicineName,
-      amount: amount * 100,
-      currency,
-      status: 'created',
-      email: customerEmail,
-      contact: customerPhone,
-      description: `Payment for ${medicineName}`,
-      notes: order.notes
-    });
+    let transaction;
+    try {
+      transaction = await createPaymentTransaction({
+        razorpayOrderId: order.id,
+        customerId: customer.id,
+        medicineId: evaluationId, // Use evaluationId instead of medicineId for payment tracking
+        medicineName,
+        amount: amount * 100,
+        currency,
+        status: 'created',
+        email: customerEmail,
+        contact: customerPhone,
+        description: `Payment for ${medicineName}`,
+        notes: order.notes
+      });
+    } catch (transactionError) {
+      throw new Error(`Failed to create payment transaction: ${transactionError instanceof Error ? transactionError.message : 'Unknown error'}`);
+    }
 
     return NextResponse.json({
       success: true,

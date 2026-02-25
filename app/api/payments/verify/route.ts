@@ -92,10 +92,9 @@ export async function POST(request: NextRequest) {
       });
       
       if (updatedTransaction) {
-        // Payment transaction updated successfully
+        console.log('Payment transaction updated successfully:', updatedTransaction.id);
       } else {
-        console.error('No transaction found to update - payment transaction was never created during order creation');
-        console.error('This means the create-order API failed or was not called');
+        console.log('No transaction found to update - payment transaction was never created during order creation');
       }
     } catch (dbError) {
       console.error('Failed to update payment transaction:', dbError);      
@@ -125,7 +124,7 @@ export async function POST(request: NextRequest) {
           // Use the proper function to update user's customer_id
           await updateUserCustomerId(userId, customerId);
           
-          console.log(`✅ Linked user ${userId} to customer ${customerId}`);
+          console.log(`Linked user ${userId} to customer ${customerId}`);
         }
         
         client.release();
