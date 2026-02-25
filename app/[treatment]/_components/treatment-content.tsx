@@ -22,7 +22,20 @@ export function TreatmentContent({ treatment }: { treatment: string }) {
       try {
         // Fetch treatment data
         const treatmentResponse = await fetch('/api/treatments');
+        
+        if (!treatmentResponse.ok) {
+          console.error('Treatment API error:', treatmentResponse.status);
+          return;
+        }
+        
         const treatments = await treatmentResponse.json();
+        
+        // Check if treatments is an array
+        if (!Array.isArray(treatments)) {
+          console.error('Treatments is not an array:', treatments);
+          return;
+        }
+        
         const foundTreatment = treatments.find((t: Treatment) => 
           t.name.toLowerCase().replace(/\s+/g, '-') === treatment
         );
@@ -34,7 +47,7 @@ export function TreatmentContent({ treatment }: { treatment: string }) {
           const category = foundTreatment.category || 'weight-loss'; // Default fallback
           const medicinesResponse = await fetch(`/api/medicines?category=${category}`);
           const medicinesData = await medicinesResponse.json();
-          setMedicines(medicinesData);
+          setMedicines(Array.isArray(medicinesData) ? medicinesData : []);
         }
       } catch (error) {
         console.error('Error fetching data:', error);

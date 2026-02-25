@@ -26,3 +26,8 @@ SMTP_PASS=your-app-password
 ENCRYPTION_KEY=encryption_key
 # AWS_REGION=us-east-1
 # AWS_KMS_KEY_ID=arn:aws:kms:ap-southeast-1:123456789012:key/your-kms-key-id
+
+# Razorpay credentials
+RAZORPAY_KEY_ID=razorpay_key_id
+RAZORPAY_KEY_SECRET=razorpay_key_secret
+RAZORPAY_WEBHOOK_SECRET=razorpay_webhook_secret

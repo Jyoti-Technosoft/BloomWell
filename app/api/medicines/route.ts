@@ -5,6 +5,74 @@ const pool = new Pool({
   connectionString: process.env.NEON_DATABASE_URL,
 });
 
+// Fallback medicines data when database is not available
+const fallbackMedicines = [
+  {
+    id: 'semaglutide-1mg',
+    name: 'Semaglutide 1mg',
+    description: 'Weekly injection for weight management',
+    category: 'weight-loss',
+    image: '/medicines/semaglutide-1mg.jpg',
+    price: 299,
+    dosage: '4 x 1mg prefilled pens',
+    overview: 'Semaglutide 1mg is an FDA-approved medication that helps with weight management.',
+    howItWorks: 'Semaglutide works by mimicking the GLP-1 hormone to regulate appetite.',
+    shipping: 'Discreet packaging with temperature-controlled shipping',
+    support: '24/7 medical support and weekly check-ins',
+    sideEffects: ['Nausea', 'Decreased appetite', 'Possible diarrhea'],
+    benefits: ['Significant weight loss', 'Blood sugar control', 'Once-weekly injection'],
+    inStock: true
+  },
+  {
+    id: 'semaglutide-2mg',
+    name: 'Semaglutide 2.4mg',
+    description: 'Maintenance dose for optimal results',
+    category: 'weight-loss',
+    image: '/medicines/semaglutide-2mg.jpg',
+    price: 399,
+    dosage: '4 x 2.4mg prefilled pens',
+    overview: 'Semaglutide 2.4mg is the maintenance dose for continued weight management.',
+    howItWorks: 'Higher dose provides enhanced GLP-1 receptor activation.',
+    shipping: 'Temperature-controlled shipping with ice packs',
+    support: 'Enhanced medical monitoring and regular lab tests',
+    sideEffects: ['Initial nausea', 'Reduced appetite', 'Possible constipation'],
+    benefits: ['Maximum weight loss effectiveness', 'Sustained appetite control'],
+    inStock: true
+  },
+  {
+    id: 'sildenafil-50mg',
+    name: 'Sildenafil 50mg',
+    description: 'Generic Viagra for ED treatment',
+    category: 'ed-treatments',
+    image: '/medicines/sildenafil-50mg.jpg',
+    price: 99,
+    dosage: '10 tablets',
+    overview: 'Sildenafil 50mg helps men achieve and maintain erections.',
+    howItWorks: 'Relaxes smooth muscles in blood vessels to increase blood flow.',
+    shipping: 'Discreet packaging with no indication of contents',
+    support: '24/7 medical consultation',
+    sideEffects: ['Headache', 'Flushing', 'Upset stomach', 'Nasal congestion'],
+    benefits: ['Proven effectiveness', 'Fast-acting formula', 'Affordable'],
+    inStock: true
+  },
+  {
+    id: 'testo-cypionate',
+    name: 'Testosterone Cypionate',
+    description: 'Injectable testosterone for hormone therapy',
+    category: 'hormone-therapy',
+    image: '/medicines/testo-cypionate.jpg',
+    price: 199,
+    dosage: '10ml vial (200mg/ml)',
+    overview: 'Testosterone Cypionate is used for hormone replacement therapy.',
+    howItWorks: 'Provides sustained release of testosterone into the bloodstream.',
+    shipping: 'Discreet packaging with medical-grade supplies',
+    support: 'Regular hormone level monitoring',
+    sideEffects: ['Injection site pain', 'Acne', 'Increased red blood cell count'],
+    benefits: ['Increased energy', 'Improved muscle mass', 'Enhanced mood'],
+    inStock: true
+  }
+];
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -41,11 +109,20 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(medicines);
   } catch (error) {
-    console.error('Error fetching medicines:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch medicines' },
-      { status: 500 }
-    );
+    console.error('Error fetching medicines from database:', error);
+    console.log('Returning fallback medicines data');
+    
+    // Filter fallback medicines by category if specified
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get('category');
+    
+    let filteredMedicines = fallbackMedicines;
+    if (category) {
+      filteredMedicines = fallbackMedicines.filter(medicine => medicine.category === category);
+    }
+    
+    // Return fallback data when database is not available
+    return NextResponse.json(filteredMedicines);
   }
 }
 

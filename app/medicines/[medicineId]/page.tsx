@@ -13,10 +13,13 @@ import {
   UserIcon
 } from '@heroicons/react/24/outline';
 import { useUser } from '../../context/UserContext';
+import { useUserProfile } from '../../hooks/useUserProfile';
 import Toast from '../../components/Toast';
 import MedicalQuestionnaire from '../../components/MedicalQuestionnaire';
 import IdentityVerification from '../../components/IdentityVerification';
 import TreatmentRecommendation from '../../components/TreatmentRecommendation';
+import EvaluationStatus from '../../../components/EvaluationStatus';
+import PaymentModal from '../../../components/PaymentModal';
 import { Medicine } from '../../lib/types';
 
 export default function MedicinePage({ params }: { params: Promise<{ medicineId: string }> }) {
@@ -24,6 +27,7 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
   const medicineId = resolvedParams.medicineId;
   const router = useRouter();
   const { user } = useUser();
+  const { profile } = useUserProfile();
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [medicine, setMedicine] = useState<Medicine | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,14 +36,17 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const [showIdentityVerification, setShowIdentityVerification] = useState(false);
   const [showRecommendation, setShowRecommendation] = useState(false);
+  const [showEvaluationStatus, setShowEvaluationStatus] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
   const [questionnaireData, setQuestionnaireData] = useState<any>(null);
+  const [currentEvaluationId, setCurrentEvaluationId] = useState<string | null>(null);
+  const [pendingEvaluations, setPendingEvaluations] = useState<string[]>([]);
 
   const handleCloseToast = () => {
     setToast(null);
   };
 
-  useEffect(() => {
-    const fetchMedicine = async () => {
+  const fetchMedicine = async () => {
       try {
         // Try to fetch from API first
         const response = await fetch('/api/medicines');
@@ -54,8 +61,60 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
       }
     };
 
+  useEffect(() => {
     fetchMedicine();
   }, [medicineId]);
+
+  const checkPendingEvaluations = async () => {
+    try {
+      const response = await fetch('/api/evaluations');
+      const data = await response.json();
+      
+      if (data.evaluations) {
+        // Filter evaluations that are pending_review OR approved but not yet paid
+        const pending = await Promise.all(
+          data.evaluations.map(async (evaluation: any) => {
+            // Include pending_review evaluations
+            if (evaluation.status === 'pending_review') {
+              return evaluation;
+            }
+            
+            // For approved evaluations, check if payment is completed
+            if (evaluation.status === 'approved') {
+              try {
+                const paymentResponse = await fetch(`/api/payments/check-payment?evaluationId=${evaluation.id}`);
+                const paymentData = await paymentResponse.json();
+                
+                // Only include approved evaluations that haven't been paid for
+                if (!paymentData.hasPayment) {
+                  return evaluation;
+                }
+              } catch (error) {
+                console.error('Error checking payment for evaluation:', evaluation.id, error);
+                // If we can't check payment status, include it to be safe
+                return evaluation;
+              }
+            }
+            
+            return null;
+          })
+        );
+        
+        // Filter out null values and get IDs
+        const validPendingEvaluations = pending.filter(evaluation => evaluation !== null);
+        setPendingEvaluations(validPendingEvaluations.map((evaluation: any) => evaluation.id));
+      }
+    } catch (error) {
+      console.error('Error checking pending evaluations:', error);
+    }
+  };
+
+  // Check for pending/approved evaluations
+  useEffect(() => {
+    if (user) {
+      checkPendingEvaluations();
+    }
+  }, [user]);
 
   if (loading) {
     return (
@@ -90,7 +149,7 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
     );
   }
 
-  const treatmentCategory = medicine.category;
+  // const treatmentCategory = medicine.category;
 
   const handleClaimEvaluation = () => {
     // Check if medicine data is available
@@ -104,6 +163,15 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
 
     if (!user) {
       router.push(`/auth/signin?callbackUrl=/medicines/${medicineId}`);
+      return;
+    }
+
+    // Check if user has pending or approved evaluations
+    if (pendingEvaluations.length > 0) {
+      setToast({
+        message: 'You have pending or approved evaluations. Please complete the existing evaluation process before starting a new one.',
+        type: 'error'
+      });
       return;
     }
 
@@ -125,19 +193,26 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
     setShowRecommendation(true);
   };
 
+  const handleIdentityVerificationBack = () => {
+    setShowIdentityVerification(false);
+    setShowQuestionnaire(true);
+  };
+
   const handleRecommendationProceed = async () => {
     try {
-      // Submit the evaluation data to the backend
+      // Submit the evaluation data to the backend with authentication
       const response = await fetch('/api/evaluations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          // Add authentication - cookies are automatically sent by browser
+          'Cookie': document.cookie || '',
         },
-        credentials: 'include',
+        credentials: 'include', // Ensure cookies are sent
         body: JSON.stringify({
-          medicineId,
-          medicineName: medicine?.name || 'Unknown Medicine',
-          ...questionnaireData
+          ...questionnaireData,
+          medicineId: medicineId,
+          medicineName: medicine?.name || 'Unknown Medicine'
         }),
       });
 
@@ -146,7 +221,12 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
         throw new Error(errorData.error || 'Failed to submit evaluation');
       }
 
+      const result = await response.json();
+      setCurrentEvaluationId(result.evaluationId);
+      
       setShowRecommendation(false);
+      setShowEvaluationStatus(true);
+
       setToast({
         message: 'Evaluation submitted successfully! Our medical team will review your information.',
         type: 'success'
@@ -165,6 +245,78 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
     setShowQuestionnaire(false);
     setShowIdentityVerification(false);
     setShowRecommendation(false);
+    setShowEvaluationStatus(false);
+    setShowPayment(false);
+  };
+
+  const handleEvaluationStatusPayment = (evaluationData: any) => {
+    setShowEvaluationStatus(false);
+    setShowPayment(true);
+  };
+
+  const handlePaymentSuccess = async (paymentData: any) => {
+    try {
+      // Create order after successful payment
+      const orderResponse = await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          evaluationId: currentEvaluationId,
+          medicineId: medicineId,
+          medicineName: medicine?.name || 'Unknown Medicine',
+          amount: paymentData.amount,
+          paymentId: paymentData.paymentId,
+          paymentStatus: 'completed'
+        }),
+      });
+
+      if (orderResponse.ok) {
+        const orderResult = await orderResponse.json();
+        setToast({
+          message: `Order #${orderResult.order.id} placed successfully! Your order will be processed soon.`,
+          type: 'success'
+        });
+        
+        // Refresh evaluation status to update payment status
+        if (currentEvaluationId) {
+          setTimeout(async () => {
+            try {
+              const response = await fetch(`/api/payments/check-payment?evaluationId=${currentEvaluationId}`);
+              const data = await response.json();
+              if (data.hasPayment) {
+                // Force a re-render by updating state
+                setShowEvaluationStatus(true);
+                
+                // Refresh pending evaluations to remove this evaluation from the list
+                await checkPendingEvaluations();
+              }
+            } catch (error) {
+              console.error('Error refreshing payment status:', error);
+            }
+          }, 1500);
+        }
+        
+        // Here you could redirect to order confirmation page
+        // router.push(`/orders/${orderResult.order.id}`);
+      } else {
+        throw new Error('Failed to create order');
+      }
+    } catch (error) {
+      console.error('Order creation error:', error);
+      setToast({
+        message: 'Payment successful but order creation failed. Please contact support.',
+        type: 'error'
+      });
+    }
+  };
+
+  const handlePaymentError = (error: string) => {
+    setToast({
+      message: error,
+      type: 'error'
+    });
   };
 
   if (!medicine) {
@@ -458,6 +610,7 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
           isOpen={showQuestionnaire}
           onClose={handleCloseAllModals}
           onComplete={handleQuestionnaireComplete}
+          initialData={questionnaireData}
         />
       )}
 
@@ -465,6 +618,7 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
         <IdentityVerification
           isOpen={showIdentityVerification}
           onClose={handleCloseAllModals}
+          onBack={handleIdentityVerificationBack}
           onComplete={handleIdentityVerificationComplete}
         />
       )}
@@ -477,6 +631,34 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
           isOpen={showRecommendation}
           onClose={handleCloseAllModals}
           onProceed={handleRecommendationProceed}
+        />
+      )}
+
+      {medicine && showEvaluationStatus && currentEvaluationId && (
+        <EvaluationStatus
+          evaluationId={currentEvaluationId}
+          isOpen={showEvaluationStatus}
+          onClose={handleCloseAllModals}
+          onPaymentRequired={handleEvaluationStatusPayment}
+        />
+      )}
+
+      {medicine && showPayment && (
+        <PaymentModal
+          isOpen={showPayment}
+          onClose={handleCloseAllModals}
+          medicineId={medicineId}
+          medicineName={medicine.name}
+          amount={medicine.price}
+          userId={user?.id || ''}
+          evaluationId={currentEvaluationId || ''}
+          customerData={{
+            name: profile?.fullName || user?.fullName || 'User',
+            email: profile?.email || user?.email || '',
+            phone: profile?.phone || ''
+          }}
+          onSuccess={handlePaymentSuccess}
+          onError={handlePaymentError}
         />
       )}
     </div>
