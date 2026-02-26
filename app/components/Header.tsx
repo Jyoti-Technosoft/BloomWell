@@ -8,6 +8,8 @@ import { ChevronDownIcon, UserIcon, Bars3Icon, XMarkIcon } from '@heroicons/reac
 interface NavItem {
   name: string;
   href: string;
+  specialty?: string;
+  image?: string;
   dropdown?: Array<{
     name: string;
     href: string;
@@ -16,26 +18,33 @@ interface NavItem {
   }>;
 }
 
-const getNavItems = (isAuthenticated: boolean): NavItem[] => [
-  {
-    name: 'Women\'s Health',
-    href: '/treatments',
-    dropdown: [
-      { name: 'Semaglutide', href: '/semaglutide' },
-      { name: 'Tirzepatide', href: '/tirzepatide' },
-      { name: 'Oral ED Treatments', href: '/oral-ed-treatments' },
-      { name: 'Testosterone Therapy', href: '/testosterone-therapy' },
-      { name: 'Erectile Dysfunction', href: '/erectile-dysfunction' },
-      { name: 'Injectable Treatments', href: '/injectable-treatments' }
-    ],
-  },
-  { 
-    name: 'Women\'s Health Experts',
-    href: '/physicians'
-  },
-  { name: 'About', href: '/about' },
-  { name: 'Reviews', href: '/reviews' },
-];
+const getNavItems = (isAuthenticated: boolean, userRole?: string): NavItem[] => {
+  // Don't show navigation for doctor users - they have their own layout
+  if (userRole === 'doctor') {
+    return [];
+  }
+
+  return [
+    {
+      name: 'Women\'s Health',
+      href: '/treatments',
+      dropdown: [
+        { name: 'Semaglutide', href: '/semaglutide' },
+        { name: 'Tirzepatide', href: '/tirzepatide' },
+        { name: 'Oral ED Treatments', href: '/oral-ed-treatments' },
+        { name: 'Testosterone Therapy', href: '/testosterone-therapy' },
+        { name: 'Erectile Dysfunction', href: '/erectile-dysfunction' },
+        { name: 'Injectable Treatments', href: '/injectable-treatments' }
+      ],
+    },
+    { 
+      name: 'Women\'s Health Experts',
+      href: '/physicians'
+    },
+    { name: 'About', href: '/about' },
+    { name: 'Reviews', href: '/reviews' },
+  ];
+};
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -92,7 +101,7 @@ export default function Header() {
             </div>
 
             <div className="hidden md:ml-10 md:flex md:space-x-8 items-center">
-              {getNavItems(status === 'authenticated').map((item: NavItem) => (
+              {status === 'authenticated' && getNavItems(true, session.user?.role).map((item: NavItem) => (
                 <div key={item.name} className="relative">
                   {item.dropdown ? (
                     <div
@@ -132,23 +141,15 @@ export default function Header() {
                                       className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-linear-to-r hover:from-indigo-50 hover:to-purple-50 rounded-lg group transition-all duration-200 ease-in-out"
                                     >
                                       <div className="shrink-0 h-12 w-12 rounded-xl bg-linear-to-br from-gray-100 to-gray-200 overflow-hidden mr-3 group-hover:from-indigo-100 group-hover:to-purple-100 transition-all duration-200">
-                                        {'image' in subItem && subItem.image ? (
-                                          <img
-                                            src={subItem.image}
-                                            alt={subItem.name}
-                                            className="h-full w-full object-cover"
-                                          />
-                                        ) : (
-                                          <div className="h-full w-full bg-linear-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                                            <UserIcon className="h-6 w-6 text-gray-500" />
-                                          </div>
-                                        )}
+                                        <div className="h-full w-full bg-linear-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                                          <UserIcon className="h-6 w-6 text-gray-500" />
+                                        </div>
                                       </div>
                                       <div>
                                         <p className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors duration-200">
                                           {subItem.name}
                                         </p>
-                                        {'specialty' in subItem && subItem.specialty && (
+                                        {subItem.specialty && (
                                           <p className="text-xs text-gray-500 group-hover:text-indigo-400 transition-colors duration-200">{subItem.specialty}</p>
                                         )}
                                       </div>
@@ -191,15 +192,7 @@ export default function Header() {
                     {session.user?.name}
                   </span>
                   <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center overflow-hidden">
-                    {session.user?.image ? (
-                      <img
-                        src={session.user.image}
-                        alt={session.user?.name || 'User'}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <UserIcon className="h-5 w-5 text-indigo-600" />
-                    )}
+                    <UserIcon className="h-5 w-5 text-indigo-600" />
                   </div>
                 </button>
 
@@ -228,34 +221,39 @@ export default function Header() {
                             Profile
                           </div>
                         </Link>
-                        <Link
-                          href="/bookings"
-                          onClick={() => setProfileDropdownOpen(false)}
-                          className="block px-4 py-3 text-sm text-gray-700 hover:bg-linear-to-r hover:from-indigo-50 hover:to-purple-50 rounded-lg transition-all duration-200 ease-in-out"
-                        >
-                          <div className="flex items-center">
-                            <div className="h-8 w-8 rounded-lg bg-linear-to-br from-green-100 to-emerald-100 flex items-center justify-center mr-3">
-                              <svg className="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                              </svg>
-                            </div>
-                            Booking Info
-                          </div>
-                        </Link>
-                        <Link
-                          href="/evaluations"
-                          onClick={() => setProfileDropdownOpen(false)}
-                          className="block px-4 py-3 text-sm text-gray-700 hover:bg-linear-to-r hover:from-indigo-50 hover:to-purple-50 rounded-lg transition-all duration-200 ease-in-out"
-                        >
-                          <div className="flex items-center">
-                            <div className="h-8 w-8 rounded-lg bg-linear-to-br from-blue-100 to-cyan-100 flex items-center justify-center mr-3">
-                              <svg className="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                              </svg>
-                            </div>
-                            My Evaluations
-                          </div>
-                        </Link>
+                        {/* Only show booking info and evaluations for non-doctor users */}
+                        {session.user?.role !== 'doctor' && (
+                          <>
+                            <Link
+                              href="/bookings"
+                              onClick={() => setProfileDropdownOpen(false)}
+                              className="block px-4 py-3 text-sm text-gray-700 hover:bg-linear-to-r hover:from-indigo-50 hover:to-purple-50 rounded-lg transition-all duration-200 ease-in-out"
+                            >
+                              <div className="flex items-center">
+                                <div className="h-8 w-8 rounded-lg bg-linear-to-br from-green-100 to-emerald-100 flex items-center justify-center mr-3">
+                                  <svg className="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                  </svg>
+                                </div>
+                                Booking Info
+                              </div>
+                            </Link>
+                            <Link
+                              href="/evaluations"
+                              onClick={() => setProfileDropdownOpen(false)}
+                              className="block px-4 py-3 text-sm text-gray-700 hover:bg-linear-to-r hover:from-indigo-50 hover:to-purple-50 rounded-lg transition-all duration-200 ease-in-out"
+                            >
+                              <div className="flex items-center">
+                                <div className="h-8 w-8 rounded-lg bg-linear-to-br from-blue-100 to-cyan-100 flex items-center justify-center mr-3">
+                                  <svg className="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                  </svg>
+                                </div>
+                                My Evaluations
+                              </div>
+                            </Link>
+                          </>
+                        )}
                         <div className="border-t border-gray-100 my-1"></div>
                         <div 
                           onClick={() => setShowConfirmDialog(true)}
@@ -320,7 +318,7 @@ export default function Header() {
             >
               <div className="pt-2 pb-3 space-y-1 bg-white">
                 {/* User section for mobile */}
-                {status === 'authenticated' && (
+                {session && status === 'authenticated' && (
                   <div className="border-b border-gray-200 pb-3 mb-3">
                     <div className="px-4 py-3">
                       <div className="flex items-center space-x-3 mb-3">
@@ -329,15 +327,15 @@ export default function Header() {
                         </div>
                         <div>
                           <p className="text-base font-medium text-gray-900">
-                            Welcome, {session.user.name}
+                            Welcome, {session.user?.name}
                           </p>
-                          <p className="text-sm text-gray-500">{session.user.email}</p>
+                          <p className="text-sm text-gray-500">{session.user?.email}</p>
                         </div>
                       </div>
                     </div>
                     <div className="px-4 space-y-1">
                       <Link
-                        href="/profile"
+                        href={session.user?.role === 'doctor' ? '/doctor/profile' : '/profile'}
                         onClick={closeMobileMenu}
                         className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg"
                       >
@@ -346,30 +344,34 @@ export default function Header() {
                         </div>
                         Profile
                       </Link>
-                      <Link
-                        href="/bookings"
-                        onClick={closeMobileMenu}
-                        className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg"
-                      >
-                        <div className="h-8 w-8 rounded-lg bg-linear-to-br from-green-100 to-emerald-100 flex items-center justify-center mr-3">
-                          <svg className="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                        </div>
-                        Booking Info
-                      </Link>
-                      <Link
-                        href="/evaluations"
-                        onClick={closeMobileMenu}
-                        className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg"
-                      >
-                        <div className="h-8 w-8 rounded-lg bg-linear-to-br from-blue-100 to-cyan-100 flex items-center justify-center mr-3">
-                          <svg className="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                        </div>
-                        My Evaluations
-                      </Link>
+                      {session.user?.role !== 'doctor' && (
+                        <>
+                          <Link
+                            href="/bookings"
+                            onClick={closeMobileMenu}
+                            className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg"
+                          >
+                            <div className="h-8 w-8 rounded-lg bg-linear-to-br from-green-100 to-emerald-100 flex items-center justify-center mr-3">
+                              <svg className="h-4 w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                            </div>
+                            Booking Info
+                          </Link>
+                          <Link
+                            href="/evaluations"
+                            onClick={closeMobileMenu}
+                            className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg"
+                          >
+                            <div className="h-8 w-8 rounded-lg bg-linear-to-br from-blue-100 to-cyan-100 flex items-center justify-center mr-3">
+                              <svg className="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                            </div>
+                            My Evaluations
+                          </Link>
+                        </>
+                      )}
                       <div 
                         onClick={() => setShowConfirmDialog(true)}
                         className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer"
@@ -385,7 +387,7 @@ export default function Header() {
                   </div>
                 )}
 
-                {getNavItems(status === 'authenticated').map((item: NavItem) => (
+                {session && status === 'authenticated' && getNavItems(true, session.user?.role).map((item: NavItem) => (
                   <div key={item.name}>
                     {item.dropdown ? (
                       <div>

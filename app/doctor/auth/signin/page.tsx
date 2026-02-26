@@ -1,25 +1,26 @@
-'use client';
+"use client";
+
 import { useEffect, useState, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import Link from 'next/link';
-import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { signIn } from 'next-auth/react';
+import { EyeIcon, EyeSlashIcon, AcademicCapIcon } from '@heroicons/react/24/outline';
 
 type FormData = {
   email: string;
   password: string;
 };
 
-export default function SignIn() {
+export default function DoctorSignIn() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <SignInContent />
+      <DoctorSignInContent />
     </Suspense>
   );
 }
 
-function SignInContent() {
+function DoctorSignInContent() {
   const router = useRouter();
   const { 
     register, 
@@ -31,78 +32,73 @@ function SignInContent() {
   const [success, setSuccess] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/';
+  const callbackUrl = searchParams.get('callbackUrl') || '/doctor';
+
+  useEffect(() => {
+    const message = searchParams.get('message');
+    if (message === 'registration-success') {
+      setSuccess('Registration successful! Please sign in with your credentials.');
+    }
+  }, [searchParams]);
 
   const onSubmit = async (data: FormData) => {
     try {
       setError(null);
       
-      // First try to sign in as a doctor
-      let result = await signIn('doctor-credentials', {
+      // Use NextAuth with doctor-credentials provider
+      const result = await signIn('doctor-credentials', {
         email: data.email,
         password: data.password,
         redirect: false,
       });
-
-      // If doctor sign-in fails, try patient sign-in
-      if (result?.error) {
-        result = await signIn('patient-credentials', {
-          email: data.email,
-          password: data.password,
-          redirect: false,
-        });
-      }
 
       if (result?.error) {
         throw new Error(result?.error || 'Invalid email or password');
       }
 
       if (result?.ok) {
-        // Get session to determine role and redirect accordingly
+        // Get session to verify doctor role
         const sessionResponse = await fetch('/api/auth/session');
         const session = await sessionResponse.json();
         
-        let redirectUrl = callbackUrl;
-        
-        // Role-based redirect logic
-        if (session?.user?.role === 'doctor') {
-          redirectUrl = '/doctor';
-        } else if (session?.user?.role === 'admin') {
-          redirectUrl = '/admin';
-        } else if (callbackUrl === '/' || callbackUrl.includes('/auth/')) {
-          redirectUrl = '/dashboard';
+        if (session?.user?.role !== 'doctor') {
+          throw new Error('Access denied. Doctor account required.');
         }
-
+        
+        setError(null);
+        setSuccess('Login successful! Redirecting...');
+        
         setTimeout(() => {
-          router.push(redirectUrl);
+          router.push(callbackUrl);
           router.refresh();
-        }, 100);
+        }, 1000);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign in failed');
     }
   };
 
-  useEffect(() => {
-    const registered = searchParams.get('registered');
-    if (registered === 'true') {
-      setSuccess('Registration successful! Please sign in.');
-    }
-  }, [searchParams]);
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="flex justify-center mb-6">
+          <div className="p-3 bg-indigo-100 rounded-full">
+            <AcademicCapIcon className="h-8 w-8 text-indigo-600" />
+          </div>
+        </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Sign in to your account
+          Healthcare Provider Sign In
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Or{' '}
+          Access your BloomWell provider dashboard
+        </p>
+        <p className="mt-2 text-center text-sm text-gray-600">
+          Not a provider?{' '}
           <Link
-            href={`/auth/signup${callbackUrl ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ''}`}
+            href="/auth/signin"
             className="font-medium text-indigo-600 hover:text-indigo-500"
           >
-            create a new account
+            Patient sign in
           </Link>
         </p>
       </div>
@@ -128,6 +124,21 @@ function SignInContent() {
                 </div>
                 <div className="ml-3">
                   <p className="text-sm text-red-700">{error}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {success && (
+            <div className="mb-6 bg-green-50 border-l-4 border-green-400 p-4">
+              <div className="flex">
+                <div className="shrink-0">
+                  <svg className="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-green-700">{success}</p>
                 </div>
               </div>
             </div>
@@ -207,12 +218,6 @@ function SignInContent() {
                   Remember me
                 </label>
               </div>
-
-              {/* <div className="text-sm">
-                <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
-                  Forgot your password?
-                </a>
-              </div> */}
             </div>
 
             <div>
@@ -223,25 +228,30 @@ function SignInContent() {
                   isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >
-                {isSubmitting ? 'Signing in...' : 'Sign in'}
+                {isSubmitting ? 'Signing in...' : 'Sign In'}
               </button>
             </div>
           </form>
 
-          {success && (
-            <div className="mb-6 bg-green-50 border-l-4 border-green-400 p-4">
-              <div className="flex">
-                <div className="shrink-0">
-                  <svg className="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-green-700">{success}</p>
-                </div>
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">New to BloomWell?</span>
               </div>
             </div>
-          )}
+
+            <div className="mt-6">
+              <Link
+                href="/doctor/auth/register"
+                className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+              >
+                Create Healthcare Provider Account
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </div>

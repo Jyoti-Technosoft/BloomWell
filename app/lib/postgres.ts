@@ -29,8 +29,8 @@ if (process.env.NODE_ENV !== 'production') {
 //   throw new Error('❌ NEON_DATABASE_URL is not defined in environment variables');
 // }
 const pool = new Pool({
-  connectionString: process.env.NEON_DATABASE_URL, // Neon pooled URL
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false, // SSL only in production
+  connectionString: process.env.NEON_DATABASE_URL, // Neon database URL
+  ssl: process.env.NEON_DATABASE_URL?.includes('localhost') ? false : { rejectUnauthorized: false }, // SSL for non-localhost connections
   max: 20, // Maximum number of connections in the pool
   idleTimeoutMillis: 30000, // How long a client is allowed to remain idle before being closed
   connectionTimeoutMillis: 10000, // How long to wait when connecting a new client (reduced from 2000)

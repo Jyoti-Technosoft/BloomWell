@@ -7,7 +7,10 @@ declare module 'next-auth' {
       id?: string;
       name?: string | null;
       email?: string | null;
-      image?: string | null;
+      role?: string;
+      doctorProfileId?: string;
+      isVerified?: boolean;
+      verificationStatus?: string;
     };
   }
 }
@@ -15,14 +18,20 @@ declare module 'next-auth' {
 declare module 'next-auth/jwt' {
   interface JWT {
     id?: string;
+    role?: string;
+    doctorProfileId?: string;
+    isVerified?: boolean;
+    verificationStatus?: string;
   }
 }
 
 const handler = NextAuth({
   secret: process.env.JWT_SECRET,
   providers: [
+    // Patient credentials provider
     CredentialsProvider({
-      name: 'Credentials',
+      id: 'patient-credentials',
+      name: 'Patient Credentials',
       credentials: {
         email: { label: "Email", type: "email" },
         password: {  label: "Password", type: "password" }
@@ -31,41 +40,74 @@ const handler = NextAuth({
         if (!credentials?.email || !credentials?.password) return null;
 
         try {
-          // Call signin API to get decrypted user data
-          const baseUrl = process.env.NEXTAUTH_URL;
+          const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3001';
           const response = await fetch(`${baseUrl}/api/auth/signin`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(credentials)
           });
 
-          if (!response.ok) {
-            console.error('Signin API response not ok:', response.status);
-            return null;
-          }
+          if (!response.ok) return null;
 
           const data = await response.json();
-          if (data.error) {
-            console.error('Signin API returned error:', data.error);
+          if (data.error) return null;
+
+          if (!data.user || !data.user.id || !data.user.fullName) {
             return null;
           }
 
-          console.log('Signin API response:', data);
-
-          // Check if user data exists and has required fields
-          if (!data.user || !data.user.id || !data.user.fullName || !data.user.email) {
-            console.error('Invalid signin API response - missing user object:', data);
-            return null;
-          }
-
-          // The response structure is correct, so return the user object
           return {
             id: data.user.id,
-            name: data.user.fullName, // Use decrypted name from signin API
+            name: data.user.fullName,
             email: data.user.email,
+            role: data.user.role || 'patient'
           };
         } catch (error) {
-          console.error('Authorize function error:', error);
+          console.error('Patient authorize error:', error);
+          return null;
+        }
+      },
+    }),
+
+    // Doctor credentials provider
+    CredentialsProvider({
+      id: 'doctor-credentials',
+      name: 'Doctor Credentials',
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: {  label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) return null;
+
+        try {
+          const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3001';
+          const response = await fetch(`${baseUrl}/api/doctor/auth/signin`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(credentials)
+          });
+
+          if (!response.ok) return null;
+
+          const data = await response.json();
+          if (data.error) return null;
+
+          if (!data.user || !data.user.id || !data.user.email) {
+            return null;
+          }
+
+          return {
+            id: data.user.id,
+            name: data.user.name,
+            email: data.user.email,
+            role: data.user.role,
+            doctorProfileId: data.user.doctorProfileId,
+            isVerified: data.user.isVerified,
+            verificationStatus: data.user.verificationStatus
+          };
+        } catch (error) {
+          console.error('Doctor authorize error:', error);
           return null;
         }
       },
@@ -116,26 +158,30 @@ const handler = NextAuth({
     signIn: '/auth/signin',
   },
   callbacks: {
-    async jwt({ token, user }) {
-      console.log('JWT callback - token:', token);
-      console.log('JWT callback - user:', user);
-      
-      if (!user) {
-        console.error('JWT callback - user is null or undefined');
-        return token;
+    async jwt({ token, user, account }) {
+      // Initial sign in
+      if (user && account) {
+        return {
+          ...token,
+          id: user.id,
+          role: (user as any).role || 'patient',
+          doctorProfileId: (user as any).doctorProfileId,
+          isVerified: (user as any).isVerified,
+          verificationStatus: (user as any).verificationStatus
+        };
       }
       
-      if (!user.id) {
-        console.error('JWT callback - user.id is missing');
-        return token;
-      }
-      
-      token.id = user.id;
-      console.log('JWT callback - setting token.id to:', user.id);
       return token;
     },
+    
     async session({ session, token }) {
-      if (session.user) session.user.id = token.id as string;
+      if (session.user) {
+        session.user.id = token.id as string;
+        session.user.role = token.role as string;
+        session.user.doctorProfileId = token.doctorProfileId as string;
+        session.user.isVerified = token.isVerified as boolean;
+        session.user.verificationStatus = token.verificationStatus as string;
+      }
       return session;
     },
   },

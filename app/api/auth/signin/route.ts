@@ -20,7 +20,7 @@ export async function POST(request: Request) {
 
     // Find user
     const result = await pool.query(
-      'SELECT id, email, password_hash, full_name, phone_number, date_of_birth, healthcare_purpose, created_at FROM users WHERE email = $1',
+      'SELECT id, email, password_hash, full_name, phone_number, date_of_birth, healthcare_purpose, role, created_at FROM users WHERE email = $1',
       [email]
     );
     
@@ -60,6 +60,7 @@ export async function POST(request: Request) {
       healthcarePurpose: userWithoutPassword.healthcarePurpose,
       email: userWithoutPassword.email,
       id: userWithoutPassword.id,
+      role: userWithoutPassword.role || 'patient',
       created_at: userWithoutPassword.created_at
     };
     
