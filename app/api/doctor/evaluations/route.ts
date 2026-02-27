@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0');
     const status = searchParams.get('status');
 
-    // Build query
+    // Build query - filter by doctor_id for logged-in doctor
     let query = `
       SELECT e.*, u.full_name as patient_name, u.email as patient_email
       FROM evaluations e
@@ -48,13 +48,12 @@ export async function GET(request: NextRequest) {
     const params: any[] = [];
     let paramIndex = 1;
 
-    // For now, all doctors see all evaluations since they're not assigned to specific doctors
-    // In the future, when evaluations have doctor assignments, uncomment this:
-    // if (userRole === 'doctor') {
-    //   query += ` AND (e.doctor_id = $${paramIndex} OR e.status = 'pending_review')`;
-    //   params.push(doctorId);
-    //   paramIndex++;
-    // }
+    // Filter by logged-in doctor's ID
+    if (userRole === 'doctor') {
+      query += ` AND e.doctor_id = $${paramIndex}`;
+      params.push(doctorId);
+      paramIndex++;
+    }
 
     // Filter by status if provided
     if (status) {

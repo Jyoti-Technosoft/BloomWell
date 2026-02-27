@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
 
     const doctorId = userResult.rows[0].id;
 
-    // Get dashboard stats
+    // Get evaluation counts for this doctor
     const [
       totalEvaluationsResult,
       pendingEvaluationsResult,
@@ -48,20 +48,11 @@ export async function GET(request: NextRequest) {
       rejectedEvaluationsResult,
       totalPatientsResult
     ] = await Promise.all([
-      // Total evaluations in the system
-      pool.query('SELECT COUNT(*) as count FROM evaluations'),
-      
-      // All pending evaluations (doctors can see all pending evaluations)
-      pool.query('SELECT COUNT(*) as count FROM evaluations WHERE status = $1', ['pending_review']),
-      
-      // Approved evaluations
-      pool.query('SELECT COUNT(*) as count FROM evaluations WHERE status = $1', ['approved']),
-      
-      // Rejected evaluations
-      pool.query('SELECT COUNT(*) as count FROM evaluations WHERE status = $1', ['rejected']),
-      
-      // Total unique patients
-      pool.query('SELECT COUNT(DISTINCT user_id) as count FROM evaluations')
+      pool.query('SELECT COUNT(*) as count FROM evaluations WHERE doctor_id = $1', [doctorId]),
+      pool.query('SELECT COUNT(*) as count FROM evaluations WHERE doctor_id = $1 AND status = $2', [doctorId, 'pending_review']),
+      pool.query('SELECT COUNT(*) as count FROM evaluations WHERE doctor_id = $1 AND status = $2', [doctorId, 'approved']),
+      pool.query('SELECT COUNT(*) as count FROM evaluations WHERE doctor_id = $1 AND status = $2', [doctorId, 'rejected']),
+      pool.query('SELECT COUNT(DISTINCT user_id) as count FROM evaluations WHERE doctor_id = $1', [doctorId])
     ]);
 
     // Try to get today's appointments (table might not exist)

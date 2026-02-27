@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search') || '';
     const status = searchParams.get('status') || '';
 
-    // Build query to get patients who have submitted evaluations
+    // Build query to get patients assigned to this doctor
     let query = `
       SELECT DISTINCT 
         u.id,
@@ -66,11 +66,11 @@ export async function GET(request: NextRequest) {
         END) as last_pending_date
       FROM users u
       JOIN evaluations e ON u.id = e.user_id
-      WHERE u.role = 'patient'
+      WHERE u.role = 'patient' AND e.doctor_id = $1
     `;
     
-    const params: any[] = [];
-    let paramIndex = 1;
+    const params: any[] = [doctorId];
+    let paramIndex = 2;
 
     // Add search filter
     if (search) {

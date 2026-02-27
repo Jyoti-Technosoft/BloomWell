@@ -89,7 +89,7 @@ export default function Header() {
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center">
               <div className="shrink-0">
-                <Link href="/" className="text-xl font-bold text-gray-900">
+                <Link href={session?.user?.role === 'doctor' ? '/doctor' : '/'} className="text-xl font-bold text-gray-900">
                   <img
                     src="/bloomwell-logo.png"
                     alt="BloomWell - Women's Health"
@@ -210,7 +210,7 @@ export default function Header() {
                     >
                       <div className="py-1">
                         <Link
-                          href="/profile"
+                          href={session.user?.role === 'doctor' ? '/doctor/profile' : '/profile'}
                           onClick={() => setProfileDropdownOpen(false)}
                           className="block px-4 py-3 text-sm text-gray-700 hover:bg-linear-to-r hover:from-indigo-50 hover:to-purple-50 rounded-lg transition-all duration-200 ease-in-out"
                         >

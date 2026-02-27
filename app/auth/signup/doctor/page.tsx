@@ -24,6 +24,16 @@ interface FormData {
   deaNumber: string;
   professionalBio: string;
   
+  // Enhanced Professional Details
+  experienceYears: string;
+  education: string;
+  professionalRole: string;
+  workExperience: string;
+  specialties: string[];
+  publications: string[];
+  awards: string[];
+  certifications: string[];
+  
   // Practice Information
   consultationFee: string;
   languages: string[];
@@ -39,23 +49,31 @@ const specializations = [
   "Family Medicine", 
   "Internal Medicine",
   "Pediatrics",
+  "Cardiology",
+  "Dermatology",
   "Psychiatry",
-  "Dermatology"
-];
-
-const states = [
-  "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
-  "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
-  "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
-  "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
-  "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"
+  "Anesthesiology",
+  "Radiology",
+  "Pathology",
+  "Surgery",
+  "Emergency Medicine",
+  "Oncology",
+  "Neurology",
+  "Urology",
+  "Orthopedics",
+  "Ophthalmology",
+  "Otolaryngology (ENT)",
+  "Physical Medicine & Rehabilitation",
+  "Preventive Medicine"
 ];
 
 const languages = [
-  "English", "Spanish", "French", "German", "Chinese", "Hindi", "Arabic", "Portuguese"
+  "English", "Spanish", "French", "German", "Italian", "Portuguese", 
+  "Russian", "Chinese", "Japanese", "Korean", "Arabic", "Hindi", 
+  "Bengali", "Urdu", "Indonesian", "Vietnamese", "Thai", "Turkish"
 ];
 
-export default function DoctorRegister() {
+export default function DoctorSignUp() {
   const router = useRouter();
   const {
     register,
@@ -63,18 +81,21 @@ export default function DoctorRegister() {
     watch,
     formState: { errors, isSubmitting }
   } = useForm<FormData>();
-  
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState({ strength: 0, color: 'bg-gray-200' });
-  const [error, setError] = useState<string | null>(null);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [selectedLanguages, setSelectedLanguages] = useState<string[]>(['English']);
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [hospitalInput, setHospitalInput] = useState('');
   const [hospitalAffiliations, setHospitalAffiliations] = useState<string[]>([]);
+  const [specialties, setSpecialties] = useState<string[]>([]);
+  const [publications, setPublications] = useState<string[]>([]);
+  const [awards, setAwards] = useState<string[]>([]);
+  const [certifications, setCertifications] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const password = watch('password');
-  const confirmPassword = watch('confirmPassword');
 
   useEffect(() => {
     if (password) {
@@ -130,22 +151,34 @@ export default function DoctorRegister() {
     setHospitalAffiliations(prev => prev.filter(h => h !== hospital));
   };
 
+  const addToArray = (array: string[], setArray: React.Dispatch<React.SetStateAction<string[]>>, value: string) => {
+    if (value.trim() && !array.includes(value.trim())) {
+      setArray(prev => [...prev, value.trim()]);
+    }
+  };
+
+  const removeFromArray = (array: string[], setArray: React.Dispatch<React.SetStateAction<string[]>>, value: string) => {
+    setArray(prev => prev.filter(item => item !== value));
+  };
+
   const onSubmit = async (data: FormData) => {
     try {
       setError(null);
       
-      const submitData = {
-        ...data,
-        languages: selectedLanguages,
-        hospitalAffiliations: hospitalAffiliations
-      };
-
-      const response = await fetch('/api/doctor/auth/register', {
+      const response = await fetch('/api/doctor/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(submitData),
+        body: JSON.stringify({
+          ...data,
+          languages: selectedLanguages,
+          hospitalAffiliations,
+          specialties,
+          publications,
+          awards,
+          certifications,
+        }),
       });
 
       if (!response.ok) {
@@ -157,7 +190,7 @@ export default function DoctorRegister() {
       setIsSuccess(true);
       
       setTimeout(() => {
-        router.push('/doctor/auth/signin?message=registration-success');
+        router.push('/auth/signin?message=registration-success');
       }, 3000);
 
     } catch (err) {
@@ -265,13 +298,18 @@ export default function DoctorRegister() {
                     id="phoneNumber"
                     {...register("phoneNumber", { required: "Phone number is required" })}
                     className={inputClassName}
-                    placeholder="+1 (555) 123-4567"
                   />
                   {errors.phoneNumber && (
                     <p className="mt-1 text-sm text-red-600">{errors.phoneNumber.message}</p>
                   )}
                 </div>
+              </div>
+            </div>
 
+            {/* Password Section */}
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Security</h2>
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
                   <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                     Password *
@@ -291,33 +329,34 @@ export default function DoctorRegister() {
                     />
                     <button
                       type="button"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-500"
                     >
                       {showPassword ? (
-                        <EyeSlashIcon className="h-5 w-5" />
+                        <EyeSlashIcon className="h-5 w-5 text-gray-400" />
                       ) : (
-                        <EyeIcon className="h-5 w-5" />
+                        <EyeIcon className="h-5 w-5 text-gray-400" />
                       )}
                     </button>
+                  </div>
+                  <div className="mt-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-700">Password Strength</span>
+                      <div className="flex space-x-1">
+                        {[1, 2, 3, 4, 5].map((level) => (
+                          <div
+                            key={level}
+                            className={`h-2 w-8 rounded-full ${
+                              passwordStrength.strength >= level * 20 ? passwordStrength.color : 'bg-gray-200'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
                   </div>
                   {errors.password && (
                     <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
                   )}
-                  <div className="mt-2">
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className={`h-2 rounded-full transition-all duration-300 ${passwordStrength.color}`}
-                        style={{ width: `${passwordStrength.strength}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Password strength: {passwordStrength.strength < 20 ? "Very Weak" : 
-                                     passwordStrength.strength < 40 ? "Weak" :
-                                     passwordStrength.strength < 60 ? "Moderate" :
-                                     passwordStrength.strength < 80 ? "Strong" : "Very Strong"}
-                    </p>
-                  </div>
                 </div>
 
                 <div>
@@ -330,19 +369,19 @@ export default function DoctorRegister() {
                       id="confirmPassword"
                       {...register("confirmPassword", { 
                         required: "Please confirm your password",
-                        validate: value => value === password || "Passwords do not match"
+                        validate: (value) => value === watch('password') || "Passwords do not match"
                       })}
                       className={`${inputClassName} pr-10`}
                     />
                     <button
                       type="button"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-500"
                     >
                       {showConfirmPassword ? (
-                        <EyeSlashIcon className="h-5 w-5" />
+                        <EyeSlashIcon className="h-5 w-5 text-gray-400" />
                       ) : (
-                        <EyeIcon className="h-5 w-5" />
+                        <EyeIcon className="h-5 w-5 text-gray-400" />
                       )}
                     </button>
                   </div>
@@ -364,7 +403,7 @@ export default function DoctorRegister() {
                   <select
                     id="specialization"
                     {...register("specialization", { required: "Specialization is required" })}
-                    className={`${inputClassName} h-10`}
+                    className={inputClassName}
                   >
                     <option value="">Select your specialization</option>
                     {specializations.map(spec => (
@@ -378,7 +417,7 @@ export default function DoctorRegister() {
 
                 <div>
                   <label htmlFor="licenseNumber" className="block text-sm font-medium text-gray-700">
-                    Medical License Number *
+                    License Number *
                   </label>
                   <input
                     type="text"
@@ -395,16 +434,12 @@ export default function DoctorRegister() {
                   <label htmlFor="licenseState" className="block text-sm font-medium text-gray-700">
                     License State *
                   </label>
-                  <select
+                  <input
+                    type="text"
                     id="licenseState"
                     {...register("licenseState", { required: "License state is required" })}
-                    className={`${inputClassName} h-10`}
-                  >
-                    <option value="">Select state</option>
-                    {states.map(state => (
-                      <option key={state} value={state}>{state}</option>
-                    ))}
-                  </select>
+                    className={inputClassName}
+                  />
                   {errors.licenseState && (
                     <p className="mt-1 text-sm text-red-600">{errors.licenseState.message}</p>
                   )}
@@ -427,164 +462,222 @@ export default function DoctorRegister() {
 
                 <div>
                   <label htmlFor="npiNumber" className="block text-sm font-medium text-gray-700">
-                    NPI Number (Optional)
+                    NPI Number *
                   </label>
                   <input
                     type="text"
                     id="npiNumber"
-                    {...register("npiNumber")}
+                    {...register("npiNumber", { required: "NPI number is required" })}
                     className={inputClassName}
-                    placeholder="National Provider Identifier"
                   />
+                  {errors.npiNumber && (
+                    <p className="mt-1 text-sm text-red-600">{errors.npiNumber.message}</p>
+                  )}
                 </div>
 
                 <div>
                   <label htmlFor="deaNumber" className="block text-sm font-medium text-gray-700">
-                    DEA Number (Optional)
+                    DEA Number *
                   </label>
                   <input
                     type="text"
                     id="deaNumber"
-                    {...register("deaNumber")}
+                    {...register("deaNumber", { required: "DEA number is required" })}
                     className={inputClassName}
-                    placeholder="Drug Enforcement Administration number"
                   />
+                  {errors.deaNumber && (
+                    <p className="mt-1 text-sm text-red-600">{errors.deaNumber.message}</p>
+                  )}
                 </div>
+              </div>
 
-                <div className="sm:col-span-2">
-                  <label htmlFor="professionalBio" className="block text-sm font-medium text-gray-700">
-                    Professional Bio
+              <div className="mt-6">
+                <label htmlFor="professionalBio" className="block text-sm font-medium text-gray-700">
+                  Professional Bio
+                </label>
+                <textarea
+                  id="professionalBio"
+                  rows={4}
+                  {...register("professionalBio")}
+                  className={inputClassName}
+                  placeholder="Tell patients about your approach to care and expertise..."
+                />
+              </div>
+            </div>
+
+            {/* Enhanced Professional Details */}
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Enhanced Professional Details</h2>
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="experienceYears" className="block text-sm font-medium text-gray-700">
+                    Years of Experience
                   </label>
-                  <textarea
-                    id="professionalBio"
-                    rows={4}
-                    {...register("professionalBio")}
+                  <input
+                    type="number"
+                    id="experienceYears"
+                    {...register("experienceYears")}
                     className={inputClassName}
-                    placeholder="Brief professional background and areas of expertise..."
                   />
                 </div>
 
                 <div>
+                  <label htmlFor="professionalRole" className="block text-sm font-medium text-gray-700">
+                    Professional Role
+                  </label>
+                  <input
+                    type="text"
+                    id="professionalRole"
+                    {...register("professionalRole")}
+                    className={inputClassName}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <label htmlFor="education" className="block text-sm font-medium text-gray-700">
+                  Education
+                </label>
+                <textarea
+                  id="education"
+                  rows={3}
+                  {...register("education")}
+                  className={inputClassName}
+                  placeholder="Your educational background..."
+                />
+              </div>
+
+              <div className="mt-6">
+                <label htmlFor="workExperience" className="block text-sm font-medium text-gray-700">
+                  Work Experience
+                </label>
+                <textarea
+                  id="workExperience"
+                  rows={4}
+                  {...register("workExperience")}
+                  className={inputClassName}
+                  placeholder="Your professional experience..."
+                />
+              </div>
+            </div>
+
+            {/* Practice Information */}
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Practice Information</h2>
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
                   <label htmlFor="consultationFee" className="block text-sm font-medium text-gray-700">
-                    Standard Consultation Fee (USD)
+                    Consultation Fee ($)
                   </label>
                   <input
                     type="number"
                     id="consultationFee"
-                    step="0.01"
                     {...register("consultationFee")}
                     className={inputClassName}
-                    placeholder="150.00"
                   />
                 </div>
               </div>
-            </div>
 
-            {/* Languages */}
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Languages Spoken</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {languages.map(language => (
-                  <label key={language} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={selectedLanguages.includes(language)}
-                      onChange={() => handleLanguageToggle(language)}
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">{language}</span>
-                  </label>
-                ))}
+              <div className="mt-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Languages Spoken
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {languages.map(language => (
+                    <label key={language} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedLanguages.includes(language)}
+                        onChange={() => handleLanguageToggle(language)}
+                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded mr-2"
+                      />
+                      <span className="text-sm text-gray-700">{language}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* Hospital Affiliations */}
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Hospital Affiliations</h2>
-              <div className="flex gap-2 mb-3">
-                <input
-                  type="text"
-                  value={hospitalInput}
-                  onChange={(e) => setHospitalInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addHospital())}
-                  className={`${inputClassName} flex-1`}
-                  placeholder="Enter hospital name and press Enter"
-                />
-                <button
-                  type="button"
-                  onClick={addHospital}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-                >
-                  Add
-                </button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {hospitalAffiliations.map((hospital, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-indigo-100 text-indigo-800"
+              <div className="mt-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Hospital Affiliations
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={hospitalInput}
+                    onChange={(e) => setHospitalInput(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addHospital())}
+                    className={inputClassName}
+                    placeholder="Enter hospital name"
+                  />
+                  <button
+                    type="button"
+                    onClick={addHospital}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
                   >
-                    {hospital}
-                    <button
-                      type="button"
-                      onClick={() => removeHospital(hospital)}
-                      className="ml-2 text-indigo-600 hover:text-indigo-800"
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
+                    Add
+                  </button>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {hospitalAffiliations.map(hospital => (
+                    <span key={hospital} className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-indigo-100 text-indigo-800">
+                      {hospital}
+                      <button
+                        type="button"
+                        onClick={() => removeHospital(hospital)}
+                        className="ml-2 text-indigo-600 hover:text-indigo-800"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
 
-            {/* Terms and Conditions */}
+            {/* Terms */}
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Terms & Compliance</h2>
               <div className="space-y-4">
-                <div className="flex items-start">
+                <div className="flex items-center">
                   <input
+                    type="checkbox"
                     id="agreeTerms"
-                    type="checkbox"
-                    {...register("agreeTerms", { required: "You must agree to the terms of service" })}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded mt-1"
+                    {...register("agreeTerms", { 
+                      required: "You must agree to the terms of service"
+                    })}
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                   />
-                  <div className="ml-3 text-sm">
-                    <label htmlFor="agreeTerms" className="font-medium text-gray-700">
-                      I agree to the{" "}
-                      <Link href="/terms" className="text-indigo-600 hover:text-indigo-500" target="_blank">
-                        Terms of Service
-                      </Link>{" "}
-                      and{" "}
-                      <Link href="/privacy" className="text-indigo-600 hover:text-indigo-500" target="_blank">
-                        Privacy Policy
-                      </Link>
-                    </label>
-                    {errors.agreeTerms && (
-                      <p className="mt-1 text-sm text-red-600">{errors.agreeTerms.message}</p>
-                    )}
-                  </div>
+                  <label htmlFor="agreeTerms" className="ml-2 block text-sm text-gray-700">
+                    I agree to the{" "}
+                    <Link href="/terms" className="text-indigo-600 hover:text-indigo-500">
+                      Terms of Service
+                    </Link>{" "}
+                    and{" "}
+                    <Link href="/privacy" className="text-indigo-600 hover:text-indigo-500">
+                      Privacy Policy
+                    </Link>
+                  </label>
                 </div>
+                {errors.agreeTerms && (
+                  <p className="mt-1 text-sm text-red-600">{errors.agreeTerms.message}</p>
+                )}
 
-                <div className="flex items-start">
+                <div className="flex items-center">
                   <input
-                    id="agreeHipaa"
                     type="checkbox"
-                    {...register("agreeHipaa", { required: "You must agree to HIPAA compliance" })}
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded mt-1"
+                    id="agreeHipaa"
+                    {...register("agreeHipaa", { 
+                      required: "You must agree to HIPAA compliance"
+                    })}
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                   />
-                  <div className="ml-3 text-sm">
-                    <label htmlFor="agreeHipaa" className="font-medium text-gray-700">
-                      I agree to comply with{" "}
-                      <Link href="/hipaa" className="text-indigo-600 hover:text-indigo-500" target="_blank">
-                        HIPAA regulations
-                      </Link>{" "}
-                      and maintain patient confidentiality
-                    </label>
-                    {errors.agreeHipaa && (
-                      <p className="mt-1 text-sm text-red-600">{errors.agreeHipaa.message}</p>
-                    )}
-                  </div>
+                  <label htmlFor="agreeHipaa" className="ml-2 block text-sm text-gray-700">
+                    I agree to HIPAA compliance and maintain patient confidentiality
+                  </label>
                 </div>
+                {errors.agreeHipaa && (
+                  <p className="mt-1 text-sm text-red-600">{errors.agreeHipaa.message}</p>
+                )}
               </div>
             </div>
 
@@ -605,7 +698,7 @@ export default function DoctorRegister() {
                 <div className="flex">
                   <div className="shrink-0">
                     <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                     </svg>
                   </div>
                   <div className="ml-3">
@@ -638,7 +731,7 @@ export default function DoctorRegister() {
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
             Already have an account?{" "}
-            <Link href="/doctor/auth/signin" className="font-medium text-indigo-600 hover:text-indigo-500">
+            <Link href="/auth/signin" className="font-medium text-indigo-600 hover:text-indigo-500">
               Sign in here
             </Link>
           </p>

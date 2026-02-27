@@ -4,7 +4,7 @@ import pool from '@/app/lib/postgres';
 
 export async function GET(request: NextRequest) {
   try {
-    // Get NextAuth token from cookies
+    // Get NextAuth token from cookies - using same pattern as dashboard API
     const token = await getToken({ 
       req: request,
       secret: process.env.JWT_SECRET,
@@ -27,18 +27,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get user from database
-    const userEmail = token.email as string;
-    const userResult = await pool.query('SELECT id FROM users WHERE email = $1', [userEmail]);
-    
-    if (userResult.rows.length === 0) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
-    }
-
-    const doctorId = userResult.rows[0].id;
+    // Use token.id directly instead of email lookup
+    const doctorId = token.id as string;
 
     // Get query parameters
     const { searchParams } = new URL(request.url);
@@ -55,7 +45,7 @@ export async function GET(request: NextRequest) {
              e.medicine_name as evaluation_medicine,
              e.status as evaluation_status
       FROM appointments a
-      JOIN users u ON a.user_id = u.id
+      LEFT JOIN users u ON a.patient_id = u.id
       LEFT JOIN evaluations e ON a.evaluation_id = e.id
       WHERE a.doctor_id = $1
     `;
@@ -112,8 +102,15 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ appointments });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Doctor appointments fetch error:', error);
+    
+    // Handle missing appointments table gracefully
+    if (error.code === '42P01' && error.message.includes('relation "appointments" does not exist')) {
+      console.log('Appointments table does not exist, returning empty array');
+      return NextResponse.json({ appointments: [] });
+    }
+    
     return NextResponse.json(
       { error: 'Failed to fetch appointments' },
       { status: 500 }
@@ -245,8 +242,18 @@ export async function PUT(request: NextRequest) {
       }
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Appointment update error:', error);
+    
+    // Handle missing appointments table gracefully
+    if (error.code === '42P01' && error.message.includes('relation "appointments" does not exist')) {
+      console.log('Appointments table does not exist, cannot update appointment');
+      return NextResponse.json(
+        { error: 'Appointments feature is not available' },
+        { status: 503 }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Failed to update appointment' },
       { status: 500 }

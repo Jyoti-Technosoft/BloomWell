@@ -42,9 +42,8 @@ export async function GET(request: NextRequest) {
 
     // Get doctor profile
     const profileResult = await pool.query(
-      `SELECT dp.*, ds.name as specialization_name
+      `SELECT dp.*
        FROM doctor_profiles dp
-       LEFT JOIN doctor_specializations ds ON dp.specialization = ds.name
        WHERE dp.user_id = $1`,
       [userId]
     );
@@ -65,7 +64,9 @@ export async function GET(request: NextRequest) {
       lastName: profile.last_name,
       email: profile.email,
       phoneNumber: profile.phone_number,
-      specialization: profile.specialization_name || profile.specialization,
+      // Use specialties field (from physicians) instead of specialization
+      specialization: profile.specialties || profile.specialization,
+      role: profile.role,
       licenseNumber: profile.license_number,
       licenseState: profile.license_state,
       licenseExpiryDate: profile.license_expiry_date,
@@ -79,6 +80,15 @@ export async function GET(request: NextRequest) {
       verificationStatus: profile.verification_status,
       verificationDate: profile.verification_date,
       rejectionReason: profile.rejection_reason,
+      // Enhanced fields
+      experienceYears: profile.experience_years,
+      education: profile.education,
+      professionalRole: profile.professional_role,
+      workExperience: profile.work_experience,
+      specialties: profile.specialties,
+      publications: profile.publications,
+      awards: profile.awards,
+      certifications: profile.certifications,
       createdAt: profile.created_at,
       updatedAt: profile.updated_at
     };
@@ -144,13 +154,24 @@ export async function PUT(request: NextRequest) {
     let paramIndex = 1;
 
     const allowedFields = [
-      'phoneNumber', 'professionalBio', 'consultationFee', 
-      'languages', 'hospitalAffiliations'
+      'firstName', 'lastName', 'phoneNumber', 'professionalBio', 'consultationFee', 
+      'languages', 'hospitalAffiliations', 'role', 'specialization', 'experienceYears',
+      'education', 'workExperience', 'professionalRole'
     ];
 
     for (const field of allowedFields) {
       if (updateData[field] !== undefined) {
         switch (field) {
+          case 'firstName':
+            updateQuery += `, first_name = $${paramIndex}`;
+            updateParams.push(updateData[field]);
+            paramIndex++;
+            break;
+          case 'lastName':
+            updateQuery += `, last_name = $${paramIndex}`;
+            updateParams.push(updateData[field]);
+            paramIndex++;
+            break;
           case 'phoneNumber':
             updateQuery += `, phone_number = $${paramIndex}`;
             updateParams.push(updateData[field]);
@@ -174,6 +195,36 @@ export async function PUT(request: NextRequest) {
           case 'hospitalAffiliations':
             updateQuery += `, hospital_affiliations = $${paramIndex}`;
             updateParams.push(JSON.stringify(updateData[field]));
+            paramIndex++;
+            break;
+          case 'role':
+            updateQuery += `, role = $${paramIndex}`;
+            updateParams.push(updateData[field]);
+            paramIndex++;
+            break;
+          case 'specialization':
+            updateQuery += `, specialization = $${paramIndex}`;
+            updateParams.push(updateData[field]);
+            paramIndex++;
+            break;
+          case 'experienceYears':
+            updateQuery += `, experience_years = $${paramIndex}`;
+            updateParams.push(parseInt(updateData[field]));
+            paramIndex++;
+            break;
+          case 'education':
+            updateQuery += `, education = $${paramIndex}`;
+            updateParams.push(updateData[field]);
+            paramIndex++;
+            break;
+          case 'workExperience':
+            updateQuery += `, work_experience = $${paramIndex}`;
+            updateParams.push(updateData[field]);
+            paramIndex++;
+            break;
+          case 'professionalRole':
+            updateQuery += `, professional_role = $${paramIndex}`;
+            updateParams.push(updateData[field]);
             paramIndex++;
             break;
         }

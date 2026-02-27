@@ -19,7 +19,9 @@ interface DoctorProfile {
   lastName: string;
   email: string;
   phoneNumber: string;
+  // Using specialties field from physicians table
   specialization: string;
+  role: string;
   licenseNumber: string;
   licenseState: string;
   licenseExpiryDate: string;
@@ -33,6 +35,15 @@ interface DoctorProfile {
   verificationStatus: string;
   verificationDate?: string;
   rejectionReason?: string;
+  // Enhanced fields
+  experienceYears?: number;
+  education?: string;
+  professionalRole?: string;
+  workExperience?: string;
+  specialties?: string;
+  publications?: string;
+  awards?: string;
+  certifications?: string;
 }
 
 export default function DoctorProfile() {
@@ -50,22 +61,43 @@ export default function DoctorProfile() {
       return;
     }
 
-    if (status === 'authenticated' && session?.user?.doctorProfileId) {
+    if (status === 'authenticated') {
       fetchProfile();
     }
   }, [status, session, router]);
 
   const fetchProfile = async () => {
     try {
+      console.log('🔄 Fetching doctor profile...');
       const response = await fetch('/api/doctor/profile');
+      console.log('📡 API Response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
-        setProfile(data.profile);
-        setEditForm(data.profile);
+        console.log('🔍 Full API Response:', data);
+        console.log('📊 Profile data received:', data.profile);
+        console.log('� Enhanced fields status:', {
+          experienceYears: data.profile?.experienceYears ? '✅' : '❌',
+          education: data.profile?.education ? '✅' : '❌',
+          professionalRole: data.profile?.professionalRole ? '✅' : '❌',
+          workExperience: data.profile?.workExperience ? '✅' : '❌',
+          role: data.profile?.role ? '✅' : '❌',
+          specialties: data.profile?.specialties ? '✅' : '❌'
+        });
+        
+        if (data.profile) {
+          setProfile(data.profile);
+          setEditForm(data.profile);
+          console.log('✅ Profile set in state');
+        } else {
+          console.error('❌ No profile data in response');
+        }
       } else {
-        throw new Error('Failed to fetch profile');
+        const errorText = await response.text();
+        console.error('❌ API Error:', response.status, errorText);
       }
     } catch (error) {
+      console.error('❌ Fetch error:', error);
       setToast({
         message: 'Failed to load profile',
         type: 'error'
@@ -234,116 +266,461 @@ export default function DoctorProfile() {
       {/* Profile Content */}
       <div className="bg-white shadow overflow-hidden sm:rounded-lg">
         <div className="px-4 py-5 sm:p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            
-            {/* Personal Information */}
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                <AcademicCapIcon className="h-5 w-5 mr-2 text-indigo-600" />
-                Personal Information
-              </h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Full Name</label>
-                  <p className="mt-1 text-sm text-gray-900">
-                    {profile.firstName} {profile.lastName}
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Email Address</label>
-                  <p className="mt-1 text-sm text-gray-900">{profile.email}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Phone Number</label>
-                  <p className="mt-1 text-sm text-gray-900">{profile.phoneNumber}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Professional Information */}
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                <DocumentTextIcon className="h-5 w-5 mr-2 text-indigo-600" />
-                Professional Information
-              </h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Specialization</label>
-                  <p className="mt-1 text-sm text-gray-900">{profile.specialization}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">License Number</label>
-                  <p className="mt-1 text-sm text-gray-900">{profile.licenseNumber}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">License State</label>
-                  <p className="mt-1 text-sm text-gray-900">{profile.licenseState}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">License Expiry</label>
-                  <p className="mt-1 text-sm text-gray-900">
-                    {new Date(profile.licenseExpiryDate).toLocaleDateString()}
-                  </p>
-                </div>
-                {profile.npiNumber && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">NPI Number</label>
-                    <p className="mt-1 text-sm text-gray-900">{profile.npiNumber}</p>
-                  </div>
-                )}
-                {profile.deaNumber && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">DEA Number</label>
-                    <p className="mt-1 text-sm text-gray-900">{profile.deaNumber}</p>
-                  </div>
-                )}
-                {profile.consultationFee && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Consultation Fee</label>
-                    <p className="mt-1 text-sm text-gray-900">${profile.consultationFee}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Professional Bio */}
-          {profile.professionalBio && (
-            <div className="mt-8">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Professional Bio</h3>
-              <p className="text-sm text-gray-700 whitespace-pre-wrap">{profile.professionalBio}</p>
-            </div>
-          )}
-
-          {/* Languages */}
-          {profile.languages && profile.languages.length > 0 && (
-            <div className="mt-8">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Languages Spoken</h3>
-              <div className="flex flex-wrap gap-2">
-                {profile.languages.map((language, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-indigo-100 text-indigo-800"
+          {editing ? (
+            /* Edit Form */
+            <div className="space-y-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Edit Profile</h2>
+                <div className="flex space-x-3">
+                  <button
+                    onClick={handleCancel}
+                    className="px-6 py-2.5 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 transform hover:scale-105"
                   >
-                    {language}
-                  </span>
-                ))}
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSave}
+                    className="px-6 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 transform hover:scale-105 hover:shadow-lg"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Personal Information */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Personal Information</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                      <input
+                        type="text"
+                        value={editForm.firstName || ''}
+                        onChange={(e) => handleInputChange('firstName', e.target.value)}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 hover:border-gray-400"
+                        placeholder="Enter your first name"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                      <input
+                        type="text"
+                        value={editForm.lastName || ''}
+                        onChange={(e) => handleInputChange('lastName', e.target.value)}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 hover:border-gray-400"
+                        placeholder="Enter your last name"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                      <input
+                        type="email"
+                        value={editForm.email || ''}
+                        onChange={(e) => handleInputChange('email', e.target.value)}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-gray-50 text-gray-500 cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
+                        placeholder="your.email@example.com"
+                        disabled
+                      />
+                      <p className="mt-1 text-xs text-gray-500">Email cannot be changed</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                      <input
+                        type="tel"
+                        value={editForm.phoneNumber || ''}
+                        onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 hover:border-gray-400"
+                        placeholder="+1 (555) 123-4567"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Professional Information */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Professional Information</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Professional Role</label>
+                      <input
+                        type="text"
+                        value={editForm.role || ''}
+                        onChange={(e) => handleInputChange('role', e.target.value)}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 hover:border-gray-400"
+                        placeholder="e.g., Medical Director, Attending Physician"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Specialization</label>
+                      <textarea
+                        value={editForm.specialization || ''}
+                        onChange={(e) => handleInputChange('specialization', e.target.value)}
+                        rows={3}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 hover:border-gray-400 resize-none"
+                        placeholder="Describe your medical specializations..."
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Years of Experience</label>
+                      <input
+                        type="number"
+                        value={editForm.experienceYears || ''}
+                        onChange={(e) => handleInputChange('experienceYears', parseInt(e.target.value))}
+                        min="0"
+                        max="50"
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 hover:border-gray-400"
+                        placeholder="15"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">License Number</label>
+                      <input
+                        type="text"
+                        value={editForm.licenseNumber || ''}
+                        onChange={(e) => handleInputChange('licenseNumber', e.target.value)}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 hover:border-gray-400"
+                        placeholder="MD123456"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Additional Fields */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Education & Experience</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Education</label>
+                      <textarea
+                        value={editForm.education || ''}
+                        onChange={(e) => handleInputChange('education', e.target.value)}
+                        rows={4}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 hover:border-gray-400 resize-none"
+                        placeholder="MD from Stanford University, Residency at Brigham and Women's Hospital..."
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Work Experience</label>
+                      <textarea
+                        value={editForm.workExperience || ''}
+                        onChange={(e) => handleInputChange('workExperience', e.target.value)}
+                        rows={4}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 hover:border-gray-400 resize-none"
+                        placeholder="Describe your professional experience and background..."
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Professional Bio</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Professional Bio</label>
+                      <textarea
+                        value={editForm.professionalBio || ''}
+                        onChange={(e) => handleInputChange('professionalBio', e.target.value)}
+                        rows={6}
+                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 hover:border-gray-400 resize-none"
+                        placeholder="Tell patients about your approach to care, special interests, and what makes your practice unique..."
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          )}
+          ) : (
+            /* View Mode */
+            <div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                {/* Personal Information */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <AcademicCapIcon className="h-5 w-5 mr-2 text-indigo-600" />
+                    Personal Information
+                  </h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                      <p className="mt-1 text-sm text-gray-900">
+                        {profile.firstName} {profile.lastName}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Email Address</label>
+                      <p className="mt-1 text-sm text-gray-900">{profile.email}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+                      <p className="mt-1 text-sm text-gray-900">{profile.phoneNumber}</p>
+                    </div>
+                  </div>
+                </div>
 
-          {/* Hospital Affiliations */}
-          {profile.hospitalAffiliations && profile.hospitalAffiliations.length > 0 && (
-            <div className="mt-8">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Hospital Affiliations</h3>
-              <ul className="text-sm text-gray-700 space-y-1">
-                {profile.hospitalAffiliations.map((hospital, index) => (
-                  <li key={index} className="flex items-center">
-                    <span className="h-2 w-2 bg-indigo-600 rounded-full mr-2"></span>
-                    {hospital}
-                  </li>
-                ))}
-              </ul>
+                {/* Professional Information - Doctor Specific */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <DocumentTextIcon className="h-5 w-5 mr-2 text-indigo-600" />
+                    Professional Information
+                  </h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Professional Role</label>
+                      <p className="mt-1 text-sm text-gray-900">{profile.role}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Specialization</label>
+                      <p className="mt-1 text-sm text-gray-900">{profile.specialization}</p>
+                    </div>
+                    {profile.experienceYears && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Years of Experience</label>
+                        <p className="mt-1 text-sm text-gray-900">{profile.experienceYears} years</p>
+                      </div>
+                    )}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">License Number</label>
+                      <p className="mt-1 text-sm text-gray-900">{profile.licenseNumber}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">License State</label>
+                      <p className="mt-1 text-sm text-gray-900">{profile.licenseState}</p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">License Expiry</label>
+                      <p className="mt-1 text-sm text-gray-900">
+                        {new Date(profile.licenseExpiryDate).toLocaleDateString()}
+                      </p>
+                    </div>
+                    {profile.npiNumber && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">NPI Number</label>
+                        <p className="mt-1 text-sm text-gray-900">{profile.npiNumber}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Medical Credentials */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <AcademicCapIcon className="h-5 w-5 mr-2 text-indigo-600" />
+                    Medical Credentials
+                  </h3>
+                  <div className="space-y-4">
+                    {profile.education && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Education</label>
+                        <p className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{profile.education}</p>
+                      </div>
+                    )}
+                    {profile.professionalRole && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Professional Role</label>
+                        <p className="mt-1 text-sm text-gray-900">{profile.professionalRole}</p>
+                      </div>
+                    )}
+                    {profile.workExperience && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Work Experience</label>
+                        <p className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{profile.workExperience}</p>
+                      </div>
+                    )}
+                    {profile.consultationFee && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Consultation Fee</label>
+                        <p className="mt-1 text-sm text-gray-900">${profile.consultationFee}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Enhanced Professional Details */}
+              <div className="mt-8">
+                <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                  <AcademicCapIcon className="h-5 w-5 mr-2 text-indigo-600" />
+                  Professional Details
+                </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    {profile.experienceYears && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Years of Experience</label>
+                        <p className="mt-1 text-sm text-gray-900">{profile.experienceYears} years</p>
+                      </div>
+                    )}
+                    {profile.education && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Education</label>
+                        <p className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{profile.education}</p>
+                      </div>
+                    )}
+                    {profile.workExperience && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Work Experience</label>
+                        <p className="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{profile.workExperience}</p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-4">
+                    {profile.specialties && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">Specialties</label>
+                        <div className="mt-1">
+                          {(() => {
+                            try {
+                              const specialties = JSON.parse(profile.specialties);
+                              return Array.isArray(specialties) ? (
+                                <div className="flex flex-wrap gap-2">
+                                  {specialties.map((specialty, index) => (
+                                    <span
+                                      key={index}
+                                      className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-800"
+                                    >
+                                      {specialty}
+                                    </span>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-sm text-gray-900">{profile.specialties}</p>
+                              );
+                            } catch (e) {
+                              return <p className="text-sm text-gray-900">{profile.specialties}</p>;
+                            }
+                          })()}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Achievements & Certifications */}
+              <div className="mt-8">
+                <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                  <DocumentTextIcon className="h-5 w-5 mr-2 text-indigo-600" />
+                  Achievements & Certifications
+                </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  {profile.certifications && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Certifications</label>
+                      <div className="space-y-2">
+                        {(() => {
+                          try {
+                            const certifications = JSON.parse(profile.certifications);
+                            return Array.isArray(certifications) ? (
+                              certifications.map((cert, index) => (
+                                <div key={index} className="flex items-center">
+                                  <CheckCircleIcon className="h-4 w-4 text-green-500 mr-2" />
+                                  <span className="text-sm text-gray-900">{cert}</span>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-sm text-gray-900">{profile.certifications}</p>
+                            );
+                          } catch (e) {
+                            return <p className="text-sm text-gray-900">{profile.certifications}</p>;
+                          }
+                        })()}
+                      </div>
+                    </div>
+                  )}
+                  {profile.awards && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Awards</label>
+                      <div className="space-y-2">
+                        {(() => {
+                          try {
+                            const awards = JSON.parse(profile.awards);
+                            return Array.isArray(awards) && awards.length > 0 ? (
+                              awards.map((award, index) => (
+                                <div key={index} className="flex items-center">
+                                  <CheckCircleIcon className="h-4 w-4 text-yellow-500 mr-2" />
+                                  <span className="text-sm text-gray-900">{award}</span>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-sm text-gray-500">No awards listed</p>
+                            );
+                          } catch (e) {
+                            return <p className="text-sm text-gray-900">{profile.awards}</p>;
+                          }
+                        })()}
+                      </div>
+                    </div>
+                  )}
+                  {profile.publications && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Publications</label>
+                      <div className="space-y-2">
+                        {(() => {
+                          try {
+                            const publications = JSON.parse(profile.publications);
+                            return Array.isArray(publications) && publications.length > 0 ? (
+                              publications.map((pub, index) => (
+                                <div key={index} className="flex items-center">
+                                  <DocumentTextIcon className="h-4 w-4 text-blue-500 mr-2" />
+                                  <span className="text-sm text-gray-900">{pub}</span>
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-sm text-gray-500">No publications listed</p>
+                            );
+                          } catch (e) {
+                            return <p className="text-sm text-gray-900">{profile.publications}</p>;
+                          }
+                        })()}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Professional Bio */}
+              {profile.professionalBio && (
+                <div className="mt-8">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Professional Bio</h3>
+                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{profile.professionalBio}</p>
+                </div>
+              )}
+
+              {/* Languages */}
+              {profile.languages && profile.languages.length > 0 && (
+                <div className="mt-8">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Languages Spoken</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {profile.languages.map((language, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-indigo-100 text-indigo-800"
+                      >
+                        {language}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Hospital Affiliations */}
+              {profile.hospitalAffiliations && profile.hospitalAffiliations.length > 0 && (
+                <div className="mt-8">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Hospital Affiliations</h3>
+                  <ul className="text-sm text-gray-700 space-y-1">
+                    {profile.hospitalAffiliations.map((hospital, index) => (
+                      <li key={index} className="flex items-center">
+                        <span className="h-2 w-2 bg-indigo-600 rounded-full mr-2"></span>
+                        {hospital}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           )}
         </div>
