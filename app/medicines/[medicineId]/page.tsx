@@ -20,6 +20,7 @@ import IdentityVerification from '../../components/IdentityVerification';
 import TreatmentRecommendation from '../../components/TreatmentRecommendation';
 import EvaluationStatus from '../../../components/EvaluationStatus';
 import PaymentModal from '../../../components/PaymentModal';
+import DoctorSelection from '../../../components/DoctorSelection';
 import { Medicine } from '../../lib/types';
 
 export default function MedicinePage({ params }: { params: Promise<{ medicineId: string }> }) {
@@ -38,7 +39,9 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
   const [showRecommendation, setShowRecommendation] = useState(false);
   const [showEvaluationStatus, setShowEvaluationStatus] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
+  const [showDoctorSelection, setShowDoctorSelection] = useState(false);
   const [questionnaireData, setQuestionnaireData] = useState<any>(null);
+  const [selectedDoctor, setSelectedDoctor] = useState<any>(null);
   const [currentEvaluationId, setCurrentEvaluationId] = useState<string | null>(null);
   const [pendingEvaluations, setPendingEvaluations] = useState<string[]>([]);
 
@@ -175,8 +178,18 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
       return;
     }
 
-    // Start the questionnaire flow
+    // Start with doctor selection
+    setShowDoctorSelection(true);
+  };
+
+  const handleDoctorSelected = (doctor: any) => {
+    setSelectedDoctor(doctor);
+    setShowDoctorSelection(false);
     setShowQuestionnaire(true);
+  };
+
+  const handleDoctorSelectionBack = () => {
+    setShowDoctorSelection(false);
   };
 
   const handleQuestionnaireComplete = (formData: any) => {
@@ -200,7 +213,7 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
 
   const handleRecommendationProceed = async () => {
     try {
-      // Submit the evaluation data to the backend with authentication
+      // Submit the evaluation data to the backend with authentication and selected doctor
       const response = await fetch('/api/evaluations', {
         method: 'POST',
         headers: {
@@ -212,7 +225,8 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
         body: JSON.stringify({
           ...questionnaireData,
           medicineId: medicineId,
-          medicineName: medicine?.name || 'Unknown Medicine'
+          medicineName: medicine?.name || 'Unknown Medicine',
+          doctorId: selectedDoctor?.id // NEW: Include selected doctor
         }),
       });
 
@@ -228,7 +242,7 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
       setShowEvaluationStatus(true);
 
       setToast({
-        message: 'Evaluation submitted successfully! Our medical team will review your information.',
+        message: `Evaluation submitted successfully! Dr. ${selectedDoctor?.full_name} will review your information.`,
         type: 'success'
       });
 
@@ -247,6 +261,7 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
     setShowRecommendation(false);
     setShowEvaluationStatus(false);
     setShowPayment(false);
+    setShowDoctorSelection(false);
   };
 
   const handleEvaluationStatusPayment = (evaluationData: any) => {
@@ -598,6 +613,15 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
           message={toast.message}
           type={toast.type}
           onClose={handleCloseToast}
+        />
+      )}
+
+      {/* Doctor Selection Modal */}
+      {showDoctorSelection && (
+        <DoctorSelection
+          consultationType={medicine?.category?.toLowerCase().replace(' ', '-')}
+          onDoctorSelected={handleDoctorSelected}
+          onBack={handleDoctorSelectionBack}
         />
       )}
 

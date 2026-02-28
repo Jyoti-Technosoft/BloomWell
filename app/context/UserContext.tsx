@@ -36,6 +36,40 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
   }, [session, status]);
 
+  // Global session validation - check if session is still valid
+  useEffect(() => {
+    if (status !== 'authenticated' || !session) return;
+
+    const validateSession = async () => {
+      try {
+        const response = await fetch('/api/auth/session', {
+          credentials: 'include',
+        });
+        
+        if (!response.ok) {
+          console.log(' Session validation failed, clearing session...');
+          // Session is invalid, clear everything and redirect
+          localStorage.clear();
+          sessionStorage.clear();
+          setUser(null);
+          window.location.href = '/auth/signin';
+        }
+      } catch (error) {
+        console.log(' Session validation error, clearing session...');
+        localStorage.clear();
+        sessionStorage.clear();
+        setUser(null);
+        window.location.href = '/auth/signin';
+      }
+    };
+
+    // Validate session immediately and then every 5 minutes
+    validateSession();
+    const interval = setInterval(validateSession, 5 * 60 * 1000); // 5 minutes
+
+    return () => clearInterval(interval);
+  }, [status, session]);
+
   const logout = async () => {
     try {
       await fetch('/api/auth/signout', {

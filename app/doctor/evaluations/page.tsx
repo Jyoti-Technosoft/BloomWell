@@ -10,6 +10,8 @@ import {
   ExclamationTriangleIcon,
   FunnelIcon
 } from '@heroicons/react/24/outline';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import Toast from '../../components/Toast';
 
 interface Evaluation {
@@ -34,8 +36,11 @@ interface ReviewForm {
 }
 
 export default function DoctorEvaluations() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedEvaluation, setSelectedEvaluation] = useState<Evaluation | null>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>('pending_review');
@@ -49,29 +54,86 @@ export default function DoctorEvaluations() {
   });
   const [submittingReview, setSubmittingReview] = useState(false);
 
+  // Enhanced fetch with auth handling
+  const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
+    // Check if user is authenticated before making request
+    if (status === 'unauthenticated') {
+      console.log('🔐 User not authenticated, redirecting to login...');
+      const currentPath = window.location.pathname;
+      const callbackUrl = encodeURIComponent(currentPath);
+      router.push(`/auth/signin?callbackUrl=${callbackUrl}`);
+      throw new Error('User not authenticated');
+    }
+
+    const response = await fetch(url, {
+      ...options,
+      credentials: 'include', // Ensure cookies are sent
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+
+    // Handle 401 Unauthorized globally
+    if (response.status === 401) {
+      console.log('🔐 Session expired, redirecting to login...');
+      
+      // Clear local storage
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Redirect to login page with callback
+      const currentPath = window.location.pathname;
+      const callbackUrl = encodeURIComponent(currentPath);
+      window.location.href = `/auth/signin?callbackUrl=${callbackUrl}`;
+      
+      throw new Error('Session expired - redirecting to login');
+    }
+
+    // Handle 403 Forbidden
+    if (response.status === 403) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || 'Access denied');
+    }
+
+    // Handle other HTTP errors
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    return response;
+  };
+
   useEffect(() => {
+    if (status === 'loading') return;
+    if (status === 'unauthenticated') return; // Will be handled by useAuthenticatedApi
+    
     fetchEvaluations();
-  }, [filterStatus]);
+  }, [filterStatus, status]);
 
   const fetchEvaluations = async () => {
     try {
       setLoading(true);
+      setError(null);
       const params = new URLSearchParams();
       if (filterStatus !== 'all') {
         params.append('status', filterStatus);
       }
       
-      const response = await fetch(`/api/doctor/evaluations?${params}`);
-      if (response.ok) {
-        const data = await response.json();
-        setEvaluations(data.evaluations || []);
-      }
+      const response = await authenticatedFetch(`/api/evaluations?${params}`);
+      const data = await response.json();
+      setEvaluations(data.evaluations || []);
+      
     } catch (error) {
       console.error('Error fetching evaluations:', error);
-      setToast({
-        message: 'Failed to fetch evaluations',
-        type: 'error'
-      });
+      if (error instanceof Error && !error.message.includes('redirecting')) {
+        setError(error.message);
+        setToast({
+          message: error.message || 'Failed to fetch evaluations',
+          type: 'error'
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -116,7 +178,7 @@ export default function DoctorEvaluations() {
 
     try {
       setSubmittingReview(true);
-      const response = await fetch(`/api/evaluations/${selectedEvaluation.id}/review`, {
+      const response = await authenticatedFetch(`/api/evaluations/${selectedEvaluation.id}/review`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -130,25 +192,23 @@ export default function DoctorEvaluations() {
         }),
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setToast({
-          message: `Evaluation ${reviewForm.approved ? 'approved' : 'rejected'} successfully`,
-          type: 'success'
-        });
-        setShowReviewModal(false);
-        setSelectedEvaluation(null);
-        fetchEvaluations(); // Refresh the list
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to submit review');
-      }
+      const data = await response.json();
+      setToast({
+        message: `Evaluation ${reviewForm.approved ? 'approved' : 'rejected'} successfully`,
+        type: 'success'
+      });
+      setShowReviewModal(false);
+      setSelectedEvaluation(null);
+      fetchEvaluations(); // Refresh the list
+      
     } catch (error) {
       console.error('Error submitting review:', error);
-      setToast({
-        message: error instanceof Error ? error.message : 'Failed to submit review',
-        type: 'error'
-      });
+      if (error instanceof Error && !error.message.includes('redirecting')) {
+        setToast({
+          message: error.message || 'Failed to submit review',
+          type: 'error'
+        });
+      }
     } finally {
       setSubmittingReview(false);
     }
@@ -163,6 +223,23 @@ export default function DoctorEvaluations() {
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
         <span className="ml-3 text-gray-600">Loading evaluations...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-md mx-auto mt-8">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h3 className="text-lg font-medium text-red-800 mb-2">Error Loading Evaluations</h3>
+          <p className="text-red-600 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }

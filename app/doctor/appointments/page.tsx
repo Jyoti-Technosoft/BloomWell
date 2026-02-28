@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import { 
   CalendarIcon,
   ClockIcon,
-  UserIcon,
   CheckCircleIcon,
   XMarkIcon,
   ExclamationTriangleIcon,
@@ -12,6 +11,8 @@ import {
   DocumentTextIcon,
   FunnelIcon
 } from '@heroicons/react/24/outline';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import Toast from '../../components/Toast';
 
 interface Appointment {
@@ -19,20 +20,25 @@ interface Appointment {
   patientName: string;
   patientEmail: string;
   patientPhone?: string;
-  evaluationId?: string;
-  evaluationMedicine?: string;
-  evaluationStatus?: string;
   appointmentType: string;
-  status: 'scheduled' | 'completed' | 'cancelled' | 'no_show';
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'no_show';
   scheduledAt: string;
   durationMinutes: number;
   notes?: string;
+  doctorName: string;
+  doctorSpecialty: string;
+  consultationType: string;
+  medicalHistory?: string;
+  medications?: string;
+  allergies?: string;
+  preferredPharmacy?: string;
+  insuranceProvider?: string;
+  consultationFee?: number;
   prescription?: string;
   doctorNotes?: string;
   meetingLink?: string;
   createdAt: string;
   updatedAt: string;
-  cancelledAt?: string;
   cancellationReason?: string;
 }
 
@@ -45,8 +51,11 @@ interface AppointmentUpdate {
 }
 
 export default function DoctorAppointments() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
@@ -62,32 +71,154 @@ export default function DoctorAppointments() {
   });
   const [submitting, setSubmitting] = useState(false);
 
+  // Enhanced fetch with auth handling
+  const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
+    // Check if user is authenticated before making request
+    if (status === 'unauthenticated') {
+      console.log('🔐 User not authenticated, redirecting to login...');
+      const currentPath = window.location.pathname;
+      const callbackUrl = encodeURIComponent(currentPath);
+      router.push(`/auth/signin?callbackUrl=${callbackUrl}`);
+      throw new Error('User not authenticated');
+    }
+
+    const response = await fetch(url, {
+      ...options,
+      credentials: 'include', // Ensure cookies are sent
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+
+    // Handle 401 Unauthorized globally
+    if (response.status === 401) {
+      console.log('🔐 Session expired, redirecting to login...');
+      
+      // Clear local storage
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Redirect to login page with callback
+      const currentPath = window.location.pathname;
+      const callbackUrl = encodeURIComponent(currentPath);
+      window.location.href = `/auth/signin?callbackUrl=${callbackUrl}`;
+      
+      throw new Error('Session expired - redirecting to login');
+    }
+
+    // Handle 403 Forbidden
+    if (response.status === 403) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || 'Access denied');
+    }
+
+    // Handle other HTTP errors
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    return response;
+  };
+
   useEffect(() => {
+    if (status === 'loading') return;
+    if (status === 'unauthenticated') return; // Will be handled by authentication guard
+    
     fetchAppointments();
-  }, [filterStatus, filterDate]);
+  }, [filterStatus, filterDate, status]);
 
   const fetchAppointments = async () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams();
-      if (filterStatus !== 'all') {
-        params.append('status', filterStatus);
-      }
-      if (filterDate !== 'all') {
-        params.append('date', filterDate);
-      }
+      setError(null);
       
-      const response = await fetch(`/api/doctor/appointments?${params}`);
-      if (response.ok) {
-        const data = await response.json();
-        setAppointments(data.appointments || []);
-      }
+      // Fetch from doctor appointments API (includes consultation bookings)
+      const response = await authenticatedFetch('/api/doctor/appointments');
+      const data = await response.json();
+      
+      console.log('📅 Doctor appointments data:', data);
+      
+      // Transform consultation bookings to match Appointment interface
+      const transformedAppointments = data.consultations.map((consultation: any) => {
+        // Properly format the scheduledAt date
+        let scheduledAt: string;
+        
+        try {
+          // Handle different date formats from the database
+          const consultationDate = consultation.consultation_date;
+          const consultationTime = consultation.consultation_time;
+          
+          // If we have both date and time, combine them properly
+          if (consultationDate && consultationTime) {
+            // Extract date part (in case it has time component)
+            const datePart = consultationDate.split('T')[0];
+            // Extract time part (in case it has date component)
+            const timePart = consultationTime.split('T')[1] || consultationTime;
+            
+            // Create proper ISO datetime string
+            scheduledAt = `${datePart}T${timePart}`;
+          } else if (consultationDate) {
+            // Use only date if time is missing
+            scheduledAt = consultationDate;
+          } else {
+            // Fallback to created_at if consultation_date is missing
+            scheduledAt = consultation.created_at;
+          }
+          
+          // Validate the date
+          const testDate = new Date(scheduledAt);
+          if (isNaN(testDate.getTime())) {
+            console.warn('Invalid date detected, using fallback:', scheduledAt);
+            scheduledAt = consultation.created_at;
+          }
+          
+        } catch (error) {
+          console.warn('Error formatting date, using fallback:', error);
+          scheduledAt = consultation.created_at;
+        }
+
+        return {
+          id: consultation.id,
+          patientName: consultation.patient_name || 'Unknown',
+          patientEmail: consultation.patient_email || '',
+          patientPhone: '',
+          appointmentType: 'Consultation',
+          status: consultation.status === 'scheduled' ? 'pending' : consultation.status,
+          scheduledAt: scheduledAt,
+          durationMinutes: 30,
+          notes: consultation.reason,
+          doctorName: consultation.doctor_name,
+          doctorSpecialty: consultation.doctor_specialty,
+          consultationType: 'in-person',
+          medicalHistory: '',
+          medications: '',
+          allergies: '',
+          preferredPharmacy: '',
+          insuranceProvider: '',
+          consultationFee: 150,
+          prescription: '',
+          doctorNotes: '',
+          meetingLink: '',
+          createdAt: consultation.created_at,
+          updatedAt: consultation.created_at,
+          cancellationReason: ''
+        };
+      });
+      
+      setAppointments(transformedAppointments);
+      console.log(`✅ Loaded ${transformedAppointments.length} appointments`);
+      
     } catch (error) {
       console.error('Error fetching appointments:', error);
-      setToast({
-        message: 'Failed to fetch appointments',
-        type: 'error'
-      });
+      if (error instanceof Error && !error.message.includes('redirecting')) {
+        setError(error.message);
+        setToast({
+          message: error.message || 'Failed to fetch appointments',
+          type: 'error'
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -97,8 +228,9 @@ export default function DoctorAppointments() {
     switch (status) {
       case 'completed': return 'text-green-600 bg-green-100';
       case 'cancelled': return 'text-red-600 bg-red-100';
-      case 'no_show': return 'text-orange-600 bg-orange-100';
-      case 'scheduled': return 'text-blue-600 bg-blue-100';
+      case 'confirmed': return 'text-blue-600 bg-blue-100';
+      case 'pending': return 'text-yellow-600 bg-yellow-100';
+      case 'no_show': return 'text-gray-600 bg-gray-100';
       default: return 'text-gray-600 bg-gray-100';
     }
   };
@@ -107,8 +239,9 @@ export default function DoctorAppointments() {
     switch (status) {
       case 'completed': return <CheckCircleIcon className="h-5 w-5" />;
       case 'cancelled': return <XMarkIcon className="h-5 w-5" />;
+      case 'confirmed': return <CheckCircleIcon className="h-5 w-5" />;
+      case 'pending': return <ClockIcon className="h-5 w-5" />;
       case 'no_show': return <ExclamationTriangleIcon className="h-5 w-5" />;
-      case 'scheduled': return <ClockIcon className="h-5 w-5" />;
       default: return <ClockIcon className="h-5 w-5" />;
     }
   };
@@ -135,13 +268,13 @@ export default function DoctorAppointments() {
 
     try {
       setSubmitting(true);
-      const response = await fetch('/api/doctor/appointments', {
+      const response = await fetch('/api/user/bookings', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          appointmentId: selectedAppointment.id,
+          bookingId: selectedAppointment.id,
           ...updateForm
         }),
       });
@@ -175,12 +308,32 @@ export default function DoctorAppointments() {
   };
 
   const formatDateTime = (dateTimeString: string) => {
-    const date = new Date(dateTimeString);
-    return {
-      date: date.toLocaleDateString(),
-      time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      day: date.toLocaleDateString('en-US', { weekday: 'long' })
-    };
+    try {
+      const date = new Date(dateTimeString);
+      
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        console.warn('Invalid date in formatDateTime:', dateTimeString);
+        return {
+          date: 'Invalid Date',
+          time: 'Invalid Time',
+          day: 'Invalid Day'
+        };
+      }
+      
+      return {
+        date: date.toLocaleDateString(),
+        time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        day: date.toLocaleDateString('en-US', { weekday: 'long' })
+      };
+    } catch (error) {
+      console.error('Error in formatDateTime:', error);
+      return {
+        date: 'Invalid Date',
+        time: 'Invalid Time',
+        day: 'Invalid Day'
+      };
+    }
   };
 
   if (loading) {
@@ -188,6 +341,23 @@ export default function DoctorAppointments() {
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
         <span className="ml-3 text-gray-600">Loading appointments...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-md mx-auto mt-8">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h3 className="text-lg font-medium text-red-800 mb-2">Error Loading Appointments</h3>
+          <p className="text-red-600 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     );
   }
@@ -228,7 +398,8 @@ export default function DoctorAppointments() {
               className="rounded-md border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             >
               <option value="all">All Status</option>
-              <option value="scheduled">Scheduled</option>
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
               <option value="completed">Completed</option>
               <option value="cancelled">Cancelled</option>
               <option value="no_show">No Show</option>
@@ -264,9 +435,9 @@ export default function DoctorAppointments() {
                             <p className="text-sm text-gray-500">
                               {appointment.appointmentType} • {day}, {date} at {time}
                             </p>
-                            {appointment.evaluationMedicine && (
+                            {appointment.consultationType && (
                               <p className="text-xs text-gray-400">
-                                Evaluation: {appointment.evaluationMedicine}
+                                Type: {appointment.consultationType}
                               </p>
                             )}
                           </div>
@@ -361,10 +532,10 @@ export default function DoctorAppointments() {
                           <span className="text-gray-900 ml-2">{selectedAppointment.patientPhone}</span>
                         </div>
                       )}
-                      {selectedAppointment.evaluationMedicine && (
+                      {selectedAppointment.consultationType && (
                         <div>
-                          <span className="font-medium text-gray-700">Evaluation:</span>
-                          <span className="text-gray-900 ml-2">{selectedAppointment.evaluationMedicine}</span>
+                          <span className="font-medium text-gray-700">Type:</span>
+                          <span className="text-gray-900 ml-2">{selectedAppointment.consultationType}</span>
                         </div>
                       )}
                     </div>

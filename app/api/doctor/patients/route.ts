@@ -94,17 +94,61 @@ export async function GET(request: NextRequest) {
         let decryptedDateOfBirth = row.date_of_birth;
 
         try {
-          // Decrypt patient data
-          if (row.full_name && typeof row.full_name === 'object' && 'encrypted' in row.full_name) {
-            decryptedName = await decryptField(row.full_name);
+          // Decrypt patient name
+          if (row.full_name) {
+            if (typeof row.full_name === 'object' && 'encrypted' in row.full_name) {
+              decryptedName = await decryptField(row.full_name);
+            } else if (typeof row.full_name === 'string') {
+              try {
+                const parsed = JSON.parse(row.full_name);
+                if (typeof parsed === 'object' && 'encrypted' in parsed) {
+                  decryptedName = await decryptField(parsed);
+                } else {
+                  decryptedName = parsed;
+                }
+              } catch (parseError) {
+                // It's a plain string, use as-is
+                decryptedName = row.full_name;
+              }
+            }
           }
           
-          if (row.phone_number && typeof row.phone_number === 'object' && 'encrypted' in row.phone_number) {
-            decryptedPhone = await decryptField(row.phone_number);
+          // Decrypt phone number
+          if (row.phone_number) {
+            if (typeof row.phone_number === 'object' && 'encrypted' in row.phone_number) {
+              decryptedPhone = await decryptField(row.phone_number);
+            } else if (typeof row.phone_number === 'string') {
+              try {
+                const parsed = JSON.parse(row.phone_number);
+                if (typeof parsed === 'object' && 'encrypted' in parsed) {
+                  decryptedPhone = await decryptField(parsed);
+                } else {
+                  decryptedPhone = parsed;
+                }
+              } catch (parseError) {
+                // It's a plain string, use as-is
+                decryptedPhone = row.phone_number;
+              }
+            }
           }
           
-          if (row.date_of_birth && typeof row.date_of_birth === 'object' && 'encrypted' in row.date_of_birth) {
-            decryptedDateOfBirth = await decryptField(row.date_of_birth);
+          // Decrypt date of birth
+          if (row.date_of_birth) {
+            if (typeof row.date_of_birth === 'object' && 'encrypted' in row.date_of_birth) {
+              decryptedDateOfBirth = await decryptField(row.date_of_birth);
+            } else if (typeof row.date_of_birth === 'string') {
+              try {
+                const parsed = JSON.parse(row.date_of_birth);
+                if (typeof parsed === 'object' && 'encrypted' in parsed) {
+                  decryptedDateOfBirth = await decryptField(parsed);
+                } else {
+                  decryptedDateOfBirth = parsed;
+                }
+              } catch (parseError) {
+                // It's a plain string, use as-is
+                decryptedDateOfBirth = row.date_of_birth;
+              }
+            }
           }
         } catch (error) {
           console.error('Error decrypting patient data:', error);

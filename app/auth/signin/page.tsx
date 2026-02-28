@@ -58,25 +58,27 @@ function SignInContent() {
       }
 
       if (result?.ok) {
+        setSuccess('Sign in successful! Redirecting...');
         // Get session to determine role and redirect accordingly
-        const sessionResponse = await fetch('/api/auth/session');
-        const session = await sessionResponse.json();
-        
-        let redirectUrl = callbackUrl;
-        
-        // Role-based redirect logic
-        if (session?.user?.role === 'doctor') {
-          redirectUrl = '/doctor';
-        } else if (session?.user?.role === 'admin') {
-          redirectUrl = '/admin';
-        } else if (callbackUrl === '/' || callbackUrl.includes('/auth/')) {
-          redirectUrl = '/dashboard';
-        }
-
-        setTimeout(() => {
+        try {
+          const sessionResponse = await fetch('/api/auth/session');
+          const session = await sessionResponse.json();
+          
+          let redirectUrl = callbackUrl;
+          
+          // Role-based redirect logic
+          if (session?.user?.role === 'doctor') {
+            redirectUrl = '/doctor';
+          } else if (session?.user?.role === 'admin') {
+            redirectUrl = '/admin';
+          } else if (callbackUrl === '/' || callbackUrl.includes('/auth/')) {
+            redirectUrl = '/';
+          }
           router.push(redirectUrl);
           router.refresh();
-        }, 100);
+        } catch (sessionError) {
+          router.push('/');
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign in failed');

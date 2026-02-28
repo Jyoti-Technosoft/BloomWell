@@ -8,6 +8,7 @@ import {
   ClockIcon
 } from '@heroicons/react/24/outline';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 interface DashboardStats {
   totalEvaluations: number;
@@ -17,7 +18,8 @@ interface DashboardStats {
 }
 
 export default function DoctorDashboard() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [stats, setStats] = useState<DashboardStats>({
     totalEvaluations: 0,
     pendingEvaluations: 0,
@@ -25,23 +27,81 @@ export default function DoctorDashboard() {
     totalPatients: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Enhanced fetch with auth handling
+  const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
+    // Check if user is authenticated before making request
+    if (status === 'unauthenticated') {
+      console.log('🔐 User not authenticated, redirecting to login...');
+      const currentPath = window.location.pathname;
+      const callbackUrl = encodeURIComponent(currentPath);
+      router.push(`/auth/signin?callbackUrl=${callbackUrl}`);
+      throw new Error('User not authenticated');
+    }
+
+    const response = await fetch(url, {
+      ...options,
+      credentials: 'include', // Ensure cookies are sent
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+
+    // Handle 401 Unauthorized globally
+    if (response.status === 401) {
+      console.log('🔐 Session expired, redirecting to login...');
+      
+      // Clear local storage
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Redirect to login page with callback
+      const currentPath = window.location.pathname;
+      const callbackUrl = encodeURIComponent(currentPath);
+      window.location.href = `/auth/signin?callbackUrl=${callbackUrl}`;
+      
+      throw new Error('Session expired - redirecting to login');
+    }
+
+    // Handle 403 Forbidden
+    if (response.status === 403) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || 'Access denied');
+    }
+
+    // Handle other HTTP errors
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    return response;
+  };
 
   useEffect(() => {
+    if (status === 'loading') return;
+    if (status === 'unauthenticated') return; // Will be handled by useAuthenticatedApi
+    
     fetchDashboardData();
-  }, []);
+  }, [status]);
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
+      setError(null);
       
-      // Fetch dashboard stats
-      const statsResponse = await fetch('/api/doctor/dashboard/stats');
-      if (statsResponse.ok) {
-        const statsData = await statsResponse.json();
-        setStats(statsData);
-      }
+      // Fetch dashboard stats with automatic error handling
+      const statsResponse = await authenticatedFetch('/api/doctor/dashboard/stats');
+      const statsData = await statsResponse.json();
+      setStats(statsData);
+      
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      if (error instanceof Error && !error.message.includes('redirecting')) {
+        setError(error.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -56,6 +116,23 @@ export default function DoctorDashboard() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="max-w-md mx-auto mt-8">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h3 className="text-lg font-medium text-red-800 mb-2">Error Loading Dashboard</h3>
+          <p className="text-red-600 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -63,11 +140,11 @@ export default function DoctorDashboard() {
       className="space-y-8"
     >
       {/* Welcome Header */}
-      <div className="text-center py-8">
+      <div className="text-center py-4">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
           Welcome back, Dr. {session?.user?.name}
         </h1>
-        <p className="text-lg text-gray-600">Here's your practice overview</p>
+        {/* <p className="text-lg text-gray-600">Here's your practice overview</p> */}
       </div>
 
       {/* Stats Grid */}
@@ -156,30 +233,6 @@ export default function DoctorDashboard() {
           </div>
         </motion.div>
       </div>
-
-      {/* Quick Actions */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="bg-white rounded-xl shadow-sm border border-gray-100 p-8"
-      >
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">Quick Actions</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <button className="flex items-center justify-center px-6 py-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
-            <DocumentTextIcon className="h-5 w-5 mr-2" />
-            Review Evaluations
-          </button>
-          <button className="flex items-center justify-center px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-            <CalendarIcon className="h-5 w-5 mr-2" />
-            View Schedule
-          </button>
-          <button className="flex items-center justify-center px-6 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-            <UserGroupIcon className="h-5 w-5 mr-2" />
-            Patient List
-          </button>
-        </div>
-      </motion.div>
     </motion.div>
   );
 }

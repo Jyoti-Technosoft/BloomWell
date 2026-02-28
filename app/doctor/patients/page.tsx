@@ -6,11 +6,7 @@ import {
   UserGroupIcon,
   MagnifyingGlassIcon,
   FunnelIcon,
-  CalendarIcon,
-  PhoneIcon,
-  EnvelopeIcon
 } from '@heroicons/react/24/outline';
-import { useSession } from 'next-auth/react';
 
 interface Patient {
   id: string;
@@ -25,7 +21,6 @@ interface Patient {
 }
 
 export default function DoctorPatients() {
-  const { data: session } = useSession();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -105,7 +100,7 @@ export default function DoctorPatients() {
               <option value="all">All Status</option>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
-              <option value="new">New</option>
+              {/* <option value="new">New</option> */}
             </select>
           </div>
         </div>
@@ -138,9 +133,9 @@ export default function DoctorPatients() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
-                </th>
+                </th> */}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -184,14 +179,14 @@ export default function DoctorPatients() {
                       {patient.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  {/* <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <button className="text-indigo-600 hover:text-indigo-900 mr-3">
                       View Profile
                     </button>
                     <button className="text-gray-600 hover:text-gray-900">
                       Schedule
                     </button>
-                  </td>
+                  </td> */}
                 </tr>
               ))}
             </tbody>

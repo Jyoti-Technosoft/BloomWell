@@ -84,6 +84,9 @@ export const config = {
   matcher: [
     '/admin/:path*',
     '/doctor/:path*',
+    '/dashboard/:path*',
+    '/evaluations/:path*',
+    '/appointments/:path*',
     '/api/admin/:path*',
     '/api/doctor/:path*',
   ],

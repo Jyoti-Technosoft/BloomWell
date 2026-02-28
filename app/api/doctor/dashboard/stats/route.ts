@@ -27,20 +27,23 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get user from database
-    const userEmail = token.email as string;
-    const userResult = await pool.query('SELECT id FROM users WHERE email = $1', [userEmail]);
-    
-    if (userResult.rows.length === 0) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+    // Use token.id directly instead of email lookup
+    const doctorId = token.id as string;
+
+    // Get evaluation counts for patients who have consultations with this doctor
+    // First get doctor's name
+    const doctorResult = await pool.query(
+      'SELECT full_name FROM users WHERE id = $1',
+      [doctorId]
+    );
+
+    if (doctorResult.rows.length === 0) {
+      return NextResponse.json({ error: 'Doctor not found' }, { status: 404 });
     }
 
-    const doctorId = userResult.rows[0].id;
+    const doctorName = doctorResult.rows[0].full_name;
 
-    // Get evaluation counts for this doctor
+    // Get evaluation counts directly for this doctor using doctor_id
     const [
       totalEvaluationsResult,
       pendingEvaluationsResult,
@@ -48,30 +51,129 @@ export async function GET(request: NextRequest) {
       rejectedEvaluationsResult,
       totalPatientsResult
     ] = await Promise.all([
-      pool.query('SELECT COUNT(*) as count FROM evaluations WHERE doctor_id = $1', [doctorId]),
-      pool.query('SELECT COUNT(*) as count FROM evaluations WHERE doctor_id = $1 AND status = $2', [doctorId, 'pending_review']),
-      pool.query('SELECT COUNT(*) as count FROM evaluations WHERE doctor_id = $1 AND status = $2', [doctorId, 'approved']),
-      pool.query('SELECT COUNT(*) as count FROM evaluations WHERE doctor_id = $1 AND status = $2', [doctorId, 'rejected']),
-      pool.query('SELECT COUNT(DISTINCT user_id) as count FROM evaluations WHERE doctor_id = $1', [doctorId])
+      // Count all evaluations assigned to this doctor
+      pool.query(`
+        SELECT COUNT(*) as count 
+        FROM evaluations 
+        WHERE doctor_id = $1
+      `, [doctorId]),
+      // Count pending evaluations for this doctor
+      pool.query(`
+        SELECT COUNT(*) as count 
+        FROM evaluations 
+        WHERE status = $1 AND doctor_id = $2
+      `, ['pending_review', doctorId]),
+      // Count approved evaluations for this doctor
+      pool.query(`
+        SELECT COUNT(*) as count 
+        FROM evaluations 
+        WHERE status = $1 AND doctor_id = $2
+      `, ['approved', doctorId]),
+      // Count rejected evaluations for this doctor
+      pool.query(`
+        SELECT COUNT(*) as count 
+        FROM evaluations 
+        WHERE status = $1 AND doctor_id = $2
+      `, ['rejected', doctorId]),
+      // Count unique patients for this doctor
+      pool.query(`
+        SELECT COUNT(DISTINCT user_id) as count 
+        FROM evaluations 
+        WHERE doctor_id = $1 AND user_id IS NOT NULL
+      `, [doctorId])
     ]);
 
-    // Try to get today's appointments (table might not exist)
+    const totalEvaluations = parseInt(totalEvaluationsResult.rows[0]?.count || '0');
+    const pendingEvaluations = parseInt(pendingEvaluationsResult.rows[0]?.count || '0');
+    const approvedEvaluations = parseInt(approvedEvaluationsResult.rows[0]?.count || '0');
+    const rejectedEvaluations = parseInt(rejectedEvaluationsResult.rows[0]?.count || '0');
+    const totalPatients = parseInt(totalPatientsResult.rows[0]?.count || '0');
+
+    // Fallback: If no evaluations assigned to this doctor (old evaluations without doctor_id)
+    // Use consultation-based approach for backward compatibility
+    if (totalEvaluations === 0) {
+      const fallbackResult = await pool.query(`
+        SELECT COUNT(*) as count 
+        FROM evaluations e 
+        WHERE e.user_id IN (
+          SELECT DISTINCT c.user_id 
+          FROM consultations c 
+          WHERE c.doctor_name = $1
+        ) AND e.doctor_id IS NULL
+      `, [doctorName]);
+
+      const fallbackPending = await pool.query(`
+        SELECT COUNT(*) as count 
+        FROM evaluations e 
+        WHERE e.status = $1 AND e.user_id IN (
+          SELECT DISTINCT c.user_id 
+          FROM consultations c 
+          WHERE c.doctor_name = $2
+        ) AND e.doctor_id IS NULL
+      `, ['pending_review', doctorName]);
+
+      const fallbackApproved = await pool.query(`
+        SELECT COUNT(*) as count 
+        FROM evaluations e 
+        WHERE e.status = $1 AND e.user_id IN (
+          SELECT DISTINCT c.user_id 
+          FROM consultations c 
+          WHERE c.doctor_name = $2
+        ) AND e.doctor_id IS NULL
+      `, ['approved', doctorName]);
+
+      const fallbackRejected = await pool.query(`
+        SELECT COUNT(*) as count 
+        FROM evaluations e 
+        WHERE e.status = $1 AND e.user_id IN (
+          SELECT DISTINCT c.user_id 
+          FROM consultations c 
+          WHERE c.doctor_name = $2
+        ) AND e.doctor_id IS NULL
+      `, ['rejected', doctorName]);
+
+      const fallbackPatients = await pool.query(`
+        SELECT COUNT(DISTINCT e.user_id) as count 
+        FROM evaluations e 
+        WHERE e.user_id IN (
+          SELECT DISTINCT c.user_id 
+          FROM consultations c 
+          WHERE c.doctor_name = $1
+        ) AND e.doctor_id IS NULL AND e.user_id IS NOT NULL
+      `, [doctorName]);
+
+      // Update stats with fallback values
+      return NextResponse.json({
+        totalEvaluations: parseInt(fallbackResult.rows[0]?.count || '0'),
+        pendingEvaluations: parseInt(fallbackPending.rows[0]?.count || '0'),
+        approvedEvaluations: parseInt(fallbackApproved.rows[0]?.count || '0'),
+        rejectedEvaluations: parseInt(fallbackRejected.rows[0]?.count || '0'),
+        totalPatients: parseInt(fallbackPatients.rows[0]?.count || '0'),
+        todayAppointments: 0, // Will be calculated below
+        fallbackMode: true
+      });
+    }
+
+    // Get today's consultations for this doctor
     let todayAppointments = 0;
     try {
-      const todayAppointmentsResult = await pool.query('SELECT COUNT(*) as count FROM appointments WHERE DATE(created_at) = CURRENT_DATE');
+      const todayAppointmentsResult = await pool.query(
+        'SELECT COUNT(*) as count FROM consultations WHERE consultation_date = CURRENT_DATE AND doctor_name = $1',
+        [doctorName]
+      );
       todayAppointments = parseInt(todayAppointmentsResult.rows[0]?.count || '0');
-    } catch (error) {
-      // Appointments table doesn't exist, keep as 0
-      console.log('Appointments table not found, using 0 for todayAppointments');
+    } catch (error: any) {
+      todayAppointments = 0;
     }
 
     const stats = {
-      totalEvaluations: parseInt(totalEvaluationsResult.rows[0]?.count || '0'),
-      pendingEvaluations: parseInt(pendingEvaluationsResult.rows[0]?.count || '0'),
-      approvedEvaluations: parseInt(approvedEvaluationsResult.rows[0]?.count || '0'),
-      rejectedEvaluations: parseInt(rejectedEvaluationsResult.rows[0]?.count || '0'),
+      totalEvaluations: totalEvaluations,
+      pendingEvaluations: pendingEvaluations,
+      approvedEvaluations: approvedEvaluations,
+      rejectedEvaluations: rejectedEvaluations,
       todayAppointments: todayAppointments,
-      totalPatients: parseInt(totalPatientsResult.rows[0]?.count || '0'),
+      totalPatients: totalPatients,
+      fallbackMode: false
     };
 
     return NextResponse.json(stats);

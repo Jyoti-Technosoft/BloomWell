@@ -1,13 +1,11 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  HomeIcon,
   DocumentTextIcon,
   CalendarIcon,
   UserGroupIcon,
-  CogIcon,
-  ArrowRightOnRectangleIcon,
+  ArrowLeftIcon,
   Bars3Icon,
   XMarkIcon,
   ClipboardDocumentListIcon,
@@ -33,9 +31,48 @@ const navigation = [
 
 export default function DoctorLayout({ children }: DoctorLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const pathname = usePathname();
+
+  // Authentication guard - redirect immediately if not authenticated
+  useEffect(() => {
+    if (status === 'loading') return; // Still loading session
+    
+    if (status === 'unauthenticated' || !session) {
+      // Clear any stored data
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      // Redirect to login with callback
+      const callbackUrl = encodeURIComponent(pathname);
+      router.replace(`/auth/signin?callbackUrl=${callbackUrl}`);
+      return;
+    }
+
+    // Check if user is a doctor
+    if (session.user?.role !== 'doctor') {
+      router.replace('/');
+      return;
+    }
+  }, [status, session, router, pathname]);
+
+  // Show loading while checking authentication
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Verifying authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render anything if redirecting
+  if (status === 'unauthenticated' || !session || session.user?.role !== 'doctor') {
+    return null;
+  }
 
   const handleSignOut = async () => {
     await signOut({ redirect: false });
@@ -114,7 +151,7 @@ export default function DoctorLayout({ children }: DoctorLayoutProps) {
                     onClick={handleSignOut}
                     className="mt-3 flex w-full items-center rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
                   >
-                    <ArrowRightOnRectangleIcon className="mr-3 h-5 w-5" />
+                    <ArrowLeftIcon className="mr-3 h-5 w-5" />
                     Sign out
                   </button>
                 </div>
@@ -180,7 +217,7 @@ export default function DoctorLayout({ children }: DoctorLayoutProps) {
                 onClick={handleSignOut}
                 className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md"
               >
-                <ArrowRightOnRectangleIcon className="h-5 w-5 mr-2" />
+                <ArrowLeftOnExitIcon className="h-5 w-5 mr-2" />
                 <span className="hidden sm:inline">Sign out</span>
               </button> */}
             </div>

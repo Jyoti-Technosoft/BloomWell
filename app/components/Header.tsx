@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDownIcon, UserIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
@@ -82,6 +82,9 @@ export default function Header() {
     };
   }, [profileDropdownOpen]);
 
+  // More robust authentication check
+  const isAuthenticated = status === 'authenticated' && session && session.user;
+
   return (
     <header className="fixed w-full bg-white z-50 shadow-sm">
       <nav className="border-b border-gray-200">
@@ -101,7 +104,7 @@ export default function Header() {
             </div>
 
             <div className="hidden md:ml-10 md:flex md:space-x-8 items-center">
-              {status === 'authenticated' && getNavItems(true, session.user?.role).map((item: NavItem) => (
+              {isAuthenticated && getNavItems(true, session.user?.role).map((item: NavItem) => (
                 <div key={item.name} className="relative">
                   {item.dropdown ? (
                     <div
@@ -121,17 +124,17 @@ export default function Header() {
                       <AnimatePresence>
                         {openDropdown === item.name && (
                           <motion.div
-                            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                            transition={{ duration: 0.2, ease: "easeOut" }}
-                            className={`absolute left-0 mt-3 rounded-xl shadow-2xl bg-white border-0 ${
-                              item.name === 'Physicians' ? 'w-80 p-3' : 'w-64 p-2'
-                            }`}
-                            style={{
-                              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
-                            }}
-                          >
+                          initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                          transition={{ duration: 0.2, ease: "easeOut" }}
+                          className={`absolute left-0 mt-3 rounded-xl shadow-2xl bg-white border-0 ${
+                            item.name === 'Physicians' ? 'w-80 p-3' : 'w-64 p-2'
+                          }`}
+                          style={{
+                            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+                          }}
+                        >
                             <div className="py-1">
                               {item.dropdown?.map((subItem: any) => (
                                 <div key={subItem.name}>
@@ -182,7 +185,7 @@ export default function Header() {
             </div>
 
             <div className="hidden md:flex items-center space-x-4">
-            {status === 'authenticated' ? (
+            {isAuthenticated ? (
               <div className="relative profile-dropdown">
                 <button
                   onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
@@ -318,7 +321,7 @@ export default function Header() {
             >
               <div className="pt-2 pb-3 space-y-1 bg-white">
                 {/* User section for mobile */}
-                {session && status === 'authenticated' && (
+                {isAuthenticated && (
                   <div className="border-b border-gray-200 pb-3 mb-3">
                     <div className="px-4 py-3">
                       <div className="flex items-center space-x-3 mb-3">
@@ -373,7 +376,16 @@ export default function Header() {
                         </>
                       )}
                       <div 
-                        onClick={() => setShowConfirmDialog(true)}
+                        onClick={async () => {
+                          try {
+                            await signOut({ 
+                              redirect: true,
+                              callbackUrl: '/auth/signin'
+                            });
+                          } catch (error) {
+                            window.location.href = '/auth/signin';
+                          }
+                        }}
                         className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg cursor-pointer"
                       >
                         <div className="h-8 w-8 rounded-lg bg-linear-to-br from-red-100 to-pink-100 flex items-center justify-center mr-3">
@@ -387,7 +399,7 @@ export default function Header() {
                   </div>
                 )}
 
-                {session && status === 'authenticated' && getNavItems(true, session.user?.role).map((item: NavItem) => (
+                {isAuthenticated && getNavItems(true, session.user?.role).map((item: NavItem) => (
                   <div key={item.name}>
                     {item.dropdown ? (
                       <div>
@@ -460,7 +472,7 @@ export default function Header() {
                 ))}
 
                 {/* Auth links for mobile when not logged in */}
-                {status !== 'authenticated' && (
+                {!isAuthenticated && (
                   <div className="border-t border-gray-200 pt-3 mt-3">
                     <Link
                       href="/auth/signin"
@@ -501,12 +513,11 @@ export default function Header() {
               <button
                 onClick={async () => {
                   try {
-                    await fetch('/api/auth/signout', {
-                      method: 'POST',
+                    await signOut({ 
+                      redirect: true,
+                      callbackUrl: '/auth/signin'
                     });
-                    window.location.href = '/auth/signin';
                   } catch (error) {
-                    console.error('Logout failed:', error);
                     window.location.href = '/auth/signin';
                   }
                 }}
