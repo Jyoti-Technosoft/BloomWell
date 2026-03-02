@@ -75,7 +75,6 @@ export default function DoctorAppointments() {
   const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
     // Check if user is authenticated before making request
     if (status === 'unauthenticated') {
-      console.log('🔐 User not authenticated, redirecting to login...');
       const currentPath = window.location.pathname;
       const callbackUrl = encodeURIComponent(currentPath);
       router.push(`/auth/signin?callbackUrl=${callbackUrl}`);
@@ -93,8 +92,6 @@ export default function DoctorAppointments() {
 
     // Handle 401 Unauthorized globally
     if (response.status === 401) {
-      console.log('🔐 Session expired, redirecting to login...');
-      
       // Clear local storage
       localStorage.clear();
       sessionStorage.clear();
@@ -138,10 +135,9 @@ export default function DoctorAppointments() {
       const response = await authenticatedFetch('/api/doctor/appointments');
       const data = await response.json();
       
-      console.log('📅 Doctor appointments data:', data);
-      
       // Transform consultation bookings to match Appointment interface
       const transformedAppointments = data.consultations.map((consultation: any) => {
+        
         // Properly format the scheduledAt date
         let scheduledAt: string;
         
@@ -154,14 +150,19 @@ export default function DoctorAppointments() {
           if (consultationDate && consultationTime) {
             // Extract date part (in case it has time component)
             const datePart = consultationDate.split('T')[0];
-            // Extract time part (in case it has date component)
-            const timePart = consultationTime.split('T')[1] || consultationTime;
+            // Extract time part and ensure it has proper format
+            let timePart = consultationTime.split('T')[1] || consultationTime;
             
-            // Create proper ISO datetime string
-            scheduledAt = `${datePart}T${timePart}`;
+            // Ensure time has seconds
+            if (timePart.split(':').length === 2) {
+              timePart = timePart + ':00';
+            }
+            
+            // Create proper ISO datetime string with Z for UTC
+            scheduledAt = `${datePart}T${timePart}Z`;
           } else if (consultationDate) {
-            // Use only date if time is missing
-            scheduledAt = consultationDate;
+            // Use only date if time is missing - add noon time to avoid timezone issues
+            scheduledAt = `${consultationDate}T12:00:00Z`;
           } else {
             // Fallback to created_at if consultation_date is missing
             scheduledAt = consultation.created_at;
@@ -208,7 +209,6 @@ export default function DoctorAppointments() {
       });
       
       setAppointments(transformedAppointments);
-      console.log(`✅ Loaded ${transformedAppointments.length} appointments`);
       
     } catch (error) {
       console.error('Error fetching appointments:', error);
@@ -268,11 +268,8 @@ export default function DoctorAppointments() {
 
     try {
       setSubmitting(true);
-      const response = await fetch('/api/user/bookings', {
+      const response = await authenticatedFetch(`/api/user/bookings`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           bookingId: selectedAppointment.id,
           ...updateForm
@@ -282,15 +279,16 @@ export default function DoctorAppointments() {
       if (response.ok) {
         const data = await response.json();
         setToast({
-          message: 'Appointment updated successfully',
+          message: data.message || 'Appointment updated successfully',
           type: 'success'
         });
         setShowUpdateModal(false);
         setSelectedAppointment(null);
-        fetchAppointments(); // Refresh the list
+        
+        // Refresh appointments list to show updated status
+        await fetchAppointments();
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update appointment');
+        throw new Error('Failed to update appointment');
       }
     } catch (error) {
       console.error('Error updating appointment:', error);
@@ -309,7 +307,21 @@ export default function DoctorAppointments() {
 
   const formatDateTime = (dateTimeString: string) => {
     try {
-      const date = new Date(dateTimeString);
+      // Handle date string to avoid timezone issues
+      let date: Date;
+      
+      if (dateTimeString.includes('T')) {
+        // It's an ISO string, create date properly
+        if (dateTimeString.endsWith('Z')) {
+          date = new Date(dateTimeString);
+        } else {
+          // Add Z to treat as UTC to avoid local timezone conversion
+          date = new Date(dateTimeString + 'Z');
+        }
+      } else {
+        // It's a date string, create date at noon UTC to avoid timezone issues
+        date = new Date(dateTimeString + 'T12:00:00Z');
+      }
       
       // Check if date is valid
       if (isNaN(date.getTime())) {
@@ -321,11 +333,25 @@ export default function DoctorAppointments() {
         };
       }
       
-      return {
-        date: date.toLocaleDateString(),
-        time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        day: date.toLocaleDateString('en-US', { weekday: 'long' })
+      const result = {
+        date: date.toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'numeric', 
+          day: 'numeric',
+          timeZone: 'UTC' // Use UTC to avoid timezone shifts
+        }),
+        time: date.toLocaleTimeString('en-US', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          timeZone: 'UTC'
+        }),
+        day: date.toLocaleDateString('en-US', { 
+          weekday: 'long',
+          timeZone: 'UTC'
+        })
       };
+      
+      return result;
     } catch (error) {
       console.error('Error in formatDateTime:', error);
       return {

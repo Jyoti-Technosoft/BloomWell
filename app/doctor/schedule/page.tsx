@@ -12,6 +12,7 @@ import {
   BuildingOfficeIcon
 } from '@heroicons/react/24/outline';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 interface Appointment {
   id: string;
@@ -23,6 +24,9 @@ interface Appointment {
   type: 'video' | 'in_person';
   status: 'scheduled' | 'completed' | 'cancelled' | 'no_show';
   notes?: string;
+  consultationType?: string;
+  doctorName?: string;
+  doctorSpecialty?: string;
 }
 
 interface TimeSlot {
@@ -32,59 +36,95 @@ interface TimeSlot {
 }
 
 export default function DoctorSchedule() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [filteredAppointments, setFilteredAppointments] = useState<Appointment[]>([]);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('week');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+
+  // Enhanced fetch with auth handling
+  const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
+    if (status === 'unauthenticated') {
+      router.push('/auth/signin');
+      throw new Error('User not authenticated');
+    }
+
+    const response = await fetch(url, {
+      ...options,
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+
+    if (response.status === 401) {
+      router.push('/auth/signin');
+      throw new Error('Session expired');
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    return response;
+  };
 
   useEffect(() => {
+    if (status === 'loading') return;
+    if (status === 'unauthenticated') return;
+    
     fetchAppointments();
     fetchTimeSlots();
-  }, [selectedDate]);
+  }, [selectedDate, status]);
+
+  useEffect(() => {
+    // Apply status filter
+    if (statusFilter === 'all') {
+      setFilteredAppointments(appointments);
+    } else {
+      setFilteredAppointments(appointments.filter(apt => apt.status === statusFilter));
+    }
+  }, [appointments, statusFilter]);
 
   const fetchAppointments = async () => {
     try {
       setLoading(true);
-      // Mock data for now - replace with actual API call
-      const mockAppointments: Appointment[] = [
-        {
-          id: '1',
-          patientName: 'Maria Garcia',
-          patientEmail: 'maria@gmail.com',
-          date: '2025-02-27',
-          time: '09:00',
+      
+      // Fetch real consultation bookings from doctor appointments API
+      const response = await authenticatedFetch('/api/doctor/appointments');
+      const data = await response.json();
+      
+      // Transform consultation bookings to schedule format
+      const transformedAppointments = data.consultations.map((consultation: any) => {
+        // Extract date and time from consultation data
+        const consultationDate = consultation.consultation_date?.split('T')[0] || new Date().toISOString().split('T')[0];
+        const consultationTime = consultation.consultation_time || '10:00';
+        
+        return {
+          id: consultation.id,
+          patientName: consultation.patient_name || 'Unknown',
+          patientEmail: consultation.patient_email || '',
+          date: consultationDate,
+          time: consultationTime.split(':')[0] + ':' + (consultationTime.split(':')[1] || '00'),
           duration: 30,
-          type: 'video',
-          status: 'scheduled',
-          notes: 'Follow-up consultation'
-        },
-        {
-          id: '2',
-          patientName: 'Sarah Johnson',
-          patientEmail: 'sarah.j@gmail.com',
-          date: '2025-02-27',
-          time: '10:30',
-          duration: 45,
-          type: 'in_person',
-          status: 'scheduled',
-          notes: 'Initial consultation'
-        },
-        {
-          id: '3',
-          patientName: 'Emily Rodriguez',
-          patientEmail: 'emily.r@gmail.com',
-          date: '2025-02-28',
-          time: '14:00',
-          duration: 30,
-          type: 'video',
-          status: 'completed'
-        }
-      ];
-      setAppointments(mockAppointments);
+          type: 'in_person' as const, // Default to in-person
+          status: consultation.status === 'scheduled' ? 'scheduled' : consultation.status,
+          notes: consultation.reason || '',
+          consultationType: 'in-person',
+          doctorName: consultation.doctor_name,
+          doctorSpecialty: consultation.doctor_specialty
+        };
+      });
+      setAppointments(transformedAppointments);
     } catch (error) {
       console.error('Error fetching appointments:', error);
+      // Fallback to empty array if API fails
+      setAppointments([]);
     } finally {
       setLoading(false);
     }
@@ -92,27 +132,33 @@ export default function DoctorSchedule() {
 
   const fetchTimeSlots = async () => {
     try {
-      // Mock time slots
-      const mockTimeSlots: TimeSlot[] = [
-        { date: selectedDate, time: '09:00', available: false },
-        { date: selectedDate, time: '09:30', available: true },
-        { date: selectedDate, time: '10:00', available: true },
-        { date: selectedDate, time: '10:30', available: false },
-        { date: selectedDate, time: '11:00', available: true },
-        { date: selectedDate, time: '11:30', available: true },
-        { date: selectedDate, time: '14:00', available: true },
-        { date: selectedDate, time: '14:30', available: true },
-        { date: selectedDate, time: '15:00', available: false },
-        { date: selectedDate, time: '15:30', available: true },
+      // Generate time slots based on selected date and existing appointments
+      const baseTimeSlots = [
+        '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+        '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'
       ];
-      setTimeSlots(mockTimeSlots);
+
+      const timeSlotsWithAvailability: TimeSlot[] = baseTimeSlots.map(time => {
+        // Check if this time slot is booked by any appointment on the selected date
+        const isBooked = appointments.some(apt => 
+          apt.date === selectedDate && apt.time === time
+        );
+        
+        return {
+          date: selectedDate,
+          time,
+          available: !isBooked
+        };
+      });
+
+      setTimeSlots(timeSlotsWithAvailability);
     } catch (error) {
       console.error('Error fetching time slots:', error);
     }
   };
 
   const getAppointmentsForDate = (date: string) => {
-    return appointments.filter(apt => apt.date === date);
+    return filteredAppointments.filter(apt => apt.date === date);
   };
 
   const getStatusColor = (status: string) => {
@@ -180,7 +226,11 @@ export default function DoctorSchedule() {
           </div>
           <div className="flex items-center gap-2">
             <FunnelIcon className="h-5 w-5 text-gray-400" />
-            <select className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+            <select 
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            >
               <option value="all">All Appointments</option>
               <option value="scheduled">Scheduled</option>
               <option value="completed">Completed</option>
@@ -242,6 +292,11 @@ export default function DoctorSchedule() {
             <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-lg font-semibold text-gray-900">
                 Appointments
+                {statusFilter !== 'all' && (
+                  <span className="ml-2 text-sm text-gray-500">
+                    ({filteredAppointments.length} filtered)
+                  </span>
+                )}
               </h2>
             </div>
             <div className="divide-y divide-gray-200">
@@ -300,7 +355,10 @@ export default function DoctorSchedule() {
                   <CalendarIcon className="mx-auto h-12 w-12 text-gray-400" />
                   <h3 className="mt-2 text-sm font-medium text-gray-900">No appointments</h3>
                   <p className="mt-1 text-sm text-gray-500">
-                    No appointments scheduled for this date
+                    {statusFilter !== 'all' 
+                      ? `No ${statusFilter} appointments for this date` 
+                      : 'No appointments scheduled for this date'
+                    }
                   </p>
                 </div>
               )}

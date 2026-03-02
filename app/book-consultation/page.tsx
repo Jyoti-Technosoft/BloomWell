@@ -39,7 +39,8 @@ export default function BookConsultation() {
 
   const handleBookingComplete = (bookingData: any) => {
     setToast({
-      message: 'Consultation booked successfully! You will receive a confirmation email shortly.',
+      message: 'Consultation booked successfully!',
+      // message: 'Consultation booked successfully! You will receive a confirmation email shortly.',
       type: 'success'
     });
     setShowBookingModal(false);

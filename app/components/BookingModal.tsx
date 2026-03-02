@@ -445,8 +445,8 @@ function ConfirmationStep({ bookingData, physician }: any) {
       
       <div className="space-y-6">
         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <h4 className="font-semibold text-green-900 mb-2">Please review your booking details</h4>
-          <p className="text-green-700">Once confirmed, you'll receive a confirmation email with all details.</p>
+          <h4 className="font-semibold text-green-900 mb-2">Please review your booking details in your profile</h4>
+          {/* <p className="text-green-700">Once confirmed, you'll receive a confirmation email with all details.</p> */}
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
@@ -500,9 +500,9 @@ function ConfirmationStep({ bookingData, physician }: any) {
           <ol className="space-y-2 text-sm text-gray-700">
             <li>1. Click "Complete Booking" to finalize your appointment</li>
             <li>2. Payment will be processed securely</li>
-            <li>3. You'll receive a confirmation email with consultation details</li>
-            <li>4. For video consultations, you'll receive a secure link 30 minutes before your appointment</li>
-            <li>5. The physician will review your information before the consultation</li>
+            {/* <li>3. You'll receive a confirmation email with consultation details</li> */}
+            <li>3. For video consultations, you'll receive a secure link 30 minutes before your appointment</li>
+            <li>4. The physician will review your information before the consultation</li>
           </ol>
         </div>
       </div>

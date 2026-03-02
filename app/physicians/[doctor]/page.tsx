@@ -114,7 +114,7 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
     setToast({
       message: consultationLink && consultation?.consultation_type === 'video' && isConsultationNow(consultation?.consultation_date, consultation?.consultation_time)
         ? 'Consultation booked successfully! You can now start the video call.'
-        : 'Consultation booked successfully! You will receive a confirmation email with details.',
+        : 'Consultation booked successfully!',
       type: 'success'
     });
     setShowBookingModal(false);

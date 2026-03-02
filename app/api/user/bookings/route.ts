@@ -183,14 +183,15 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized - only doctors can update appointments' }, { status: 403 });
     }
 
+    const body = await request.json();
     const { 
       bookingId, 
       status, 
-      prescription, 
-      doctorNotes, 
-      meetingLink,
-      cancellationReason 
-    } = await request.json();
+      // prescription, 
+      // doctorNotes, 
+      // meetingLink,
+      // cancellationReason 
+    } = body;
 
     if (!bookingId) {
       return NextResponse.json({ error: 'Booking ID is required' }, { status: 400 });
@@ -210,67 +211,75 @@ export async function PUT(request: NextRequest) {
 
     // Verify consultation belongs to this doctor
     const consultationResult = await pool.query(
-      'SELECT id FROM consultations WHERE id = $1 AND doctor_name = $2',
-      [bookingId, doctorName]
+      'SELECT id, doctor_name FROM consultations WHERE id = $1',
+      [bookingId]
     );
 
     if (consultationResult.rows.length === 0) {
-      return NextResponse.json({ error: 'Booking not found or does not belong to this doctor' }, { status: 404 });
+      return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
+    }
+
+    const consultationDoctorName = consultationResult.rows[0].doctor_name;
+  
+    // Handle doctor name variations (e.g., "Dr. Sarah Johnson" vs "Sarah Johnson")
+    const normalizeDoctorName = (name: string) => {
+      return name.toLowerCase()
+        .replace(/^dr\.?\s*/i, '') // Remove "Dr." or "Dr" from start
+        .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+        .trim();
+    };
+    
+    const normalizedTokenName = normalizeDoctorName(doctorName);
+    const normalizedConsultationName = normalizeDoctorName(consultationDoctorName);
+ 
+    if (normalizedTokenName !== normalizedConsultationName) {
+      return NextResponse.json({ 
+        error: 'Booking does not belong to this doctor',
+        debug: {
+          tokenDoctorName: doctorName,
+          consultationDoctorName: consultationDoctorName,
+          normalizedTokenName,
+          normalizedConsultationName
+        }
+      }, { status: 404 });
     }
 
     // Build update query for consultations
-    let updateQuery = 'UPDATE consultations SET updated_at = CURRENT_TIMESTAMP';
+    let updateQuery = 'UPDATE consultations SET';
     const updateParams: any[] = [];
     let paramIndex = 1;
+    let hasUpdates = false;
 
     if (status) {
-      updateQuery += `, status = $${paramIndex}`;
+      if (hasUpdates) updateQuery += ',';
+      updateQuery += ` status = $${paramIndex}`;
       updateParams.push(status);
       paramIndex++;
-    }
-
-    if (prescription !== undefined) {
-      updateQuery += `, prescription = $${paramIndex}`;
-      updateParams.push(prescription);
-      paramIndex++;
-    }
-
-    if (doctorNotes !== undefined) {
-      updateQuery += `, doctor_notes = $${paramIndex}`;
-      updateParams.push(doctorNotes);
-      paramIndex++;
-    }
-
-    if (meetingLink !== undefined) {
-      updateQuery += `, meeting_link = $${paramIndex}`;
-      updateParams.push(meetingLink);
-      paramIndex++;
-    }
-
-    if (cancellationReason !== undefined) {
-      updateQuery += `, cancellation_reason = $${paramIndex}`;
-      updateParams.push(cancellationReason);
-      paramIndex++;
+      hasUpdates = true;
     }
 
     updateQuery += ` WHERE id = $${paramIndex} RETURNING *`;
     updateParams.push(bookingId);
 
-    const result = await pool.query(updateQuery, updateParams);
-    const updatedConsultation = result.rows[0];
+    try {
+      const result = await pool.query(updateQuery, updateParams);
+      const updatedConsultation = result.rows[0];
 
-    return NextResponse.json({
-      success: true,
-      message: 'Appointment updated successfully',
-      booking: {
-        id: updatedConsultation.id,
-        status: updatedConsultation.status,
-        prescription: updatedConsultation.prescription,
-        doctorNotes: updatedConsultation.doctor_notes,
-        meetingLink: updatedConsultation.meeting_link,
-        updatedAt: updatedConsultation.updated_at
-      }
-    });
+      return NextResponse.json({
+        success: true,
+        message: 'Appointment updated successfully',
+        booking: {
+          id: updatedConsultation.id,
+          status: updatedConsultation.status
+        }
+      });
+    } catch (dbError) {
+      console.error('🔍 Debug - Database update error:', dbError);
+      return NextResponse.json({
+        error: 'Database update failed',
+        details: dbError instanceof Error ? dbError.message : 'Unknown database error'
+      }, { status: 500 });
+    }
 
   } catch (error: any) {
     console.error('Booking update error:', error);
