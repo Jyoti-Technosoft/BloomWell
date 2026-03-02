@@ -91,16 +91,72 @@ export async function POST(request: NextRequest) {
     }
 
     // Sanitize inputs
+    const firstNameResult = validateAndSanitize({ firstName: data.firstName }, {
+      firstName: { type: 'name', required: true, maxLength: 50 }
+    });
+    
+    const lastNameResult = validateAndSanitize({ lastName: data.lastName }, {
+      lastName: { type: 'name', required: true, maxLength: 50 }
+    });
+    
+    const emailResult = validateAndSanitize({ email: data.email }, {
+      email: { type: 'email', required: true, maxLength: 255 }
+    });
+    
+    const phoneResult = validateAndSanitize({ phoneNumber: data.phoneNumber }, {
+      phoneNumber: { type: 'phone', required: true, maxLength: 20 }
+    });
+    
+    const specializationResult = validateAndSanitize({ specialization: data.specialization }, {
+      specialization: { type: 'text', required: true, maxLength: 100 }
+    });
+    
+    const licenseNumberResult = validateAndSanitize({ licenseNumber: data.licenseNumber }, {
+      licenseNumber: { type: 'text', required: true, maxLength: 50 }
+    });
+    
+    const licenseStateResult = validateAndSanitize({ licenseState: data.licenseState }, {
+      licenseState: { type: 'text', required: true, maxLength: 50 }
+    });
+    
+    const bioResult = data.professionalBio ? validateAndSanitize({ professionalBio: data.professionalBio }, {
+      professionalBio: { type: 'html', maxLength: 1000 }
+    }) : { isValid: true, sanitizedData: { professionalBio: null }, errors: [] };
+    
+    const feeResult = data.consultationFee ? validateAndSanitize({ consultationFee: data.consultationFee }, {
+      consultationFee: { type: 'text', maxLength: 10 }
+    }) : { isValid: true, sanitizedData: { consultationFee: null }, errors: [] };
+
+    // Check if any validation failed
+    const allErrors = [
+      ...firstNameResult.errors,
+      ...lastNameResult.errors,
+      ...emailResult.errors,
+      ...phoneResult.errors,
+      ...specializationResult.errors,
+      ...licenseNumberResult.errors,
+      ...licenseStateResult.errors,
+      ...bioResult.errors,
+      ...feeResult.errors
+    ];
+
+    if (allErrors.length > 0) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: allErrors },
+        { status: 400 }
+      );
+    }
+
     const sanitizedData = {
-      firstName: validateAndSanitize(data.firstName, 'First Name').sanitized,
-      lastName: validateAndSanitize(data.lastName, 'Last Name').sanitized,
-      email: validateAndSanitize(data.email, 'Email').sanitized,
-      phoneNumber: validateAndSanitize(data.phoneNumber, 'Phone Number').sanitized,
-      specialization: validateAndSanitize(data.specialization, 'Specialization').sanitized,
-      licenseNumber: validateAndSanitize(data.licenseNumber, 'License Number').sanitized,
-      licenseState: validateAndSanitize(data.licenseState, 'License State').sanitized,
-      professionalBio: data.professionalBio ? validateAndSanitize(data.professionalBio, 'Professional Bio').sanitized : null,
-      consultationFee: data.consultationFee ? validateAndSanitize(data.consultationFee, 'Consultation Fee').sanitized : null
+      firstName: firstNameResult.sanitizedData.firstName,
+      lastName: lastNameResult.sanitizedData.lastName,
+      email: emailResult.sanitizedData.email,
+      phoneNumber: phoneResult.sanitizedData.phoneNumber,
+      specialization: specializationResult.sanitizedData.specialization,
+      licenseNumber: licenseNumberResult.sanitizedData.licenseNumber,
+      licenseState: licenseStateResult.sanitizedData.licenseState,
+      professionalBio: bioResult.sanitizedData.professionalBio,
+      consultationFee: feeResult.sanitizedData.consultationFee
     };
 
     // Check if email already exists
