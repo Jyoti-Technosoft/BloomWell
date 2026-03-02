@@ -11,6 +11,7 @@ declare module 'next-auth' {
       doctorProfileId?: string;
       isVerified?: boolean;
       verificationStatus?: string;
+      image?: string;
     };
   }
 }
