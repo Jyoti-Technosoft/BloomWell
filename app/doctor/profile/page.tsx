@@ -147,7 +147,7 @@ export default function DoctorProfile() {
     }
   };
 
-  const handleInputChange = (field: keyof DoctorProfile, value: any) => {
+  const handleInputChange = (field: keyof DoctorProfile, value: string | number | string[]) => {
     setEditForm(prev => ({
       ...prev,
       [field]: value
@@ -589,7 +589,7 @@ export default function DoctorProfile() {
                               ) : (
                                 <p className="text-sm text-gray-900">{profile.specialties}</p>
                               );
-                            } catch (e) {
+                            } catch {
                               return <p className="text-sm text-gray-900">{profile.specialties}</p>;
                             }
                           })()}
@@ -624,7 +624,7 @@ export default function DoctorProfile() {
                             ) : (
                               <p className="text-sm text-gray-900">{profile.certifications}</p>
                             );
-                          } catch (e) {
+                          } catch {
                             return <p className="text-sm text-gray-900">{profile.certifications}</p>;
                           }
                         })()}
@@ -648,7 +648,7 @@ export default function DoctorProfile() {
                             ) : (
                               <p className="text-sm text-gray-500">No awards listed</p>
                             );
-                          } catch (e) {
+                          } catch {
                             return <p className="text-sm text-gray-900">{profile.awards}</p>;
                           }
                         })()}
@@ -672,7 +672,7 @@ export default function DoctorProfile() {
                             ) : (
                               <p className="text-sm text-gray-500">No publications listed</p>
                             );
-                          } catch (e) {
+                          } catch {
                             return <p className="text-sm text-gray-900">{profile.publications}</p>;
                           }
                         })()}

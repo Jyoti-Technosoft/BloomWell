@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { 
   CalendarIcon,
@@ -51,7 +51,7 @@ interface AppointmentUpdate {
 }
 
 export default function DoctorAppointments() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,7 +72,7 @@ export default function DoctorAppointments() {
   const [submitting, setSubmitting] = useState(false);
 
   // Enhanced fetch with auth handling
-  const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
+  const authenticatedFetch = useCallback(async (url: string, options: RequestInit = {}) => {
     // Check if user is authenticated before making request
     if (status === 'unauthenticated') {
       const currentPath = window.location.pathname;
@@ -117,16 +117,9 @@ export default function DoctorAppointments() {
     }
 
     return response;
-  };
+  }, [status, router]);
 
-  useEffect(() => {
-    if (status === 'loading') return;
-    if (status === 'unauthenticated') return; // Will be handled by authentication guard
-    
-    fetchAppointments();
-  }, [filterStatus, filterDate, status]);
-
-  const fetchAppointments = async () => {
+  const fetchAppointments = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -136,7 +129,20 @@ export default function DoctorAppointments() {
       const data = await response.json();
       
       // Transform consultation bookings to match Appointment interface
-      const transformedAppointments = data.consultations.map((consultation: any) => {
+      const transformedAppointments = data.consultations.map((consultation: {
+        id: string;
+        consultation_date: string;
+        consultation_time: string;
+        created_at: string;
+        patient_name: string;
+        patient_email: string;
+        consultation_type: string;
+        reason: string;
+        doctor_name: string;
+        doctor_specialty: string;
+        status: string;
+        notes?: string;
+      }) => {
         
         // Properly format the scheduledAt date
         let scheduledAt: string;
@@ -222,7 +228,7 @@ export default function DoctorAppointments() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [authenticatedFetch]);
 
   const getStatusColor = (status: string) => {
     switch (status) {

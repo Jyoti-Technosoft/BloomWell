@@ -20,7 +20,7 @@ export default function DashboardPage() {
 
         const userData = await response.json();
         setUser(userData);
-      } catch (error) {
+      } catch {
         router.push('/auth/signin');
       } finally {
         setIsLoading(false);
@@ -50,7 +50,7 @@ export default function DashboardPage() {
             Welcome, {user.name}!
           </h1>
           <p className="mt-3 text-xl text-gray-500">
-            You're now signed in to your dashboard.
+            You&apos;re now signed in to your dashboard.
           </p>
         </div>
       </div>

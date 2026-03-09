@@ -76,7 +76,7 @@ function SignInContent() {
           }
           router.push(redirectUrl);
           router.refresh();
-        } catch (sessionError) {
+        } catch {
           router.push('/');
         }
       }

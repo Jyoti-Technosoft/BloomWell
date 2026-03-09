@@ -68,14 +68,14 @@ const fallbackTreatments = [
   }
 ];
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const result = await query('SELECT * FROM treatments ORDER BY id');
     
-    const treatments = result.map((row: any) => {
-      let category = row.category;
+    const treatments = result.map((row: Record<string, unknown>) => {
+      let category = row.category as string;
       if (!category) {
-        const name = row.name.toLowerCase();
+        const name = String(row.name).toLowerCase();
         if (name.includes('semaglutide') || name.includes('tirzepatide')) {
           category = 'weight-loss';
         } else if  (name.includes('testosterone')) {
@@ -114,7 +114,7 @@ export async function GET(request: NextRequest) {
         howItWorks: row.how_it_works,
         benefits: benefits,
         faqs: faqs,
-        medicines: row.medicines ? row.medicines.split(',').map((m: string) => m.trim()) : [],
+        medicines: row.medicines ? String(row.medicines).split(',').map((m: string) => m.trim()) : [],
       };
       
       return treatment;
@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
       description: result[0].description,
       category: result[0].category,
       image: result[0].image,
-      medicines: result[0].medicines ? result[0].medicines.split(',').map((m: string) => m.trim()) : [],
+      medicines: result[0].medicines ? String(result[0].medicines).split(',').map((m: string) => m.trim()) : [],
     };
 
     return NextResponse.json(treatment, { status: 201 });

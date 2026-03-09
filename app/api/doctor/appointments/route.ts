@@ -28,7 +28,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const doctorId = token.id as string;
     const doctorName = token.name as string;
 
     // Get consultations assigned to this doctor

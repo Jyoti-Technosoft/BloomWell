@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { 
   DocumentTextIcon,
@@ -22,7 +22,7 @@ interface Evaluation {
   medicineName: string;
   evaluationType: string;
   status: 'pending_review' | 'approved' | 'rejected';
-  responses: any;
+  responses: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }
@@ -36,7 +36,7 @@ interface ReviewForm {
 }
 
 export default function DoctorEvaluations() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,7 +55,7 @@ export default function DoctorEvaluations() {
   const [submittingReview, setSubmittingReview] = useState(false);
 
   // Enhanced fetch with auth handling
-  const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
+  const authenticatedFetch = useCallback(async (url: string, options: RequestInit = {}) => {
     // Check if user is authenticated before making request
     if (status === 'unauthenticated') {
       console.log('🔐 User not authenticated, redirecting to login...');
@@ -103,16 +103,9 @@ export default function DoctorEvaluations() {
     }
 
     return response;
-  };
+  }, [status, router]);
 
-  useEffect(() => {
-    if (status === 'loading') return;
-    if (status === 'unauthenticated') return; // Will be handled by useAuthenticatedApi
-    
-    fetchEvaluations();
-  }, [filterStatus, status]);
-
-  const fetchEvaluations = async () => {
+  const fetchEvaluations = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -137,7 +130,14 @@ export default function DoctorEvaluations() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [authenticatedFetch, filterStatus]);
+
+  useEffect(() => {
+    if (status === 'loading') return;
+    if (status === 'unauthenticated') return; // Will be handled by useAuthenticatedApi
+    
+    fetchEvaluations();
+  }, [filterStatus, status, fetchEvaluations]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -178,6 +178,7 @@ export default function DoctorEvaluations() {
 
     try {
       setSubmittingReview(true);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const response = await authenticatedFetch(`/api/evaluations/${selectedEvaluation.id}/review`, {
         method: 'POST',
         headers: {
@@ -192,7 +193,7 @@ export default function DoctorEvaluations() {
         }),
       });
 
-      const data = await response.json();
+      // const data = await response.json();
       setToast({
         message: `Evaluation ${reviewForm.approved ? 'approved' : 'rejected'} successfully`,
         type: 'success'
@@ -388,7 +389,7 @@ export default function DoctorEvaluations() {
                           type="radio"
                           name="decision"
                           checked={reviewForm.approved}
-                          onChange={(e) => setReviewForm({ ...reviewForm, approved: true })}
+                          onChange={() => setReviewForm({ ...reviewForm, approved: true })}
                           className="mr-2"
                         />
                         <span className="text-sm text-green-600 font-medium">Approve</span>
@@ -398,7 +399,7 @@ export default function DoctorEvaluations() {
                           type="radio"
                           name="decision"
                           checked={!reviewForm.approved}
-                          onChange={(e) => setReviewForm({ ...reviewForm, approved: false })}
+                          onChange={() => setReviewForm({ ...reviewForm, approved: false })}
                           className="mr-2"
                         />
                         <span className="text-sm text-red-600 font-medium">Reject</span>

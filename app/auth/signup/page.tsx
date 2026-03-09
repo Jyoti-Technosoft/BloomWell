@@ -44,7 +44,7 @@ export default function SignUpChoice() {
               Join BloomWell
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              Choose how you'd like to join our healthcare community
+              Choose how you&apos;d like to join our healthcare community
             </p>
           </div>
 

@@ -53,8 +53,6 @@ interface MedicalQuestionnaireProps {
 }
 
 const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
-  medicineId,
-  medicineName,
   isOpen,
   onClose,
   onComplete,
@@ -95,44 +93,55 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [relevantSteps, setRelevantSteps] = useState<number[]>([0, 1, 2, 3, 4, 5, 7, 9, 10, 11, 13]);
 
+  // Initialize form data when component opens
+  const initializeFormData = useCallback(() => {
+    return {
+      birthday: initialData?.birthday || '',
+      pregnant: initialData?.pregnant || '',
+      currentlyUsingMedicines: initialData?.currentlyUsingMedicines || '',
+      hasDiabetes: initialData?.hasDiabetes || '',
+      seenDoctorLastTwoYears: initialData?.seenDoctorLastTwoYears || '',
+      medicalConditions: initialData?.medicalConditions || [],
+      height: initialData?.height || '',
+      weight: initialData?.weight || '',
+      targetWeight: initialData?.targetWeight || '',
+      goals: initialData?.goals || [],
+      allergies: initialData?.allergies || '',
+      currentMedications: initialData?.currentMedications || '',
+      additionalInfo: initialData?.additionalInfo || '',
+      lastFourSSN: initialData?.lastFourSSN || '',
+      primaryGoal: initialData?.primaryGoal || '',
+      triedWeightLossMethods: initialData?.triedWeightLossMethods || '',
+      activityLevel: initialData?.activityLevel || '',
+      sleepHours: initialData?.sleepHours || '',
+      stressLevel: initialData?.stressLevel || '',
+      dietaryRestrictions: initialData?.dietaryRestrictions || [],
+      currentWeightliftingRoutine: initialData?.currentWeightliftingRoutine || '',
+      proteinIntake: initialData?.proteinIntake || '',
+      workoutFrequency: initialData?.workoutFrequency || '',
+      healthConcerns: initialData?.healthConcerns || [],
+      sleepIssues: initialData?.sleepIssues || [],
+      stressTriggers: initialData?.stressTriggers || [],
+      stressManagementTechniques: initialData?.stressManagementTechniques || []
+    };
+  }, [initialData]);
+
   // Simplified effect - only handle component open/close
   useEffect(() => {
     if (isOpen) {
       // Use initialData if available, otherwise reset
-      setCurrentStep(0);
-      setErrors({});
-      setFormData({
-        birthday: initialData?.birthday || '',
-        pregnant: initialData?.pregnant || '',
-        currentlyUsingMedicines: initialData?.currentlyUsingMedicines || '',
-        hasDiabetes: initialData?.hasDiabetes || '',
-        seenDoctorLastTwoYears: initialData?.seenDoctorLastTwoYears || '',
-        medicalConditions: initialData?.medicalConditions || [],
-        height: initialData?.height || '',
-        weight: initialData?.weight || '',
-        targetWeight: initialData?.targetWeight || '',
-        goals: initialData?.goals || [],
-        allergies: initialData?.allergies || '',
-        currentMedications: initialData?.currentMedications || '',
-        additionalInfo: initialData?.additionalInfo || '',
-        lastFourSSN: initialData?.lastFourSSN || '',
-        primaryGoal: initialData?.primaryGoal || '',
-        triedWeightLossMethods: initialData?.triedWeightLossMethods || '',
-        activityLevel: initialData?.activityLevel || '',
-        sleepHours: initialData?.sleepHours || '',
-        stressLevel: initialData?.stressLevel || '',
-        dietaryRestrictions: initialData?.dietaryRestrictions || [],
-        currentWeightliftingRoutine: initialData?.currentWeightliftingRoutine || '',
-        proteinIntake: initialData?.proteinIntake || '',
-        workoutFrequency: initialData?.workoutFrequency || '',
-        healthConcerns: initialData?.healthConcerns || [],
-        sleepIssues: initialData?.sleepIssues || [],
-        stressTriggers: initialData?.stressTriggers || [],
-        stressManagementTechniques: initialData?.stressManagementTechniques || []
-      });
-      setRelevantSteps([0, 1, 2, 3, 4, 5, 7, 9, 10, 11, 13]);
+      const resetForm = () => {
+        setCurrentStep(0);
+        setErrors({});
+        const newFormData = initializeFormData();
+        setFormData(newFormData);
+        setRelevantSteps([0, 1, 2, 3, 4, 5, 7, 9, 10, 11, 13]);
+      };
+      
+      // Use setTimeout to avoid synchronous setState calls
+      setTimeout(resetForm, 0);
     }
-  }, [isOpen, initialData]);
+  }, [isOpen, initializeFormData]);
 
   // Handle primary goal changes with a simple approach
   const handlePrimaryGoalChange = (goal: string) => {
@@ -169,11 +178,11 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
   const totalSteps = useMemo(() => relevantSteps.length, [relevantSteps]);
   const progress = useMemo(() => ((currentStep + 1) / totalSteps) * 100, [currentStep, totalSteps]);
 
-  const handleInputChange = (field: keyof FormData, value: any) => {
+  const handleInputChange = useCallback((field: keyof FormData, value: string | string[]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-  };
+  }, []);
 
-  const handleCheckboxChange = (field: keyof FormData, value: string, checked: boolean) => {
+  const handleCheckboxChange = useCallback((field: keyof FormData, value: string, checked: boolean) => {
     if (field === 'medicalConditions' || field === 'goals' || field === 'dietaryRestrictions' || field === 'healthConcerns' || field === 'sleepIssues' || field === 'stressTriggers' || field === 'stressManagementTechniques') {
       setFormData(prev => ({
         ...prev,
@@ -182,7 +191,7 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
           : (prev[field] as string[]).filter(item => item !== value)
       }));
     }
-  };
+  }, []);
 
   const validateStep = useCallback((step: number): boolean => {
     const newErrors: { [key: string]: string } = {};
@@ -370,7 +379,7 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
           >
             <div className="text-center">
               <CalendarIcon className="h-12 w-12 text-indigo-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">What's your birthday?</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">What&apos;s your birthday?</h3>
               <p className="text-gray-600">We need to verify your age for medical eligibility</p>
             </div>
             <div>
@@ -487,12 +496,12 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
                 <textarea
                   value={formData.currentlyUsingMedicines}
                   onChange={(e) => handleInputChange('currentlyUsingMedicines', e.target.value)}
-                  placeholder="e.g., Semaglutide 1mg, Tirzepatide 5mg, or describe what you're taking..."
+                  placeholder="e.g., Semaglutide 1mg, Tirzepatide 5mg, or describe what you&apos;re taking..."
                   rows={4}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
                 />
                 <p className="text-xs text-gray-500 mt-2">
-                  If you're not currently using any medicines, please write "None" or "Not currently using any medicines"
+                  If you&apos;re not currently using any medicines, please write &quot;None&quot; or &quot;Not currently using any medicines&quot;
                 </p>
               </div>
             </div>
@@ -572,7 +581,7 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
             <div className="text-center">
               <ExclamationTriangleIcon className="h-12 w-12 text-indigo-600 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">Do you have any of the following medical conditions?</h3>
-              <p className="text-gray-600">Select all that apply (select "None" if none apply)</p>
+              <p className="text-gray-600">Select all that apply (select &quot;None&quot; if none apply)</p>
             </div>
             <div className="space-y-3">
               {[
@@ -689,7 +698,7 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
             <div className="text-center">
               <HeartIcon className="h-12 w-12 text-indigo-600 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">Which of the following apply to you?</h3>
-              <p className="text-gray-600">Select all that apply (select "No, none of these apply to me" if none apply)</p>
+              <p className="text-gray-600">Select all that apply (select &quot;No, none of these apply to me&quot; if none apply)</p>
             </div>
             <div className="space-y-3">
               {[
@@ -737,12 +746,12 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
                 <textarea
                   value={formData.allergies}
                   onChange={(e) => handleInputChange('allergies', e.target.value)}
-                  placeholder="e.g., Penicillin, Peanuts, Shellfish, Latex, etc. (Write 'None' if you have no allergies)"
+                  placeholder="e.g., Penicillin, Peanuts, Shellfish, Latex, etc. (Write &quot;None&quot; if you have no allergies)"
                   rows={4}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
                 />
                 <p className="text-xs text-gray-500 mt-2">
-                  Please include all known allergies, even if they seem minor. If you have no allergies, please write "None".
+                  Please include all known allergies, even if they seem minor. If you have no allergies, please write &quot;None&quot;.
                 </p>
               </div>
             </div>
@@ -863,7 +872,7 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
             <div className="text-center">
               <ExclamationTriangleIcon className="h-12 w-12 text-indigo-600 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">Dietary Restrictions</h3>
-              <p className="text-gray-600">Select all that apply (select "None" if none apply)</p>
+              <p className="text-gray-600">Select all that apply (select &quot;None&quot; if none apply)</p>
             </div>
             <div className="space-y-3">
               {[

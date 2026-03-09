@@ -1,4 +1,6 @@
 'use client';
+
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { motion } from 'framer-motion';
@@ -116,10 +118,12 @@ export default function ProfilePage() {
             <div className="flex items-center space-x-4">
               <div className="h-20 w-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
                 {session.user?.image ? (
-                  <img
+                  <Image
                     src={session.user.image}
                     alt={session.user.name || 'Profile'}
-                    className="h-full w-full rounded-full object-cover"
+                    width={80}
+                    height={80}
+                    className="h-20 w-20 rounded-full object-cover"
                   />
                 ) : (
                   <UserIcon className="h-10 w-10 text-white" />
@@ -132,7 +136,7 @@ export default function ProfilePage() {
                     : session.user?.name || 'Your Profile'
                   }
                 </h1>
-                <p className="text-indigo-100">Women's Health Profile</p>
+                <p className="text-indigo-100">Women&apos;s Health Profile</p>
               </div>
             </div>
             {!isEditing && (

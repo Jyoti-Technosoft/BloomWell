@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDownIcon, UserIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 
@@ -93,11 +94,12 @@ export default function Header() {
             <div className="flex items-center">
               <div className="shrink-0">
                 <Link href={session?.user?.role === 'doctor' ? '/doctor' : '/'} className="text-xl font-bold text-gray-900">
-                  <img
+                  <Image
                     src="/bloomwell-logo.png"
                     alt="BloomWell - Women's Health"
-                    height="200px"
-                    width="200px"
+                    width={150}
+                    height={100}
+                    // className="h-10 w-auto"
                   />
                 </Link>
               </div>
@@ -136,7 +138,14 @@ export default function Header() {
                           }}
                         >
                             <div className="py-1">
-                              {item.dropdown?.map((subItem: any) => (
+                              {item.dropdown?.map((subItem: {
+                                name: string;
+                                href: string;
+                                description?: string;
+                                specialty?: string;
+                                image?: string;
+                                rating?: number;
+                              }) => (
                                 <div key={subItem.name}>
                                   {item.name === 'Physicians' ? (
                                     <Link
@@ -382,7 +391,7 @@ export default function Header() {
                               redirect: true,
                               callbackUrl: '/auth/signin'
                             });
-                          } catch (error) {
+                          } catch {
                             window.location.href = '/auth/signin';
                           }
                         }}
@@ -434,9 +443,11 @@ export default function Header() {
                                     <div className="flex items-center">
                                       <div className="shrink-0 h-10 w-10 rounded-full bg-gray-200 overflow-hidden mr-3">
                                         {subItem.image ? (
-                                          <img
+                                          <Image
                                             src={subItem.image}
                                             alt={subItem.name}
+                                            width={40}
+                                            height={40}
                                             className="h-full w-full object-cover"
                                           />
                                         ) : (
@@ -517,7 +528,7 @@ export default function Header() {
                       redirect: true,
                       callbackUrl: '/auth/signin'
                     });
-                  } catch (error) {
+                  } catch {
                     window.location.href = '/auth/signin';
                   }
                 }}

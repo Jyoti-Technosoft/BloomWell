@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { StarIcon } from '@heroicons/react/24/solid';
 import { QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
 
@@ -60,8 +61,21 @@ function ReviewStars({ rating, interactive = false, onRatingChange }: { rating: 
   );
 }
 
+interface Review {
+  id: string;
+  patientName?: string;
+  name?: string;
+  rating: number;
+  comment?: string;
+  content?: string;
+  date?: string;
+  created_at?: string;
+  doctorId?: string;
+  doctorName?: string;
+}
+
 export default function ReviewsPage() {
-  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -131,7 +145,7 @@ export default function ReviewsPage() {
       } else {
         setError(data.error || 'Failed to submit review');
       }
-    } catch (error) {
+    } catch {
       setError('Failed to submit review. Please try again.');
     } finally {
       setSubmitting(false);
@@ -292,7 +306,7 @@ export default function ReviewsPage() {
                             <div className="flex items-center justify-between">
                               <ReviewStars rating={review.rating} />
                               <p className="text-sm text-gray-500">
-                                {new Date(review.created_at).toLocaleDateString(
+                                {new Date(review.created_at || review.date || '').toLocaleDateString(
                                   'en-US',
                                   {
                                     year: 'numeric',
@@ -303,10 +317,10 @@ export default function ReviewsPage() {
                               </p>
                             </div>
                             <p className="mt-4 text-base text-gray-700">
-                              {review.content}
+                              {review.content || review.comment}
                             </p>
                             <p className="mt-3 text-sm font-medium text-gray-900">
-                              {review.name}
+                              {review.name || review.patientName}
                             </p>
                           </div>
                         </div>
@@ -371,7 +385,7 @@ export default function ReviewsPage() {
                 Frequently Asked Questions
               </h2>
               <p className="mt-4 text-xl text-gray-500">
-                Have questions? We're here to help.
+                Have questions? We&apos;re here to help.
               </p>
             </div>
 
@@ -400,22 +414,22 @@ export default function ReviewsPage() {
 
             <div className="mt-12 text-center">
               <div className="inline-flex rounded-md shadow">
-                <a
+                <Link
                   href="/contact"
                   className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
                 >
                   Contact Us
-                </a>
+                </Link>
               </div>
               <p className="mt-3 text-base text-gray-500">
-                Can't find what you're looking for?{' '}
-                <a
+                Can&apos;t find what you&apos;re looking for?{' '}
+                <Link
                   href="mailto:info@yourclinic.com"
                   className="font-medium text-indigo-600 hover:text-indigo-500"
                 >
                   Email us
-                </a>{' '}
-                and we'll get back to you as soon as possible.
+                </Link>{' '}
+                and we&apos;ll get back to you as soon as possible.
               </p>
             </div>
           </div>

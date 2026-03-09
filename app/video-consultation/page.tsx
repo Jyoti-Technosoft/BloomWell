@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import VideoConsultation from '@/components/VideoConsultation';
 import { Physician } from '../lib/types';
 
@@ -25,7 +26,7 @@ export default function VideoConsultationPage() {
     fetchPhysicians();
   }, []);
 
-  const handleStartVideoCall = (physician: any) => {
+  const handleStartVideoCall = (physician: Physician) => {
     setSelectedPhysician(physician);
     setShowVideoConsultation(true);
   };
@@ -91,7 +92,7 @@ export default function VideoConsultationPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {physiciansData.members.map((doctor, index) => (
+          {physiciansData.members.map((doctor) => (
             <div
               key={doctor.id}
               className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100"
@@ -102,16 +103,18 @@ export default function VideoConsultationPage() {
                   {doctor.image ? (
                     <div className="relative">
                       <div className="absolute -inset-1 bg-linear-to-br from-blue-400 to-indigo-500 rounded-full blur-md opacity-50"></div>
-                      <img
+                      <Image
                         src={doctor.image}
-                        alt={doctor.name}
-                        className="relative w-24 h-24 rounded-full object-cover border-4 border-white shadow-xl"
+                        alt={doctor.name || ''}
+                        width={200}
+                        height={200}
+                        className="relative rounded-full object-cover border-4 border-white shadow-xl"
                       />
                     </div>
                   ) : (
                     <div className="w-24 h-24 rounded-full bg-linear-to-br from-blue-400 to-indigo-500 flex items-center justify-center shadow-xl border-4 border-white">
                       <span className="text-white text-2xl font-bold">
-                        {doctor.name.split(' ').map(n => n[0]).join('')}
+                        {(doctor.name || '').split(' ').map(n => n[0]).join('')}
                       </span>
                     </div>
                   )}
@@ -135,14 +138,14 @@ export default function VideoConsultationPage() {
                 {/* Specialties */}
                 <div className="mb-4">
                   <div className="flex flex-wrap gap-2 justify-center">
-                    {doctor.specialties.slice(0, 2).map((specialty, idx) => (
+                    {(doctor.specialties || []).slice(0, 2).map((specialty, idx) => (
                       <span key={idx} className="px-3 py-1 text-blue-600 text-xs rounded-full font-medium border border-blue-200">
                         {specialty}
                       </span>
                     ))}
-                    {doctor.specialties.length > 2 && (
+                    {(doctor.specialties || []).length > 2 && (
                       <span className="px-3 py-1 text-gray-600 text-xs rounded-full font-medium">
-                        +{doctor.specialties.length - 2} more
+                        +{(doctor.specialties || []).length - 2} more
                       </span>
                     )}
                   </div>

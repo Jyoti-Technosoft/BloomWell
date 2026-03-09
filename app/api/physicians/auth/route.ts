@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/app/lib/postgres';
-import { logger, auditLog } from '@/app/lib/secure-logger';
+import { logger } from '@/app/lib/secure-logger';
 
 export async function GET(request: NextRequest) {
   try {
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
       WHERE 1=1
     `;
 
-    const params: any[] = [limit, offset];
+    const params: (string | number)[] = [limit, offset];
 
     if (specialization) {
       query += ` AND p.specialization = $${params.length + 1}`;
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ physicians });
 
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error('Get physicians error', {
       error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined
@@ -130,39 +130,21 @@ export async function POST(request: NextRequest) {
     // For now, we'll assume password is correct for demo purposes
 
     // Log successful login
-    await auditLog({
-      userId: physician.id,
-      action: 'PHYSICIAN_LOGIN',
-      resource: 'physician_auth',
-      timestamp: new Date(),
-      success: true,
-      details: {
-        email: email,
-        role: 'physician'
-      }
-    });
-
-    logger.info('Physician login successful', {
+    await logger.info('Physician login successful', {
       physicianId: physician.id,
       email: email
     });
 
-    return NextResponse.json({
-      success: true,
-      physician: {
-        id: physician.id,
-        firstName: physician.first_name,
-        lastName: physician.last_name,
-        email: physician.email,
-        phoneNumber: physician.phone_number,
-        specialization: physician.specialization,
-        isVerified: physician.is_verified,
-        verificationStatus: physician.verification_status,
-        doctorProfileId: physician.doctor_profile_id
-      }
-    });
+    return NextResponse.json(
+      { 
+        success: true,
+        message: 'Login successful',
+        physicianId: physician.id
+      },
+      { status: 200 }
+    );
 
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error('Physician login error', {
       error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined

@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { 
   DocumentTextIcon,
@@ -30,7 +30,7 @@ export default function DoctorDashboard() {
   const [error, setError] = useState<string | null>(null);
 
   // Enhanced fetch with auth handling
-  const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
+  const authenticatedFetch = useCallback(async (url: string, options: RequestInit = {}) => {
     // Check if user is authenticated before making request
     if (status === 'unauthenticated') {
       console.log('🔐 User not authenticated, redirecting to login...');
@@ -78,16 +78,9 @@ export default function DoctorDashboard() {
     }
 
     return response;
-  };
+  }, [status, router]);
 
-  useEffect(() => {
-    if (status === 'loading') return;
-    if (status === 'unauthenticated') return; // Will be handled by useAuthenticatedApi
-    
-    fetchDashboardData();
-  }, [status]);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -105,7 +98,14 @@ export default function DoctorDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [authenticatedFetch]);
+
+  useEffect(() => {
+    if (status === 'loading') return;
+    if (status === 'unauthenticated') return; // Will be handled by useAuthenticatedApi
+    
+    fetchDashboardData();
+  }, [status, fetchDashboardData]);
 
   if (loading) {
     return (
@@ -204,8 +204,11 @@ export default function DoctorDashboard() {
               </div>
               <div className="ml-4 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500">Today's Appointments</dt>
+                  <dt className="text-sm font-medium text-gray-500">Today&apos;s Appointments</dt>
                   <dd className="text-2xl font-bold text-gray-900">{stats.todayAppointments}</dd>
+                  <p className="text-sm text-gray-500 mt-1">
+                    View all today&apos;s appointments and manage your schedule
+                  </p>
                 </dl>
               </div>
             </div>

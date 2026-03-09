@@ -1,6 +1,5 @@
 'use client';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
 type User = {
@@ -20,19 +19,21 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const [user, setUser] = useState<User | null>(null);
-  const router = useRouter();
 
   useEffect(() => {
     if (status === 'loading') return;
 
     if (session?.user) {
-      setUser({
-        id: session.user.id!,
-        email: session.user.email!,
-        fullName: session.user.name || 'User'
-      });
+      // Use setTimeout to avoid synchronous setState calls
+      setTimeout(() => {
+        setUser({
+          id: session.user.id!,
+          email: session.user.email!,
+          fullName: session.user.name || 'User'
+        });
+      }, 0);
     } else {
-      setUser(null);
+      setTimeout(() => setUser(null), 0);
     }
   }, [session, status]);
 
@@ -54,7 +55,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           setUser(null);
           window.location.href = '/auth/signin';
         }
-      } catch (error) {
+      } catch {
         console.log(' Session validation error, clearing session...');
         localStorage.clear();
         sessionStorage.clear();

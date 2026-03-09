@@ -1211,13 +1211,13 @@ async function seedPhysicians() {
                 physician.image,
                 physician.education,
                 physician.experience,
-                physician.specialties ? physician.specialties.join(', ') : null,
-                physician.rating,
-                physician.review_count,
-                physician.consultations_count,
-                physician.initial_consultation,
-                physician.available_time_slots ? JSON.stringify(physician.available_time_slots) : null,
-                physician.available_dates ? JSON.stringify(physician.available_dates) : null
+                physician.specialties ? physician.specialties.join(', ') : '',
+                physician.rating || 0,
+                physician.review_count || 0,
+                physician.consultations_count || 0,
+                physician.initial_consultation || 150,
+                physician.available_time_slots ? JSON.stringify(physician.available_time_slots) : '',
+                physician.available_dates ? JSON.stringify(physician.available_dates) : ''
             ]
         );
     }
@@ -1257,17 +1257,17 @@ async function seedMedicines() {
                 medicine.id,
                 medicine.name,
                 medicine.description,
-                medicine.price,
+                medicine.price || 0,
                 medicine.dosage,
-                medicine.inStock,
-                medicine.image,
+                medicine.inStock ? 1 : 0,
+                medicine.image || '',,
                 medicine.category,
                 medicine.overview,
                 medicine.howItWorks,
                 medicine.shipping,
                 medicine.support,
-                medicine.benefits ? medicine.benefits.join(', ') : null,
-                medicine.sideEffects ? medicine.sideEffects.join(', ') : null
+                medicine.benefits || '',
+                medicine.sideEffects || ''
             ]
         );
     }
@@ -1304,8 +1304,8 @@ async function seedTreatments() {
                 treatment.overview,
                 treatment.howItWorks,
                 treatment.category,
-                treatment.benefits ? JSON.stringify(treatment.benefits) : null,
-                treatment.faqs ? JSON.stringify(treatment.faqs) : null
+                treatment.benefits ? JSON.stringify(treatment.benefits) : '',
+                treatment.faqs ? JSON.stringify(treatment.faqs) : ''
             ]
         );
     }

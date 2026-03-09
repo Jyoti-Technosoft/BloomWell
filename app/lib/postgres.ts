@@ -59,7 +59,7 @@ export async function getConnection(): Promise<PoolClient> {
 }
 
 // Helper function to execute queries with proper error handling
-export async function query<T = any>(text: string, params?: any[]): Promise<T[]> {
+export async function query<T = Record<string, unknown>>(text: string, params?: (string | number)[]): Promise<T[]> {
   const client = await getConnection();
   try {
     const result = await client.query(text, params);
@@ -73,7 +73,7 @@ export async function query<T = any>(text: string, params?: any[]): Promise<T[]>
 }
 
 // Helper function for single query result
-export async function queryOne<T = any>(text: string, params?: any[]): Promise<T | null> {
+export async function queryOne<T = Record<string, unknown>>(text: string, params?: (string | number)[]): Promise<T | null> {
   const rows = await query<T>(text, params);
   return rows.length > 0 ? rows[0] : null;
 }

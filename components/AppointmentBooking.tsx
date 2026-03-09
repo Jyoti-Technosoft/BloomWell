@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ClockIcon,
@@ -24,12 +24,24 @@ interface TimeSlot {
   appointmentId?: string;
 }
 
+interface Appointment {
+  id: string;
+  doctorId: string;
+  patientId: string;
+  date: string;
+  time: string;
+  type: string;
+  notes?: string;
+  status: 'scheduled' | 'completed' | 'cancelled';
+  createdAt: string;
+}
+
 interface AppointmentBookingProps {
   isOpen: boolean;
   onClose: () => void;
   evaluationId?: string;
   medicineName?: string;
-  onSuccess?: (appointment: any) => void;
+  onSuccess?: (appointment: Appointment) => void;
 }
 
 export default function AppointmentBooking({ 
@@ -57,12 +69,6 @@ export default function AppointmentBooking({
     }
   }, [isOpen, step]);
 
-  useEffect(() => {
-    if (selectedDoctor && selectedDate) {
-      fetchTimeSlots();
-    }
-  }, [selectedDoctor, selectedDate]);
-
   const fetchDoctors = async () => {
     try {
       setLoading(true);
@@ -78,7 +84,7 @@ export default function AppointmentBooking({
     }
   };
 
-  const fetchTimeSlots = async () => {
+  const fetchTimeSlots = useCallback(async () => {
     if (!selectedDoctor || !selectedDate) return;
 
     try {
@@ -104,7 +110,13 @@ export default function AppointmentBooking({
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedDoctor, selectedDate]);
+
+  useEffect(() => {
+    if (selectedDoctor && selectedDate) {
+      fetchTimeSlots();
+    }
+  }, [selectedDoctor, selectedDate, fetchTimeSlots]);
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();

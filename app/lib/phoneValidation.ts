@@ -262,7 +262,7 @@ export function formatPhoneNumber(phone: string, countryCode?: string): string {
     return phone;
   }
 
-  const config = COUNTRY_PHONE_CONFIGS[countryCode];
+  // const config = COUNTRY_PHONE_CONFIGS[countryCode];
   const cleanPhone = phone.replace(/\D/g, '');
   
   // Basic formatting - you can enhance this based on country

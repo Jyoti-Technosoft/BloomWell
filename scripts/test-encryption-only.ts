@@ -152,16 +152,16 @@ async function testEncryptionOnly() {
       console.log('⚠️  Please check encryption implementation.');
     }
 
-  } catch (error: any) {
-    console.error('❌ Test failed:', error);
+  } catch (error: unknown) {
+    console.error('❌ Test failed:', error instanceof Error ? error.message : String(error));
     process.exit(1);
   }
 }
 
 // Run test if this file is executed directly
 if (require.main === module) {
-  testEncryptionOnly().catch((error: any) => {
-    console.error('Encryption test failed:', error);
+  testEncryptionOnly().catch((error: unknown) => {
+    console.error('Encryption test failed:', error instanceof Error ? error.message : String(error));
     process.exit(1);
   });
 }

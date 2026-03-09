@@ -1,12 +1,30 @@
 'use client';
 import { useState } from 'react';
 import { CalendarIcon, UserIcon, CreditCardIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
-import { BookingModalProps, Consultation } from '../lib/types';
+import { BookingModalProps } from '../lib/types';
 import { generateNextSevenDays, generateTimeSlotsForDate, formatDateForDisplay, getRelativeDateDescription } from '../lib/dateUtils';
 
 export default function BookingModal({ isOpen, onClose, physician, onComplete }: BookingModalProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [bookingData, setBookingData] = useState<Partial<Consultation>>({
+  const [bookingData, setBookingData] = useState<{
+    physicianId: string;
+    date?: string;
+    time?: string;
+    type?: string;
+    notes?: string;
+    chiefComplaint?: string;
+    medications?: string;
+    allergies?: string;
+    medicalHistory?: string;
+    preferredPharmacy?: string;
+    consultationType?: string;
+    insuranceInfo?: {
+      provider?: string;
+      policyNumber?: string;
+      groupNumber?: string;
+      memberId?: string;
+    };
+  }>({
     physicianId: physician.id,
   });
   const [isProcessing, setIsProcessing] = useState(false);
@@ -173,7 +191,56 @@ export default function BookingModal({ isOpen, onClose, physician, onComplete }:
 }
 
 // Step Components
-function DateTimeSelection({ physician, bookingData, setBookingData }: any) {
+function DateTimeSelection({ 
+  bookingData, 
+  setBookingData 
+}: {
+  physician: {
+    id: string;
+    name: string;
+    image?: string;
+    specialties?: string[];
+    initialConsultation?: number;
+  };
+  bookingData: {
+    physicianId: string;
+    date?: string;
+    time?: string;
+    type?: string;
+    notes?: string;
+    chiefComplaint?: string;
+    medications?: string;
+    allergies?: string;
+    medicalHistory?: string;
+    preferredPharmacy?: string;
+    consultationType?: string;
+    insuranceInfo?: {
+      provider?: string;
+      policyNumber?: string;
+      groupNumber?: string;
+      memberId?: string;
+    };
+  };
+  setBookingData: React.Dispatch<React.SetStateAction<{
+    physicianId: string;
+    date?: string;
+    time?: string;
+    type?: string;
+    notes?: string;
+    chiefComplaint?: string;
+    medications?: string;
+    allergies?: string;
+    medicalHistory?: string;
+    preferredPharmacy?: string;
+    consultationType?: string;
+    insuranceInfo?: {
+      provider?: string;
+      policyNumber?: string;
+      groupNumber?: string;
+      memberId?: string;
+    };
+  }>>;
+}) {
   // Generate dynamic dates for next 7 days
   const availableDates = generateNextSevenDays();
   const availableTimeSlots = bookingData.date ? generateTimeSlotsForDate(bookingData.date) : [];
@@ -232,7 +299,49 @@ function DateTimeSelection({ physician, bookingData, setBookingData }: any) {
   );
 }
 
-function ConsultationTypeSelection({ bookingData, setBookingData }: any) {
+function ConsultationTypeSelection({ 
+  bookingData, 
+  setBookingData 
+}: {
+  bookingData: {
+    physicianId: string;
+    date?: string;
+    time?: string;
+    type?: string;
+    notes?: string;
+    chiefComplaint?: string;
+    medications?: string;
+    allergies?: string;
+    medicalHistory?: string;
+    preferredPharmacy?: string;
+    consultationType?: string;
+    insuranceInfo?: {
+      provider?: string;
+      policyNumber?: string;
+      groupNumber?: string;
+      memberId?: string;
+    };
+  };
+  setBookingData: React.Dispatch<React.SetStateAction<{
+    physicianId: string;
+    date?: string;
+    time?: string;
+    type?: string;
+    notes?: string;
+    chiefComplaint?: string;
+    medications?: string;
+    allergies?: string;
+    medicalHistory?: string;
+    preferredPharmacy?: string;
+    consultationType?: string;
+    insuranceInfo?: {
+      provider?: string;
+      policyNumber?: string;
+      groupNumber?: string;
+      memberId?: string;
+    };
+  }>>;
+}) {
   const consultationTypes = [
     {
       type: 'video',
@@ -294,7 +403,49 @@ function ConsultationTypeSelection({ bookingData, setBookingData }: any) {
   );
 }
 
-function MedicalInformationForm({ bookingData, setBookingData }: any) {
+function MedicalInformationForm({ 
+  bookingData, 
+  setBookingData 
+}: {
+  bookingData: {
+    physicianId: string;
+    date?: string;
+    time?: string;
+    type?: string;
+    notes?: string;
+    chiefComplaint?: string;
+    medications?: string;
+    allergies?: string;
+    medicalHistory?: string;
+    preferredPharmacy?: string;
+    consultationType?: string;
+    insuranceInfo?: {
+      provider?: string;
+      policyNumber?: string;
+      groupNumber?: string;
+      memberId?: string;
+    };
+  };
+  setBookingData: React.Dispatch<React.SetStateAction<{
+    physicianId: string;
+    date?: string;
+    time?: string;
+    type?: string;
+    notes?: string;
+    chiefComplaint?: string;
+    medications?: string;
+    allergies?: string;
+    medicalHistory?: string;
+    preferredPharmacy?: string;
+    consultationType?: string;
+    insuranceInfo?: {
+      provider?: string;
+      policyNumber?: string;
+      groupNumber?: string;
+      memberId?: string;
+    };
+  }>>;
+}) {
   return (
     <div>
       <h3 className="text-xl font-bold text-gray-900 mb-6">Medical Information</h3>
@@ -369,7 +520,57 @@ function MedicalInformationForm({ bookingData, setBookingData }: any) {
   );
 }
 
-function PaymentInsuranceForm({ bookingData, setBookingData, physician }: any) {
+function PaymentInsuranceForm({ 
+  bookingData, 
+  setBookingData, 
+  physician 
+}: {
+  bookingData: {
+    physicianId: string;
+    date?: string;
+    time?: string;
+    type?: string;
+    notes?: string;
+    chiefComplaint?: string;
+    medications?: string;
+    allergies?: string;
+    medicalHistory?: string;
+    preferredPharmacy?: string;
+    consultationType?: string;
+    insuranceInfo?: {
+      provider?: string;
+      policyNumber?: string;
+      groupNumber?: string;
+      memberId?: string;
+    };
+  };
+  setBookingData: React.Dispatch<React.SetStateAction<{
+    physicianId: string;
+    date?: string;
+    time?: string;
+    type?: string;
+    notes?: string;
+    chiefComplaint?: string;
+    medications?: string;
+    allergies?: string;
+    medicalHistory?: string;
+    preferredPharmacy?: string;
+    consultationType?: string;
+    insuranceInfo?: {
+      provider?: string;
+      policyNumber?: string;
+      groupNumber?: string;
+      memberId?: string;
+    };
+  }>>;
+  physician: {
+    id: string;
+    name: string;
+    image?: string;
+    specialties?: string[];
+    initialConsultation?: number;
+  };
+}) {
   return (
     <div>
       <h3 className="text-xl font-bold text-gray-900 mb-6">Payment & Insurance</h3>
@@ -438,7 +639,37 @@ function PaymentInsuranceForm({ bookingData, setBookingData, physician }: any) {
   );
 }
 
-function ConfirmationStep({ bookingData, physician }: any) {
+function ConfirmationStep({ 
+  bookingData, 
+  physician 
+}: {
+  bookingData: {
+    physicianId: string;
+    date?: string;
+    time?: string;
+    type?: string;
+    notes?: string;
+    chiefComplaint?: string;
+    medications?: string;
+    allergies?: string;
+    medicalHistory?: string;
+    preferredPharmacy?: string;
+    consultationType?: string;
+    insuranceInfo?: {
+      provider?: string;
+      policyNumber?: string;
+      groupNumber?: string;
+      memberId?: string;
+    };
+  };
+  physician: {
+    id: string;
+    name: string;
+    image?: string;
+    specialties?: string[];
+    initialConsultation?: number;
+  };
+}) {
   return (
     <div>
       <h3 className="text-xl font-bold text-gray-900 mb-6">Booking Confirmation</h3>
@@ -498,10 +729,10 @@ function ConfirmationStep({ bookingData, physician }: any) {
         <div className="border-t pt-6">
           <h4 className="font-semibold text-gray-900 mb-3">What happens next?</h4>
           <ol className="space-y-2 text-sm text-gray-700">
-            <li>1. Click "Complete Booking" to finalize your appointment</li>
+            <li>1. Click &quot;Complete Booking&quot; to finalize your appointment</li>
             <li>2. Payment will be processed securely</li>
             {/* <li>3. You'll receive a confirmation email with consultation details</li> */}
-            <li>3. For video consultations, you'll receive a secure link 30 minutes before your appointment</li>
+            <li>3. For video consultations, you&apos;ll receive a secure link 30 minutes before your appointment</li>
             <li>4. The physician will review your information before the consultation</li>
           </ol>
         </div>

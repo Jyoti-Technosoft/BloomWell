@@ -1,5 +1,9 @@
-const { Pool } = require('pg');
-require('dotenv').config({ path: '.env.local' });
+import { Pool } from 'pg';
+import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
+
+dotenv.config({ path: '.env.local' });
 
 // Your Neon database connection string from .env.local
 const DATABASE_URL = process.env.NEON_DATABASE_URL
@@ -30,8 +34,6 @@ async function runMigration() {
     console.log('Connecting to Neon database...');
     
     // Read the migration file
-    const fs = require('fs');
-    const path = require('path');
     const migrationSQL = fs.readFileSync(
       path.join(__dirname, '../database/migrations/006_sample_doctors_with_passwords.sql'),
       'utf8'

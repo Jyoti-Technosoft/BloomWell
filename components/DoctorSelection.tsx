@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { UserIcon, CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
@@ -24,11 +24,7 @@ export default function DoctorSelection({ consultationType, onDoctorSelected, on
   const [error, setError] = useState<string | null>(null);
   const [fallbackUsed, setFallbackUsed] = useState(false);
 
-  useEffect(() => {
-    fetchDoctors();
-  }, [consultationType]);
-
-  const fetchDoctors = async () => {
+  const fetchDoctors = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -54,15 +50,20 @@ export default function DoctorSelection({ consultationType, onDoctorSelected, on
           console.log('🔄 Using fallback - showing all verified doctors');
         }
       } else {
-        throw new Error(data.error || 'Failed to load doctors');
+        throw new Error(data.error || 'Failed to fetch doctors');
       }
     } catch (error) {
       console.error('Error fetching doctors:', error);
-      setError(error instanceof Error ? error.message : 'Failed to load doctors');
+      setError('Failed to load doctors. Please try again.');
+      setFallbackUsed(true);
     } finally {
       setLoading(false);
     }
-  };
+  }, [consultationType]);
+
+  useEffect(() => {
+    fetchDoctors();
+  }, [fetchDoctors]);
 
   const handleDoctorSelect = (doctor: Doctor) => {
     setSelectedDoctor(doctor);
@@ -159,7 +160,7 @@ export default function DoctorSelection({ consultationType, onDoctorSelected, on
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex items-start space-x-3">
-                      <div className="flex-shrink-0">
+                      <div className="shrink-0">
                         <div className="h-12 w-12 bg-indigo-100 rounded-full flex items-center justify-center">
                           <UserIcon className="h-6 w-6 text-indigo-600" />
                         </div>
@@ -185,7 +186,7 @@ export default function DoctorSelection({ consultationType, onDoctorSelected, on
                       </div>
                     </div>
                     {selectedDoctor?.id === doctor.id && (
-                      <div className="flex-shrink-0">
+                      <div className="shrink-0">
                         <CheckCircleIcon className="h-6 w-6 text-indigo-600" />
                       </div>
                     )}

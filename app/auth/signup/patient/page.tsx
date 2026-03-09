@@ -95,6 +95,7 @@ const PatientSignUp = () => {
       };
       
       // Remove confirmPassword from the data before sending to the server
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { confirmPassword, ...userData } = submitData;
       
       const response = await fetch('/api/auth/signup', {
@@ -179,14 +180,16 @@ const PatientSignUp = () => {
   };
 
   
+  const watchFn = watch;
+  const passwordValue = watchFn('password');
   useEffect(() => {
-    if (watch('password')) {
-      const strength = getPasswordStrength(watch('password'));
+    if (passwordValue) {
+      const strength = getPasswordStrength(passwordValue);
       setPasswordStrength(strength);
     } else {
       setPasswordStrength({ strength: 0, color: 'bg-gray-200' });
     }
-  }, [watch('password')]);
+  }, [passwordValue, watchFn]);
 
   const inputClassName = "block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 pl-3 pr-10";
   const selectClassName = "block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-base sm:leading-6 h-9";
@@ -209,9 +212,9 @@ const PatientSignUp = () => {
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-blue-800">Welcome to our women's healthcare platform</h3>
+              <h3 className="text-sm font-medium text-blue-800">Welcome to our women&apos;s healthcare platform</h3>
               <div className="mt-2 text-sm text-blue-700">
-                <p>We provide comprehensive healthcare services for women and support for their families. Whether you're seeking care for yourself or supporting a loved one, we're here to help.</p>
+                <p>We provide comprehensive healthcare services for women and support for their families. Whether you&apos;re seeking care for yourself or supporting a loved one, we&apos;re here to help.</p>
               </div>
             </div>
           </div>
@@ -302,7 +305,7 @@ const PatientSignUp = () => {
                         <PhoneInput
                           international
                           countryCallingCodeEditable={false}
-                          defaultCountry={selectedCountry as any}
+                          defaultCountry={selectedCountry as 'US' | 'GB' | 'CA' | 'AU' | 'DE' | 'FR' | 'IN' | 'JP' | 'CN' | 'BR'}
                           value={phone}
                           onChange={(value) => {
                             setPhone(value || '');
@@ -467,7 +470,7 @@ const PatientSignUp = () => {
                   <PhoneInput
                     international
                     countryCallingCodeEditable={false}
-                    defaultCountry={selectedCountry as any}
+                    defaultCountry={selectedCountry as 'US' | 'GB' | 'CA' | 'AU' | 'DE' | 'FR' | 'IN' | 'JP' | 'CN' | 'BR'}
                     value={emergencyPhone}
                     onChange={(value) => setEmergencyPhone(value || '')}
                     className={inputClassName}

@@ -102,7 +102,7 @@ export function sanitizeName(name: string): string {
 /**
  * Validates and sanitizes a complete form object
  */
-export function validateAndSanitize<T extends Record<string, any>>(
+export function validateAndSanitize<T extends Record<string, unknown>>(
   data: T,
   schema: Record<keyof T, {
     type: 'text' | 'email' | 'phone' | 'name' | 'html';
@@ -127,11 +127,11 @@ export function validateAndSanitize<T extends Record<string, any>>(
     
     // Skip validation if field is empty and not required
     if (!value && !fieldSchema.required) {
-      (sanitizedData as any)[key] = value;
+      (sanitizedData as Record<string, unknown>)[key] = value;
       continue;
     }
     
-    const stringValue = value.toString();
+    const stringValue = value?.toString() || '';
     
     // Validate length
     if (fieldSchema.minLength && stringValue.length < fieldSchema.minLength) {
@@ -150,7 +150,7 @@ export function validateAndSanitize<T extends Record<string, any>>(
         if (!isValidEmail(stringValue)) {
           errors.push(`${key.toString()} must be a valid email address`);
         } else {
-          (sanitizedData as any)[key] = sanitizeEmail(stringValue);
+          (sanitizedData as Record<string, unknown>)[key] = sanitizeEmail(stringValue);
         }
         break;
         
@@ -158,7 +158,7 @@ export function validateAndSanitize<T extends Record<string, any>>(
         if (!isValidPhone(stringValue)) {
           errors.push(`${key.toString()} must be a valid phone number`);
         } else {
-          (sanitizedData as any)[key] = sanitizePhone(stringValue);
+          (sanitizedData as Record<string, unknown>)[key] = sanitizePhone(stringValue);
         }
         break;
         
@@ -166,17 +166,17 @@ export function validateAndSanitize<T extends Record<string, any>>(
         if (!isValidName(stringValue)) {
           errors.push(`${key.toString()} must contain only letters, spaces, hyphens, and apostrophes`);
         } else {
-          (sanitizedData as any)[key] = sanitizeName(stringValue);
+          (sanitizedData as Record<string, unknown>)[key] = sanitizeName(stringValue);
         }
         break;
         
       case 'html':
-        (sanitizedData as any)[key] = sanitizeHtml(stringValue);
+        (sanitizedData as Record<string, unknown>)[key] = sanitizeHtml(stringValue);
         break;
         
       case 'text':
       default:
-        (sanitizedData as any)[key] = sanitizeText(stringValue, fieldSchema.maxLength);
+        (sanitizedData as Record<string, unknown>)[key] = sanitizeText(stringValue, fieldSchema.maxLength);
         break;
     }
   }
@@ -217,9 +217,9 @@ export function isValidDate(dateString: string): boolean {
 /**
  * Sanitizes date input
  */
-export function sanitizeDate(dateString: string): string | null {
-  if (typeof dateString !== 'string') return null;
+export function sanitizeDate(data: unknown): unknown {
+  if (typeof data !== 'string') return null;
   
-  const sanitized = dateString.trim();
+  const sanitized = data.trim();
   return isValidDate(sanitized) ? sanitized : null;
 }

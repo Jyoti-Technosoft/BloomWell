@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
       WHERE u.role = 'patient' AND e.doctor_id = $1
     `;
     
-    const params: any[] = [doctorId];
+    const params: (string | number)[] = [doctorId];
     let paramIndex = 2;
 
     // Add search filter
@@ -106,8 +106,9 @@ export async function GET(request: NextRequest) {
                 } else {
                   decryptedName = parsed;
                 }
-              } catch (parseError) {
+              } catch (parseError: unknown) {
                 // It's a plain string, use as-is
+                console.error('Error decrypting name:', parseError instanceof Error ? parseError.message : String(parseError));
                 decryptedName = row.full_name;
               }
             }
@@ -125,8 +126,9 @@ export async function GET(request: NextRequest) {
                 } else {
                   decryptedPhone = parsed;
                 }
-              } catch (parseError) {
+              } catch (parseError: unknown) {
                 // It's a plain string, use as-is
+                console.error('Error decrypting phone:', parseError instanceof Error ? parseError.message : String(parseError));
                 decryptedPhone = row.phone_number;
               }
             }
@@ -144,14 +146,15 @@ export async function GET(request: NextRequest) {
                 } else {
                   decryptedDateOfBirth = parsed;
                 }
-              } catch (parseError) {
+              } catch (parseError: unknown) {
                 // It's a plain string, use as-is
+                console.error('Error decrypting date of birth:', parseError instanceof Error ? parseError.message : String(parseError));
                 decryptedDateOfBirth = row.date_of_birth;
               }
             }
           }
-        } catch (error) {
-          console.error('Error decrypting patient data:', error);
+        } catch (error: unknown) {
+          console.error('Error decrypting patient data:', error instanceof Error ? error.message : String(error));
         }
 
         // Determine patient status based on recent activity

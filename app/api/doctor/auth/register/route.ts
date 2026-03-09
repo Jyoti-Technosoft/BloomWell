@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/app/lib/postgres';
 import { logger, auditLog } from '@/app/lib/secure-logger';
 import { validateAndSanitize } from '@/app/lib/input-sanitizer';
+import bcrypt from 'bcrypt';
 
 interface DoctorRegistrationData {
   // Personal Information
@@ -17,23 +18,15 @@ interface DoctorRegistrationData {
   licenseNumber: string;
   licenseState: string;
   licenseExpiryDate: string;
-  npiNumber?: string;
-  deaNumber?: string;
-  professionalBio?: string;
+  npiNumber: string;
+  deaNumber: string;
+  professionalBio: string;
   
-  // Education & Experience
-  education?: Array<{
-    degree: string;
-    institution: string;
-    year: string;
-  }>;
-  experience?: Array<{
-    position: string;
-    institution: string;
-    startDate: string;
-    endDate?: string;
-    current: boolean;
-  }>;
+  // Education & Experience (can be strings from textareas or arrays)
+  education?: any;
+  experience?: any;
+  professionalRole?: string;
+  workExperience?: string;
   
   // Practice Information
   consultationFee?: string;
@@ -52,7 +45,7 @@ export async function POST(request: NextRequest) {
     // Validate required fields
     const requiredFields = [
       'firstName', 'lastName', 'email', 'phoneNumber', 'password', 'confirmPassword',
-      'specialization', 'licenseNumber', 'licenseState', 'licenseExpiryDate'
+      'specialization', 'licenseNumber', 'licenseState', 'licenseExpiryDate', 'npiNumber', 'deaNumber'
     ];
 
     for (const field of requiredFields) {
@@ -62,6 +55,13 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
+    }
+    // Additional validation for license expiry date
+    if (!data.licenseExpiryDate || data.licenseExpiryDate.trim() === '') {
+      return NextResponse.json(
+        { error: 'License expiry date is required' },
+        { status: 400 }
+      );
     }
 
     // Validate password match
@@ -119,6 +119,14 @@ export async function POST(request: NextRequest) {
       licenseState: { type: 'text', required: true, maxLength: 50 }
     });
     
+    const npiNumberResult = validateAndSanitize({ npiNumber: data.npiNumber }, {
+      npiNumber: { type: 'text', required: true, maxLength: 20 }
+    });
+    
+    const deaNumberResult = validateAndSanitize({ deaNumber: data.deaNumber }, {
+      deaNumber: { type: 'text', required: true, maxLength: 20 }
+    });
+    
     const bioResult = data.professionalBio ? validateAndSanitize({ professionalBio: data.professionalBio }, {
       professionalBio: { type: 'html', maxLength: 1000 }
     }) : { isValid: true, sanitizedData: { professionalBio: null }, errors: [] };
@@ -136,6 +144,8 @@ export async function POST(request: NextRequest) {
       ...specializationResult.errors,
       ...licenseNumberResult.errors,
       ...licenseStateResult.errors,
+      ...npiNumberResult.errors,
+      ...deaNumberResult.errors,
       ...bioResult.errors,
       ...feeResult.errors
     ];
@@ -147,6 +157,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Only proceed with sanitized data if all validations passed
     const sanitizedData = {
       firstName: firstNameResult.sanitizedData.firstName,
       lastName: lastNameResult.sanitizedData.lastName,
@@ -155,6 +166,8 @@ export async function POST(request: NextRequest) {
       specialization: specializationResult.sanitizedData.specialization,
       licenseNumber: licenseNumberResult.sanitizedData.licenseNumber,
       licenseState: licenseStateResult.sanitizedData.licenseState,
+      npiNumber: npiNumberResult.sanitizedData.npiNumber,
+      deaNumber: deaNumberResult.sanitizedData.deaNumber,
       professionalBio: bioResult.sanitizedData.professionalBio,
       consultationFee: feeResult.sanitizedData.consultationFee
     };
@@ -186,8 +199,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Hash password
-    const bcrypt = require('bcrypt');
     const hashedPassword = await bcrypt.hash(data.password, 12);
+
+    // Generate user ID
+    const generatedUserId = `doctor_${crypto.randomUUID()}`;
 
     // Start transaction
     const client = await pool.connect();
@@ -197,48 +212,94 @@ export async function POST(request: NextRequest) {
 
       // Create user with doctor role
       const userResult = await client.query(
-        `INSERT INTO users (email, password_hash, full_name, phone_number, role, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, 'doctor', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        `INSERT INTO users (id, email, password_hash, full_name, phone_number, date_of_birth, healthcare_purpose, role, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, 'doctor', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
          RETURNING id`,
         [
+          generatedUserId,
           sanitizedData.email,
           hashedPassword,
           `${sanitizedData.firstName} ${sanitizedData.lastName}`,
-          sanitizedData.phoneNumber
+          sanitizedData.phoneNumber,
+          '1900-01-01', // Default date of birth for doctors (will be updated in profile)
+          'Healthcare Provider' // Default healthcare purpose for doctors
         ]
       );
 
       const userId = userResult.rows[0].id;
+      // Handle education and experience - convert from string if needed
+      let educationData: any = data.education || [];
+      let experienceData: any = data.experience || [];
+      
+      // If education is a string, convert it to the expected format
+      if (typeof educationData === 'string' && educationData.trim()) {
+        educationData = [{
+          degree: educationData.trim(),
+          institution: '',
+          year: ''
+        }];
+      }
+      
+      // If experience is a string, convert it to the expected format  
+      if (typeof experienceData === 'string' && experienceData.trim()) {
+        experienceData = [{
+          position: experienceData.trim(),
+          institution: '',
+          startDate: '',
+          current: true
+        }];
+      }
 
       // Create doctor profile
+      // Log all values before insertion for debugging
+      const insertValues = [
+        userId, // user_id
+        sanitizedData.firstName, // first_name
+        sanitizedData.lastName, // last_name
+        sanitizedData.specialization, // specialization
+        sanitizedData.licenseNumber, // license_number
+        sanitizedData.licenseState, // license_state
+        data.licenseExpiryDate, // license_expiry_date
+        sanitizedData.npiNumber, // npi_number
+        sanitizedData.deaNumber, // dea_number
+        sanitizedData.phoneNumber, // phone_number
+        sanitizedData.email, // email
+        sanitizedData.professionalBio, // professional_bio
+        JSON.stringify(experienceData), // experience (JSONB)
+        JSON.stringify(data.hospitalAffiliations || []), // hospital_affiliations (JSONB)
+        JSON.stringify(data.languages || ['English']), // languages (JSONB)
+        sanitizedData.consultationFee ? parseFloat(sanitizedData.consultationFee) : null, // consultation_fee
+        JSON.stringify({}), // availability (JSONB) - empty for now
+        JSON.stringify([]), // verification_documents (JSONB) - empty for now
+        null, // verification_date
+        null, // rejection_reason
+        false, // is_verified
+        'pending', // verification_status
+        data.experience ? parseInt(data.experience) : null, // experience_years
+        data.education || null, // education (TEXT)
+        data.professionalRole || null, // professional_role
+        data.workExperience || null, // work_experience
+        JSON.stringify([]), // specialties (TEXT) - empty for now
+        JSON.stringify([]), // publications (TEXT) - empty for now
+        JSON.stringify([]), // awards (TEXT) - empty for now
+        JSON.stringify([]), // certifications (TEXT) - empty for now
+        'doctor' // role
+      ];
+
+      // Note: user_id is now VARCHAR in both tables, no casting needed
       const profileResult = await client.query(
         `INSERT INTO doctor_profiles (
            user_id, first_name, last_name, specialization, license_number, 
            license_state, license_expiry_date, npi_number, dea_number,
-           phone_number, email, professional_bio, consultation_fee,
-           education, experience, languages, hospital_affiliations,
-           is_verified, verification_status, created_at, updated_at
-         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, false, 'pending', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+           phone_number, email, professional_bio, experience, hospital_affiliations, 
+           languages, consultation_fee, availability, verification_documents, 
+           verification_date, rejection_reason, is_verified, verification_status,
+           experience_years, education, professional_role, work_experience,
+           specialties, publications, awards, certifications, role,
+           created_at, updated_at
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
          RETURNING id`,
-        [
-          userId,
-          sanitizedData.firstName,
-          sanitizedData.lastName,
-          sanitizedData.specialization,
-          sanitizedData.licenseNumber,
-          sanitizedData.licenseState,
-          data.licenseExpiryDate,
-          data.npiNumber || null,
-          data.deaNumber || null,
-          sanitizedData.phoneNumber,
-          sanitizedData.email,
-          sanitizedData.professionalBio,
-          sanitizedData.consultationFee ? parseFloat(sanitizedData.consultationFee) : null,
-          JSON.stringify(data.education || []),
-          JSON.stringify(data.experience || []),
-          JSON.stringify(data.languages || ['English']),
-          JSON.stringify(data.hospitalAffiliations || [])
-        ]
+        insertValues
       );
 
       const doctorProfileId = profileResult.rows[0].id;
@@ -255,6 +316,9 @@ export async function POST(request: NextRequest) {
             'INSERT INTO doctor_specialization_link (doctor_id, specialization_id) VALUES ($1, $2)',
             [doctorProfileId, specializationResult.rows[0].id]
           );
+          
+        } else {
+          console.log('⚠️ Specialization not found:', sanitizedData.specialization);
         }
       }
 
@@ -289,13 +353,15 @@ export async function POST(request: NextRequest) {
 
     } catch (error) {
       await client.query('ROLLBACK');
-      throw error;
+      return NextResponse.json(
+        { error: 'Registration failed. Please try again.' },
+        { status: 500 }
+      );
     } finally {
       client.release();
     }
-
   } catch (error) {
-    logger.error('Doctor registration error', {
+    logger.error('Doctor registration request error', {
       error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined
     });
@@ -306,3 +372,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

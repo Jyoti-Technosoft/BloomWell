@@ -91,7 +91,19 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
     setShowBookingModal(true);
   };
 
-  const handleBookingComplete = (bookingData: any) => {
+  interface BookingData {
+  consultation: {
+    consultationLink?: string;
+    id?: string;
+    status?: string;
+    scheduledAt?: string;
+    consultation_date?: string;
+    consultation_time?: string;
+    consultation_type?: string;
+  };
+}
+
+const handleBookingComplete = (bookingData: BookingData) => {
     // Extract consultation data from nested response structure
     const consultation = bookingData.consultation;
     const consultationLink = consultation?.consultationLink;
@@ -102,17 +114,17 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
         ...prev, 
         consultationLink: consultationLink || null,
         scheduledConsultation: {
-          id: consultation.id,
-          date: consultation.consultation_date,
-          time: consultation.consultation_time,
-          type: consultation.consultation_type,
-          link: consultationLink
+          id: consultation.id || '',
+          date: consultation.consultation_date || '',
+          time: consultation.consultation_time || '',
+          type: consultation.consultation_type || '',
+          link: consultationLink || ''
         }
       } : null);
     }
     
     setToast({
-      message: consultationLink && consultation?.consultation_type === 'video' && isConsultationNow(consultation?.consultation_date, consultation?.consultation_time)
+      message: consultationLink && consultation?.consultation_type === 'video' && isConsultationNow(consultation?.consultation_date || '', consultation?.consultation_time || '')
         ? 'Consultation booked successfully! You can now start the video call.'
         : 'Consultation booked successfully!',
       type: 'success'
@@ -283,7 +295,7 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
               <div>
                 <h3 className="text-lg font-semibold text-blue-900 mb-2">Healthcare Standards</h3>
                 <p className="text-blue-700 text-sm leading-relaxed">
-                  All consultations follow proper medical protocols. Video consultations are scheduled in advance 
+          All consultations follow proper medical protocols. Video consultations are scheduled in advance 
                   and conducted through secure, HIPAA-compliant platforms. Direct instant video calls are not 
                   available to ensure quality of care and proper medical documentation.
                 </p>
@@ -295,7 +307,7 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
           <div className="p-8">
             <div className="text-center">
               <h3 className="text-2xl font-semibold text-gray-900 mb-4">Consultation Options</h3>
-              <p className="text-gray-600 mb-6">Choose how you'd like to consult with Dr. {doctorData.name.split(' ').slice(1).join(' ')}</p>
+              <p className="text-gray-600 mb-6">Choose how you&apos;d like to consult with Dr. {doctorData.name.split(' ').slice(1).join(' ')}</p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 {shouldShowVideoCallButton() && (

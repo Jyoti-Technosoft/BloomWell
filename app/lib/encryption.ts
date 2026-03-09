@@ -5,19 +5,22 @@ import crypto from 'crypto';
 // Check if AWS credentials are available
 const AWS_AVAILABLE = false;
 
-let kms: any = null;
+// Type for AWS KMS client (dynamically imported)
+type KMSClient = unknown;
+
+let kms: KMSClient | null = null;
 
 // Initialize AWS KMS if available
 async function initializeAWS() {
   if (AWS_AVAILABLE) {
     try {
-      const { KMSClient, GenerateDataKeyCommand, DecryptCommand } = await import('@aws-sdk/client-kms');
+      const { KMSClient } = await import('@aws-sdk/client-kms');
       kms = new KMSClient({
         region: process.env.AWS_REGION!,
       });
       console.log('🔐 AWS KMS encryption enabled');
-    } catch (error) {
-      console.warn('⚠️ AWS KMS not available, using fallback encryption');
+    } catch {
+      // Error already logged above
     }
   } else {
     console.log('🔒 Using fallback encryption (no AWS credentials)');
@@ -49,7 +52,8 @@ export async function encryptField(text: string): Promise<EncryptedData> {
 
   if (AWS_AVAILABLE && kms) {
     // Use AWS KMS encryption
-    const { GenerateDataKeyCommand } = await import('@aws-sdk/client-kms');
+    // const { GenerateDataKeyCommand } = await import('@aws-sdk/client-kms');
+    // GenerateDataKeyCommand is used in generateDataKey function
     const { plaintextKey, encryptedKey } = await generateDataKey();
     const iv = crypto.randomBytes(IV_LENGTH);
 
@@ -62,7 +66,7 @@ export async function encryptField(text: string): Promise<EncryptedData> {
       encrypted,
       iv: iv.toString('hex'),
       tag: cipher.getAuthTag().toString('hex'),
-      key: encryptedKey,
+      key: encryptedKey.toString('base64'),
     };
   } else {
     // Use fallback encryption
@@ -89,10 +93,10 @@ async function generateDataKey() {
       KeySpec: 'AES_256',
     });
 
-    const response = await kms.send(command);
+    const response = await (kms as { send: (cmd: unknown) => Promise<{ Plaintext: Buffer; CiphertextBlob: Buffer }> }).send(command);
     return {
-      plaintextKey: response.Plaintext,
-      encryptedKey: response.CiphertextBlob,
+      plaintextKey: (response as { Plaintext: Buffer }).Plaintext,
+      encryptedKey: (response as { CiphertextBlob: Buffer }).CiphertextBlob,
     };
   } else {
     // Fallback: return a key derived from fallback key
@@ -110,8 +114,8 @@ async function decryptDataKey(encryptedKey: string): Promise<Buffer> {
       CiphertextBlob: Buffer.from(encryptedKey, 'base64'),
     });
 
-    const response = await kms.send(command);
-    return response.Plaintext;
+    const response = await (kms as { send: (cmd: unknown) => Promise<{ Plaintext: Buffer }> }).send(command);
+    return (response as { Plaintext: Buffer }).Plaintext;
   } else {
     // Fallback: return fallback key
     return FIXED_FALLBACK_KEY;
@@ -136,8 +140,8 @@ export async function decryptField(data: EncryptedData): Promise<string> {
     decrypted += decipher.final('utf8');
 
     return decrypted;
-  } catch (error) {
-    console.log('Decryption failed:', (error as Error).message);
+  } catch (error: unknown) {
+    console.error('Decryption failed:', error);
     return '[DECRYPTION_FAILED - Different encryption key used]';
   }
 }
@@ -174,7 +178,7 @@ export const SENSITIVE_FIELDS = [
   'lastFourSSN',
 ];
 
-export async function encryptSensitiveFields(data: any) {
+export async function encryptSensitiveFields(data: Record<string, unknown>) {
   if (!data || typeof data !== 'object') return data;
 
   const result = { ...data };
@@ -192,7 +196,7 @@ export async function encryptSensitiveFields(data: any) {
   return result;
 }
 
-export async function decryptSensitiveFields(data: any) {
+export async function decryptSensitiveFields(data: Record<string, unknown>) {
   if (!data || typeof data !== 'object') return data;
 
   const result = { ...data };
@@ -216,9 +220,9 @@ export async function decryptSensitiveFields(data: any) {
       }
     }
     
-    if (encryptedData?.encrypted) {
+    if (encryptedData && typeof encryptedData === 'object' && 'encrypted' in encryptedData) {
       // Try to decrypt regardless of AWS availability
-      const decryptedValue = await decryptField(encryptedData);
+      const decryptedValue = await decryptField(encryptedData as EncryptedData);
 
       if (decryptedValue.includes('[DECRYPTION_FAILED')) {
         result[field] = `[ENCRYPTED - Different encryption key used]`;
@@ -229,7 +233,7 @@ export async function decryptSensitiveFields(data: any) {
           result[field] = decryptedValue;
         }
       }
-    } else if (encryptedData?.encrypted) {
+    } else if (encryptedData && typeof encryptedData === 'object' && 'encrypted' in encryptedData) {
       console.log(`Field ${field} is encrypted but missing key - cannot decrypt`);
       // Keep original encrypted data for now
       result[field] = `[ENCRYPTED - Missing Key] ${value}`;

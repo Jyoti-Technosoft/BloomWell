@@ -1,6 +1,5 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 
 export default function ContactForm() {
   const [formData, setFormData] = useState({
@@ -13,7 +12,6 @@ export default function ContactForm() {
     success: boolean;
     message: string;
   } | null>(null);
-  const router = useRouter();
 
   // Auto-hide success message after 5 seconds
   useEffect(() => {
@@ -89,7 +87,7 @@ export default function ContactForm() {
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
         <div className="bg-linear-to-r from-indigo-600 to-purple-600 px-8 py-6">
           <h3 className="text-2xl font-semibold text-white">Send us a message</h3>
-          <p className="text-indigo-100 mt-2">We'll respond within 24 hours</p>
+          <p className="text-indigo-100 mt-2">We&apos;ll respond within 24 hours</p>
         </div>
         
         <div className="px-8 py-8">
@@ -214,7 +212,7 @@ export default function ContactForm() {
                   <svg className="w-5 h-5 text-green-600 mr-3 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  <span className="text-green-800 font-medium">Your message has been sent successfully! We'll get back to you soon.</span>
+                  <span className="text-green-800 font-medium">Your message has been sent successfully! We&apos;ll get back to you soon.</span>
                 </div>
               )}
             </div>

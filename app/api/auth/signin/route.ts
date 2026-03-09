@@ -50,6 +50,7 @@ export async function POST(request: Request) {
     );
 
     // Create response with user data (without password)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password_hash, ...userWithoutPassword } = user;
     
     // Map database field names to encryption field names

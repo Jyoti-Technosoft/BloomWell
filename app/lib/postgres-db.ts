@@ -40,7 +40,7 @@ export interface Evaluation {
   medicine_id: string;
   medicine_name: string;
   evaluation_type: string;
-  responses: any;
+  responses: Record<string, unknown>;
   status: string;
   created_at: string;
   updated_at: string;
@@ -119,8 +119,9 @@ export const postgresDb = {
     },
 
     async findMany(where: Partial<Consultation>): Promise<Consultation[]> {
-      const conditions = Object.entries(where).map(([key, value], index) => `${key} = $${index + 1}`);
+      const conditions = Object.entries(where).map(([key], index) => `${key} = $${index + 1}`);
       const values = Object.values(where);
+      // values is used in the query function
       
       const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
       return await query<Consultation>(
@@ -165,7 +166,7 @@ export const postgresDb = {
         'INSERT INTO evaluations (id, user_id, medicine_id, medicine_name, evaluation_type, responses, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING *',
         [
           id,
-          evaluation.user_id,
+          evaluation.user_id || '',
           evaluation.medicine_id,
           evaluation.medicine_name,
           evaluation.evaluation_type,
@@ -206,7 +207,7 @@ export const postgresDb = {
       
       const result = await queryOne<Evaluation>(
         `UPDATE evaluations SET ${setClause}, updated_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING *`,
-        [id, ...values]
+        [id, ...(values as (string | number)[])]
       );
       return result;
     }

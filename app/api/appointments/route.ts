@@ -203,7 +203,7 @@ export async function GET(request: NextRequest) {
       WHERE 1=1
     `;
     
-    const params: any[] = [];
+    const params: (string | number)[] = [];
     let paramIndex = 1;
 
     // Filter based on user role

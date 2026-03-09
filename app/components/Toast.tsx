@@ -7,7 +7,7 @@ export default function Toast({ message, type, onClose }: ToastProps) {
 
   useEffect(() => {
     // Trigger animation
-    setIsVisible(true);
+    setTimeout(() => setIsVisible(true), 0);
 
     // Auto close after 5 seconds
     const timer = setTimeout(() => {

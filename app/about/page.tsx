@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { CheckCircleIcon } from '@heroicons/react/24/outline';
+import Image from 'next/image';
 
 export default function AboutPage() {
   return (
@@ -7,10 +8,13 @@ export default function AboutPage() {
       {/* Hero Section */}
       <div className="relative">
         <div className="absolute inset-0">
-          <img
+          <Image
             className="w-full h-full object-cover"
             src="/medical-team.jpg"
             alt="Medical Team"
+            width={1920}
+            height={600}
+            priority
           />
         </div>
         <div className="relative max-w-7xl mx-auto py-16 px-4 sm:py-32 sm:px-6 lg:px-8">
@@ -58,10 +62,12 @@ export default function AboutPage() {
               </div>
             </div>
             <div className="mt-12 lg:mt-0">
-              <img
+              <Image
                 className="rounded-lg shadow-xl"
                 src="/clinic-interior.jpg"
                 alt="Clinic Interior"
+                width={600}
+                height={400}
               />
             </div>
           </div>

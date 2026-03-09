@@ -162,7 +162,8 @@ export async function GET(request: NextRequest) {
         [doctorName]
       );
       todayAppointments = parseInt(todayAppointmentsResult.rows[0]?.count || '0');
-    } catch (error: any) {
+    } catch (error: unknown) {
+      console.error('Error fetching today appointments:', error instanceof Error ? error.message : String(error));
       todayAppointments = 0;
     }
 

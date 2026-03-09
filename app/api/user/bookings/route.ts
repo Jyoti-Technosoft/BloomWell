@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
 
     let query = '';
-    let params: any[] = [];
+    let params: (string | number)[] = [];
 
     if (viewType === 'doctor' && token.role === 'doctor') {
       // Doctor view: show consultations where this doctor is assigned
@@ -121,7 +121,7 @@ export async function GET(request: NextRequest) {
         WHERE e.user_id = (SELECT id FROM users WHERE email = $1)
         
         ORDER BY created_at DESC`;
-      params = [token.email];
+      params = [token.email || ''];
     }
 
     const result = await pool.query(query, params);
@@ -246,7 +246,7 @@ export async function PUT(request: NextRequest) {
 
     // Build update query for consultations
     let updateQuery = 'UPDATE consultations SET';
-    const updateParams: any[] = [];
+    const updateParams: (string | number)[] = [];
     let paramIndex = 1;
     let hasUpdates = false;
 
@@ -281,8 +281,8 @@ export async function PUT(request: NextRequest) {
       }, { status: 500 });
     }
 
-  } catch (error: any) {
-    console.error('Booking update error:', error);
+  } catch (error: unknown) {
+    console.error('Booking update error:', error instanceof Error ? error.message : String(error));
     return NextResponse.json(
       { error: 'Failed to update booking' },
       { status: 500 }

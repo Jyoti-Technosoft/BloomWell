@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const countResult = await Promise.race([
       query('SELECT COUNT(*) FROM physicians'),
       timeoutPromise
-    ]) as any[];
+    ]) as { count: string }[];
     
     if (!countResult || countResult.length === 0) {
       throw new Error('Failed to get physician count');
@@ -33,9 +33,55 @@ export async function GET(request: NextRequest) {
         [limit, offset]
       ),
       timeoutPromise
-    ]) as any[];
+    ]) as {
+    id: string;
+    name: string;
+    specialization: string;
+    experience: string;
+    education: string;
+    languages: string;
+    consultation_fee: number;
+    image_url?: string;
+    rating?: number;
+    available_days: string;
+    available_time: string;
+    available_time_slots?: string;
+    available_dates?: string;
+    about: string;
+    specialties?: string | string[];
+    role?: string;
+    bio?: string;
+    image?: string;
+    review_count?: number;
+    consultations_count?: number;
+    initial_consultation?: string;
+    consultation_link?: string;
+  }[];
 
-    const physicians = result.map((row: any) => {
+    const physicians = result.map((row: {
+    id: string;
+    name: string;
+    specialization: string;
+    experience: string;
+    education: string;
+    languages: string;
+    consultation_fee: number;
+    image_url?: string;
+    rating?: number;
+    available_days: string;
+    available_time: string;
+    available_time_slots?: string;
+    available_dates?: string;
+    about: string;
+    specialties?: string | string[];
+    role?: string;
+    bio?: string;
+    image?: string;
+    review_count?: number;
+    consultations_count?: number;
+    initial_consultation?: string;
+    consultation_link?: string;
+  }) => {
       // Parse specialties
       let specialties = [];
       if (row.specialties) {
@@ -82,13 +128,13 @@ export async function GET(request: NextRequest) {
         education: row.education,
         experience: row.experience,
         specialties: specialties,
-        rating: parseFloat(row.rating) || 0,
-        reviewCount: parseInt(row.review_count) || 0,
-        consultationCount: parseInt(row.consultations_count) || 0,
-        initialConsultation: parseFloat(row.initial_consultation) || 150,
+        rating: Number(row.rating) || 0,
+        reviewCount: Number(row.review_count) || 0,
+        consultationCount: Number(row.consultations_count) || 0,
+        initialConsultation: Number(row.initial_consultation) || 150,
         available_time_slots: available_time_slots,
         available_dates: available_dates,
-        consultationLink: row.consultation_link || null,
+        consultationLink: row.consultation_link || '',
       };
     });
 
@@ -111,7 +157,16 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body: {
+  name: string;
+  role?: string;
+  bio?: string;
+  image?: string;
+  education?: string;
+  experience?: string;
+  specialties?: string[];
+  consultationLink?: string;
+} = await request.json();
     const { name, role, bio, image, education, experience, specialties, consultationLink } = body;
 
     const specialtiesString = specialties ? specialties.join(', ') : '';
@@ -120,7 +175,7 @@ export async function POST(request: NextRequest) {
       `INSERT INTO physicians (name, role, bio, image, education, experience, specialties, consultation_link) 
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
        RETURNING *`,
-      [name, role, bio, image, education, experience, specialtiesString, consultationLink || null]
+      [name || '', role || '', bio || '', image || '', education || '', experience || '', specialtiesString, consultationLink || '']
     );
 
     const physician = {
@@ -131,14 +186,14 @@ export async function POST(request: NextRequest) {
       image: result[0].image,
       education: result[0].education,
       experience: result[0].experience,
-      specialties: result[0].specialties ? result[0].specialties.split(',').map((s: string) => s.trim()) : [],
-      rating: parseFloat(result[0].rating) || 0,
-      reviewCount: parseInt(result[0].review_count) || 0,
-      consultationCount: parseInt(result[0].consultations_count) || 0,
-      initialConsultation: parseFloat(result[0].initial_consultation) || 150,
+      specialties: result[0].specialties ? String(result[0].specialties).split(',').map((s: string) => s.trim()) : [],
+      rating: Number(result[0].rating) || 0,
+      reviewCount: Number(result[0].review_count) || 0,
+      consultationCount: Number(result[0].consultations_count) || 0,
+      initialConsultation: Number(result[0].initial_consultation) || 150,
       available_time_slots: result[0].available_time_slots ? (typeof result[0].available_time_slots === 'string' ? JSON.parse(result[0].available_time_slots) : result[0].available_time_slots) : [],
       available_dates: result[0].available_dates ? (typeof result[0].available_dates === 'string' ? JSON.parse(result[0].available_dates) : result[0].available_dates) : [],
-      consultationLink: result[0].consultation_link || null,
+      consultationLink: result[0].consultation_link || '',
     };
 
     return NextResponse.json(physician, { status: 201 });

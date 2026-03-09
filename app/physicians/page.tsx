@@ -9,7 +9,34 @@ import Pagination from '../components/Pagination';
 function PhysiciansContent() {
   const searchParams = useSearchParams();
   const page = parseInt(searchParams.get('page') || '1');
-  const [physiciansData, setPhysiciansData] = useState<any>({ members: [], currentPage: 1, totalPages: 1, hasNext: false, hasPrev: false });
+  interface PhysiciansData {
+    members: Array<{
+      id: string;
+      name: string;
+      email: string;
+      image?: string;
+      specialization?: string;
+      experienceYears?: number;
+      consultationFee?: number;
+      available?: boolean;
+      role?: string;
+      bio?: string;
+      specialties?: string[];
+      rating?: number;
+      reviewCount?: number;
+      education?: string;
+      experience?: string;
+      consultationCount?: number;
+      initialConsultation?: number;
+      consultationLink?: string;
+    }>;
+    currentPage: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  }
+
+  const [physiciansData, setPhysiciansData] = useState<PhysiciansData>({ members: [], currentPage: 1, totalPages: 1, hasNext: false, hasPrev: false });
   const [loading, setLoading] = useState(true);
   const [expandedBios, setExpandedBios] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
@@ -18,10 +45,10 @@ function PhysiciansContent() {
 
   // Get all unique specialties for filter dropdown
   const allSpecialties: string[] = physiciansData.members ? 
-    [...new Set(physiciansData.members.flatMap((doctor: any) => doctor.specialties || []))] as string[] : [];
+    [...new Set(physiciansData.members.flatMap((doctor) => doctor.specialties || []))] as string[] : [];
 
   // Filter physicians based on search criteria
-  const filteredPhysicians = physiciansData.members ? physiciansData.members.filter((doctor: any) => {
+  const filteredPhysicians = physiciansData.members ? physiciansData.members.filter((doctor) => {
     const matchesSearch = !searchTerm || 
       doctor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       doctor.specialties?.some((spec: string) => spec.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -32,7 +59,7 @@ function PhysiciansContent() {
       doctor.specialties?.some((spec: string) => spec === selectedSpecialty);
     
     const matchesRating = !selectedRating || 
-      doctor.rating >= parseFloat(selectedRating);
+      (doctor.rating && doctor.rating >= parseFloat(selectedRating));
     
     return matchesSearch && matchesSpecialty && matchesRating;
   }) : [];
@@ -198,7 +225,7 @@ function PhysiciansContent() {
               </div>
             ))
           ) : (
-            filteredPhysicians.map((doctor: any, index: number) => (
+            filteredPhysicians.map((doctor) => (
               <div
                 key={doctor.id}
                 className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-100 hover:border-blue-300 flex flex-col"
@@ -241,9 +268,9 @@ function PhysiciansContent() {
                   {/* Bio */}
                   <div className="mb-4">
                     <p className={`text-gray-600 leading-relaxed text-sm text-center ${expandedBios.has(doctor.id) ? '' : 'line-clamp-5'}`}>
-                      {doctor.bio}
+                      {doctor.bio || 'No bio available'}
                     </p>
-                    {doctor.bio.split(/\s+/).length > 20 && (
+                    {doctor.bio && doctor.bio.split(/\s+/).length > 20 && (
                       <div className="text-center">
                       <button
                         onClick={() => toggleBio(doctor.id)}
@@ -259,7 +286,7 @@ function PhysiciansContent() {
                   {/* Specialties */}
                   <div className="mb-4">
                     <div className="flex flex-wrap gap-2 justify-center">
-                      {doctor.specialties.map((specialty: string, idx: number) => (
+                      {doctor.specialties?.map((specialty: string, idx: number) => (
                         <span key={idx} className="px-3 py-1 text-blue-600 text-xs rounded-full font-medium shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-300">
                           {specialty}
                         </span>

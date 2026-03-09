@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import pool from '@/app/lib/postgres';
 import { logger, auditLog } from '@/app/lib/secure-logger';
 import { encryptField, decryptField } from '@/app/lib/encryption';
+import { EncryptedData } from '@/app/lib/encryption';
 
 interface EvaluationData {
   medicineId: string;
@@ -169,9 +170,9 @@ export async function POST(request: NextRequest) {
       'healthConcerns', 'sleepIssues', 'stressTriggers', 'stressManagementTechniques'
     ];
 
-    const manualEncryptedResponses: { [key: string]: any } = {};
+    const manualEncryptedResponses: { [key: string]: EncryptedData } = {};
     for (const field of evaluationFields) {
-      const value = (evaluationData as any)[field];
+      const value = evaluationData[field as keyof typeof evaluationData];
       // Include empty strings to avoid NULL values in database
       if (value !== undefined && value !== null) {
         if (Array.isArray(value)) {
@@ -292,7 +293,7 @@ export async function GET(request: NextRequest) {
         WHERE e.doctor_id = $1
       `;
       
-      const params: any[] = [doctorId];
+      const params: (string | number)[] = [doctorId];
       let paramIndex = 2;
 
       // Filter by status if provided
@@ -308,7 +309,7 @@ export async function GET(request: NextRequest) {
 
       const evaluations = await Promise.all(
         evaluationsResult.rows.map(async (row) => {
-          let decryptedResponses: { [key: string]: any } = {};
+          let decryptedResponses: { [key: string]: string | string[] } = {};
           let decryptedPatientName = row.patient_name;
           let decryptedPatientEmail = row.patient_email;
           
@@ -326,8 +327,9 @@ export async function GET(request: NextRequest) {
                   } else {
                     decryptedPatientName = parsed;
                   }
-                } catch (parseError) {
+                } catch (parseError: unknown) {
                   // It's a plain string, use as-is
+                  console.error('Error parsing patient name:', parseError instanceof Error ? parseError.message : String(parseError));
                   decryptedPatientName = row.patient_name;
                 }
               }
@@ -346,8 +348,9 @@ export async function GET(request: NextRequest) {
                   } else {
                     decryptedPatientEmail = parsed;
                   }
-                } catch (parseError) {
+                } catch (parseError: unknown) {
                   // It's a plain string, use as-is
+                  console.error('Error parsing patient email:', parseError instanceof Error ? parseError.message : String(parseError));
                   decryptedPatientEmail = row.patient_email;
                 }
               }
@@ -358,15 +361,15 @@ export async function GET(request: NextRequest) {
             // Decrypt each field in the responses
             for (const [key, value] of Object.entries(responses)) {
               if (value && typeof value === 'object' && 'encrypted' in value) {
-                const decryptedValue = await decryptField(value as any);
+                const decryptedValue = await decryptField(value as EncryptedData);
                 try {
                   const parsed = JSON.parse(decryptedValue);
                   decryptedResponses[key] = parsed;
-                } catch (e) {
+                } catch {
                   decryptedResponses[key] = decryptedValue;
                 }
               } else {
-                decryptedResponses[key] = value;
+                decryptedResponses[key] = typeof value === 'string' ? value : String(value);
               }
             }
           } catch (error) {
@@ -416,7 +419,7 @@ export async function GET(request: NextRequest) {
       
       // Get evaluations for authenticated patient
       let query = 'SELECT * FROM evaluations WHERE user_id = $1';
-      const params: any[] = [user.id];
+      const params: (string | number)[] = [user.id];
       
       // Filter by status if provided
       if (status && status !== 'all') {
@@ -430,7 +433,7 @@ export async function GET(request: NextRequest) {
 
       const evaluations = await Promise.all(
         evaluationsResult.rows.map(async (row) => {
-          let decryptedResponses: { [key: string]: any } = {};
+          let decryptedResponses: { [key: string]: string | string[] } = {};
           try {
             let responses;
             if (typeof row.responses === 'string') {
@@ -450,15 +453,15 @@ export async function GET(request: NextRequest) {
             
             for (const [key, value] of Object.entries(responses)) {
               if (value && typeof value === 'object' && 'encrypted' in value) {
-                const decryptedValue = await decryptField(value as any);
+                const decryptedValue = await decryptField(value as EncryptedData);
                 try {
                   const parsed = JSON.parse(decryptedValue);
                   decryptedResponses[key] = parsed;
-                } catch (e) {
+                } catch {
                   decryptedResponses[key] = decryptedValue;
                 }
               } else {
-                decryptedResponses[key] = value;
+                decryptedResponses[key] = typeof value === 'string' ? value : String(value);
               }
             }
           } catch (error) {

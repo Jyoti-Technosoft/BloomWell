@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getToken } from 'next-auth/jwt';
-import { signIn } from 'next-auth/react';
 import pool from '@/app/lib/postgres';
 import { logger, auditLog } from '@/app/lib/secure-logger';
 import bcrypt from 'bcrypt';

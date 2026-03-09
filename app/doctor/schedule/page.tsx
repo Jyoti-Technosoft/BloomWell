@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { 
   CalendarIcon,
@@ -36,7 +36,7 @@ interface TimeSlot {
 }
 
 export default function DoctorSchedule() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [filteredAppointments, setFilteredAppointments] = useState<Appointment[]>([]);
@@ -47,7 +47,7 @@ export default function DoctorSchedule() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   // Enhanced fetch with auth handling
-  const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
+  const authenticatedFetch = useCallback(async (url: string, options: RequestInit = {}) => {
     if (status === 'unauthenticated') {
       router.push('/auth/signin');
       throw new Error('User not authenticated');
@@ -72,26 +72,36 @@ export default function DoctorSchedule() {
     }
 
     return response;
-  };
+  }, [status, router]);
 
-  useEffect(() => {
-    if (status === 'loading') return;
-    if (status === 'unauthenticated') return;
-    
-    fetchAppointments();
-    fetchTimeSlots();
-  }, [selectedDate, status]);
+  const fetchTimeSlots = useCallback(async () => {
+    try {
+      // Generate time slots based on selected date and existing appointments
+      const baseTimeSlots = [
+        '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+        '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'
+      ];
 
-  useEffect(() => {
-    // Apply status filter
-    if (statusFilter === 'all') {
-      setFilteredAppointments(appointments);
-    } else {
-      setFilteredAppointments(appointments.filter(apt => apt.status === statusFilter));
+      const timeSlotsWithAvailability: TimeSlot[] = baseTimeSlots.map(time => {
+        // Check if this time slot is booked by any appointment on the selected date
+        const isBooked = appointments.some(apt => 
+          apt.date === selectedDate && apt.time === time
+        );
+        
+        return {
+          date: selectedDate,
+          time,
+          available: !isBooked
+        };
+      });
+
+      setTimeSlots(timeSlotsWithAvailability);
+    } catch (error) {
+      console.error('Error fetching time slots:', error);
     }
-  }, [appointments, statusFilter]);
+  }, [appointments, selectedDate]);
 
-  const fetchAppointments = async () => {
+  const fetchAppointments = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -100,7 +110,17 @@ export default function DoctorSchedule() {
       const data = await response.json();
       
       // Transform consultation bookings to schedule format
-      const transformedAppointments = data.consultations.map((consultation: any) => {
+      const transformedAppointments = data.consultations.map((consultation: {
+        id: string;
+        consultation_date: string;
+        consultation_time: string;
+        patient_name: string;
+        patient_email: string;
+        status: string;
+        reason?: string;
+        doctor_name?: string;
+        doctor_specialty?: string;
+      }) => {
         // Extract date and time from consultation data
         const consultationDate = consultation.consultation_date?.split('T')[0] || new Date().toISOString().split('T')[0];
         const consultationTime = consultation.consultation_time || '10:00';
@@ -128,34 +148,24 @@ export default function DoctorSchedule() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [authenticatedFetch]);
 
-  const fetchTimeSlots = async () => {
-    try {
-      // Generate time slots based on selected date and existing appointments
-      const baseTimeSlots = [
-        '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-        '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'
-      ];
+  useEffect(() => {
+    if (status === 'loading') return;
+    if (status === 'unauthenticated') return;
+    
+    fetchAppointments();
+    fetchTimeSlots();
+  }, [selectedDate, status, fetchAppointments, fetchTimeSlots]);
 
-      const timeSlotsWithAvailability: TimeSlot[] = baseTimeSlots.map(time => {
-        // Check if this time slot is booked by any appointment on the selected date
-        const isBooked = appointments.some(apt => 
-          apt.date === selectedDate && apt.time === time
-        );
-        
-        return {
-          date: selectedDate,
-          time,
-          available: !isBooked
-        };
-      });
-
-      setTimeSlots(timeSlotsWithAvailability);
-    } catch (error) {
-      console.error('Error fetching time slots:', error);
+  useEffect(() => {
+    // Apply status filter
+    if (statusFilter === 'all') {
+      setFilteredAppointments(appointments);
+    } else {
+      setFilteredAppointments(appointments.filter(apt => apt.status === statusFilter));
     }
-  };
+  }, [appointments, statusFilter]);
 
   const getAppointmentsForDate = (date: string) => {
     return filteredAppointments.filter(apt => apt.date === date);

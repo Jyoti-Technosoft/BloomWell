@@ -24,15 +24,11 @@ interface FormData {
   deaNumber: string;
   professionalBio: string;
   
-  // Enhanced Professional Details
-  experienceYears: string;
+  // Education & Experience
   education: string;
+  experience: string;
   professionalRole: string;
   workExperience: string;
-  specialties: string[];
-  publications: string[];
-  awards: string[];
-  certifications: string[];
   
   // Practice Information
   consultationFee: string;
@@ -80,7 +76,32 @@ export default function DoctorSignUp() {
     handleSubmit,
     watch,
     formState: { errors, isSubmitting }
-  } = useForm<FormData>();
+  } = useForm<FormData>({
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      phoneNumber: '',
+      password: '',
+      confirmPassword: '',
+      specialization: '',
+      licenseNumber: '',
+      licenseState: '',
+      licenseExpiryDate: '',
+      npiNumber: '',
+      deaNumber: '',
+      professionalBio: '',
+      education: '',
+      experience: '',
+      professionalRole: '',
+      workExperience: '',
+      consultationFee: '',
+      languages: [],
+      hospitalAffiliations: [],
+      agreeTerms: false,
+      agreeHipaa: false
+    }
+  });
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -88,10 +109,10 @@ export default function DoctorSignUp() {
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [hospitalInput, setHospitalInput] = useState('');
   const [hospitalAffiliations, setHospitalAffiliations] = useState<string[]>([]);
-  const [specialties, setSpecialties] = useState<string[]>([]);
-  const [publications, setPublications] = useState<string[]>([]);
-  const [awards, setAwards] = useState<string[]>([]);
-  const [certifications, setCertifications] = useState<string[]>([]);
+  // const [specialties, setSpecialties] = useState<string[]>([]);
+  // const [publications, setPublications] = useState<string[]>([]);
+  // const [awards, setAwards] = useState<string[]>([]);
+  // const [certifications, setCertifications] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -151,34 +172,38 @@ export default function DoctorSignUp() {
     setHospitalAffiliations(prev => prev.filter(h => h !== hospital));
   };
 
-  const addToArray = (array: string[], setArray: React.Dispatch<React.SetStateAction<string[]>>, value: string) => {
-    if (value.trim() && !array.includes(value.trim())) {
-      setArray(prev => [...prev, value.trim()]);
-    }
-  };
+  // const addToArray = (array: string[], setArray: React.Dispatch<React.SetStateAction<string[]>>, value: string) => {
+  //   if (value.trim() && !array.includes(value.trim())) {
+  //     setArray(prev => [...prev, value.trim()]);
+  //   }
+  // };
 
-  const removeFromArray = (array: string[], setArray: React.Dispatch<React.SetStateAction<string[]>>, value: string) => {
-    setArray(prev => prev.filter(item => item !== value));
-  };
+  // const removeFromArray = (array: string[], setArray: React.Dispatch<React.SetStateAction<string[]>>, value: string) => {
+  //   setArray(prev => prev.filter(item => item !== value));
+  // };
 
   const onSubmit = async (data: FormData) => {
     try {
       setError(null);
       
-      const response = await fetch('/api/doctor/auth/signup', {
+      // Explicitly remove any experienceYears field that might be included
+      const { experienceYears, ...cleanData } = data as any;
+      const payload = {
+        ...cleanData,
+        languages: selectedLanguages,
+        hospitalAffiliations,
+        // specialties,
+        // publications,
+        // awards,
+        // certifications,
+      };
+      
+      const response = await fetch('/api/doctor/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...data,
-          languages: selectedLanguages,
-          hospitalAffiliations,
-          specialties,
-          publications,
-          awards,
-          certifications,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -186,7 +211,7 @@ export default function DoctorSignUp() {
         throw new Error(errorData.error || 'Registration failed');
       }
 
-      const result = await response.json();
+      // const result = await response.json();
       setIsSuccess(true);
       
       setTimeout(() => {
@@ -198,7 +223,7 @@ export default function DoctorSignUp() {
     }
   };
 
-  const inputClassName = "block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6";
+  const inputClassName = "block w-full rounded-md border-0 py-1.5 px-3 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6";
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -510,14 +535,28 @@ export default function DoctorSignUp() {
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Enhanced Professional Details</h2>
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="experienceYears" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="education" className="block text-sm font-medium text-gray-700">
+                    Education
+                  </label>
+                  <textarea
+                    id="education"
+                    rows={4}
+                    {...register("education")}
+                    className={inputClassName}
+                    placeholder="Your educational background..."
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="experience" className="block text-sm font-medium text-gray-700">
                     Years of Experience
                   </label>
                   <input
                     type="number"
-                    id="experienceYears"
-                    {...register("experienceYears")}
+                    id="experience"
+                    {...register("experience")}
                     className={inputClassName}
+                    placeholder="Total years of medical practice"
                   />
                 </div>
 
@@ -530,34 +569,22 @@ export default function DoctorSignUp() {
                     id="professionalRole"
                     {...register("professionalRole")}
                     className={inputClassName}
+                    placeholder="e.g., Attending Physician, Specialist"
                   />
                 </div>
-              </div>
 
-              <div className="mt-6">
-                <label htmlFor="education" className="block text-sm font-medium text-gray-700">
-                  Education
-                </label>
-                <textarea
-                  id="education"
-                  rows={3}
-                  {...register("education")}
-                  className={inputClassName}
-                  placeholder="Your educational background..."
-                />
-              </div>
-
-              <div className="mt-6">
-                <label htmlFor="workExperience" className="block text-sm font-medium text-gray-700">
-                  Work Experience
-                </label>
-                <textarea
-                  id="workExperience"
-                  rows={4}
-                  {...register("workExperience")}
-                  className={inputClassName}
-                  placeholder="Your professional experience..."
-                />
+                <div>
+                  <label htmlFor="workExperience" className="block text-sm font-medium text-gray-700">
+                    Work Experience Details
+                  </label>
+                  <textarea
+                    id="workExperience"
+                    rows={4}
+                    {...register("workExperience")}
+                    className={inputClassName}
+                    placeholder="Describe your work experience and career highlights..."
+                  />
+                </div>
               </div>
             </div>
 

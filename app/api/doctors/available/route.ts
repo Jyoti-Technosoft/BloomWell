@@ -5,7 +5,6 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const consultationType = searchParams.get('consultationType');
-    const userId = searchParams.get('userId');
 
     let query = `
       SELECT DISTINCT 
@@ -21,7 +20,7 @@ export async function GET(request: NextRequest) {
         AND dp.is_verified = true
     `;
 
-    const params: any[] = [];
+    const params: (string | number)[] = [];
 
     // If consultation type provided, filter by matching specialization
     if (consultationType && consultationType !== 'general') {
@@ -79,9 +78,9 @@ export async function GET(request: NextRequest) {
         'All verified doctors'
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { error: 'Failed to fetch doctors', details: error.message },
+      { error: 'Failed to fetch doctors', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }

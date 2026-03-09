@@ -21,7 +21,7 @@ export async function GET() {
     let decoded;
     try {
       decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string };
-    } catch (error) {
+    } catch {
       return NextResponse.json(
         { error: 'Invalid or expired token' },
         { status: 401 }
@@ -39,8 +39,7 @@ export async function GET() {
     }
 
     // Return user data without password
-    const { password, ...userWithoutPassword } = user;
-    return NextResponse.json(userWithoutPassword);
+    return NextResponse.json({ ...user, password: undefined });
     
   } catch (error) {
     console.error('Error in auth/me:', error);

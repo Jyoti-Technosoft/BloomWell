@@ -150,7 +150,7 @@ export async function PUT(request: NextRequest) {
 
     // Build update query dynamically
     let updateQuery = 'UPDATE doctor_profiles SET updated_at = CURRENT_TIMESTAMP';
-    const updateParams: any[] = [];
+    const updateParams: (string | number)[] = [];
     let paramIndex = 1;
 
     const allowedFields = [

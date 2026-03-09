@@ -154,7 +154,7 @@ class HIPAAComplianceTester {
       return content.includes('HIPAA') && 
              content.includes('Protected Health Information') &&
              content.includes('Privacy Practices');
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -168,7 +168,7 @@ class HIPAAComplianceTester {
       return content.includes('HIPAA') && 
              content.includes('Training') &&
              content.includes('Compliance');
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -189,7 +189,7 @@ class HIPAAComplianceTester {
       const encrypted = await encryptSensitiveFields(testData);
       
       // Check if the field was actually encrypted (should be an object with encrypted property)
-      if (!encrypted.lastFourSSN || typeof encrypted.lastFourSSN !== 'object' || !encrypted.lastFourSSN.encrypted) {
+      if (!encrypted.lastFourSSN || typeof encrypted.lastFourSSN !== 'object' || !((encrypted.lastFourSSN as unknown) as { encrypted?: boolean }).encrypted) {
         return false;
       }
       
@@ -210,20 +210,20 @@ class HIPAAComplianceTester {
       
       // Check if audit_logs table exists
       try {
-        const result = await query(`
+        const result = await query<{ exists: boolean }>(`
           SELECT EXISTS (
             SELECT FROM information_schema.tables 
             WHERE table_name = 'audit_logs'
           );
         `);
         return result[0].exists;
-      } catch (dbError) {
+      } catch {
         // If database connection fails, check if the code has audit logging
         const content = readFileSync(secureLoggerPath, 'utf8');
         return content.includes('audit_logs') && 
                content.includes('INSERT INTO audit_logs');
       }
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -237,7 +237,7 @@ class HIPAAComplianceTester {
       return content.includes('sanitizeData') && 
              content.includes('auditLog') &&
              content.includes('hashIdentifier');
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -249,7 +249,7 @@ class HIPAAComplianceTester {
       
       const content = readFileSync(authPath, 'utf8');
       return content.includes('maxAge: 15 * 60');
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -263,7 +263,7 @@ class HIPAAComplianceTester {
       return content.includes('verifyMFACode') && 
              content.includes('setupMFA') &&
              content.includes('generateMFASecret');
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -290,7 +290,7 @@ class HIPAAComplianceTester {
           if (!result[0].exists) return false;
         }
         return true;
-      } catch (dbError) {
+      } catch {
         // If database connection fails, check if schema file contains the tables
         const schemaPath = './database/schema.sql';
         if (!existsSync(schemaPath)) return false;
@@ -303,7 +303,7 @@ class HIPAAComplianceTester {
         }
         return true;
       }
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -317,7 +317,7 @@ class HIPAAComplianceTester {
       return content.includes('createRetentionPolicy') && 
              content.includes('deleteUserData') &&
              content.includes('processScheduledDeletions');
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -331,7 +331,7 @@ class HIPAAComplianceTester {
       return content.includes('reportBreach') && 
              content.includes('sendBreachNotifications') &&
              content.includes('BreachType');
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -345,7 +345,7 @@ class HIPAAComplianceTester {
       return content.includes('recordConsent') && 
              content.includes('hasConsent') &&
              content.includes('ConsentType');
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -358,7 +358,7 @@ class HIPAAComplianceTester {
       const content = readFileSync(retentionPath, 'utf8');
       return content.includes('deleteUserData') && 
              content.includes('DataType');
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -376,7 +376,7 @@ class HIPAAComplianceTester {
       return content.includes('ssl: true') || 
              content.includes('sslmode=require') ||
              content.includes('SSL');
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -390,7 +390,7 @@ class HIPAAComplianceTester {
       return content.includes('complianceScore') && 
              content.includes('auditStats') &&
              content.includes('breachStats');
-    } catch (error) {
+    } catch {
       return false;
     }
   }

@@ -3,6 +3,33 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { XMarkIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 
+interface PaymentData {
+  paymentId?: string;
+  orderId?: string;
+  signature?: string;
+  error?: {
+    code?: string;
+    description?: string;
+    source?: string;
+    step?: string;
+    reason?: string;
+  };
+  metadata?: {
+    payment_id?: string;
+    order_id?: string;
+  };
+  amount: number;
+  currency: string;
+  status: 'success' | 'failed' | 'pending';
+  medicineId?: string;
+  medicineName?: string;
+  transaction?: {
+    id: string;
+    status: string;
+    created_at: string;
+  };
+}
+
 interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -10,20 +37,62 @@ interface PaymentModalProps {
   medicineName: string;
   amount: number;
   userId: string;
-  evaluationId: string;
-  customerData?: {
+  evaluationId?: string;
+  customerData: {
     name: string;
     email: string;
     phone: string;
   };
-  onSuccess: (paymentData: any) => void;
+  onSuccess: (paymentData: PaymentData) => void;
   onError: (error: string) => void;
 }
 
 declare global {
   interface Window {
-    Razorpay: any;
+    Razorpay?: {
+      new(options: RazorpayOptions): RazorpayInstance;
+    };
   }
+}
+
+interface RazorpayOptions {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  order_id: string;
+  handler: (response: {
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+  }) => Promise<void>;
+  prefill: {
+    name: string;
+    email: string;
+    contact: string;
+  };
+  readonly?: {
+    email?: boolean;
+    contact?: boolean;
+  };
+  modal?: {
+    ondismiss: () => void;
+    escape?: boolean;
+    handleback?: boolean;
+    confirm_close?: boolean;
+    animation?: string;
+  };
+  callback_url?: string;
+  notes?: Record<string, string | number>;
+  theme?: {
+    color: string;
+  };
+}
+
+interface RazorpayInstance {
+  open(): void;
+  on(event: string, handler: (response: PaymentData) => void): void;
 }
 
 export default function PaymentModal({
@@ -129,7 +198,7 @@ export default function PaymentModal({
       }
 
       const newOrderData = await response.json();
-      console.log('✅ Order creation response:', newOrderData);
+      // console.log('✅ Order creation response:', newOrderData);
 
       if (!newOrderData.success) {
         throw new Error(newOrderData.error || 'Failed to create payment order');
@@ -155,8 +224,12 @@ export default function PaymentModal({
         name: 'BloomWell',
         description: `Payment for ${medicineName}`,
         order_id: newOrderData.order.id.toString().trim(),
-        handler: async function (response: any) {
-          console.log('✅ Payment successful:', response);
+        handler: async function (response: {
+          razorpay_order_id: string;
+          razorpay_payment_id: string;
+          razorpay_signature: string;
+        }) {
+          // console.log('✅ Payment successful:', response);
           
           try {
             // Verify payment            
@@ -172,7 +245,7 @@ export default function PaymentModal({
               }),
             });
 
-            console.log('📊 Verification API response status:', verifyResponse.status);
+            // console.log('📊 Verification API response status:', verifyResponse.status);
             
             if (!verifyResponse.ok) {
               const errorText = await verifyResponse.text();
@@ -185,10 +258,10 @@ export default function PaymentModal({
             }
 
             const verifyData = await verifyResponse.json();
-            console.log('✅ Payment verification successful:', verifyData);
-            console.log('📊 Transaction details:', verifyData.transaction);
-            console.log('📊 Payment ID:', verifyData.paymentId);
-            console.log('📊 Order ID:', verifyData.orderId);
+            // console.log('✅ Payment verification successful:', verifyData);
+            // console.log('📊 Transaction details:', verifyData.transaction);
+            // console.log('📊 Payment ID:', verifyData.paymentId);
+            // console.log('📊 Order ID:', verifyData.orderId);
 
             if (verifyData.success) {
               setRetryCount(0); // Reset retry count on success
@@ -198,7 +271,10 @@ export default function PaymentModal({
                 onSuccess({
                   paymentId: response.razorpay_payment_id,
                   orderId: response.razorpay_order_id,
+                  signature: response.razorpay_signature,
                   amount: amount,
+                  currency: 'INR',
+                  status: 'success',
                   medicineId,
                   medicineName,
                   transaction: verifyData.transaction
@@ -243,6 +319,9 @@ export default function PaymentModal({
           app_user_id: userId,
           source: 'bloomwell_app',
           timestamp: Date.now()
+        },
+        theme: {
+          color: '#6366f1'
         }
       };
 
@@ -257,7 +336,7 @@ export default function PaymentModal({
         }
         
         // Add comprehensive error handling for payment failures
-        razorpay.on('payment.failed', function (response: any) {
+        razorpay.on('payment.failed', function (response: PaymentData) {
           console.error('❌ Payment failed:', response);
           const errorDescription = response.error?.description || 'Payment failed';
           const errorCode = response.error?.code || 'UNKNOWN_ERROR';

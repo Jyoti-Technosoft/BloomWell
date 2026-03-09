@@ -1,6 +1,16 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
+interface UserWithRole {
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  role?: string;
+  doctorProfileId?: string;
+  isVerified?: boolean;
+  verificationStatus?: string;
+}
+
 declare module 'next-auth' {
   interface Session {
     user: {
@@ -165,10 +175,10 @@ const handler = NextAuth({
         return {
           ...token,
           id: user.id,
-          role: (user as any).role || 'patient',
-          doctorProfileId: (user as any).doctorProfileId,
-          isVerified: (user as any).isVerified,
-          verificationStatus: (user as any).verificationStatus
+          role: (user as UserWithRole).role || 'patient',
+          doctorProfileId: (user as UserWithRole).doctorProfileId,
+          isVerified: (user as UserWithRole).isVerified,
+          verificationStatus: (user as UserWithRole).verificationStatus
         };
       }
       

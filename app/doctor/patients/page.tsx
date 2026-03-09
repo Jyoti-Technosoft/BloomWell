@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { 
   UserGroupIcon,
@@ -26,11 +26,7 @@ export default function DoctorPatients() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  useEffect(() => {
-    fetchPatients();
-  }, [searchTerm, statusFilter]);
-
-  const fetchPatients = async () => {
+  const fetchPatients = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -52,7 +48,11 @@ export default function DoctorPatients() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchTerm, statusFilter]);
+
+  useEffect(() => {
+    fetchPatients();
+  }, [fetchPatients]);
 
   if (loading) {
     return (

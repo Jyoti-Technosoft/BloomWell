@@ -9,7 +9,7 @@ function hashIdentifier(identifier: string): string {
 }
 
 // Sanitize data to remove PHI
-function sanitizeData(data: any): any {
+export function sanitizeForLogging(data: unknown): unknown {
   if (!data) return data;
   
   if (typeof data === 'string') {
@@ -30,18 +30,18 @@ function sanitizeData(data: any): any {
   }
   
   if (Array.isArray(data)) {
-    return data.map(item => sanitizeData(item));
+    return data.map(item => sanitizeForLogging(item));
   }
   
   if (typeof data === 'object') {
-    const sanitized: any = {};
+    const sanitized: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data)) {
       // Skip known PHI fields entirely
       const phiFields = ['ssn', 'socialSecurity', 'medicalHistory', 'medications', 'allergies', 'conditions'];
       if (phiFields.some(field => key.toLowerCase().includes(field))) {
         sanitized[key] = '[REDACTED]';
       } else {
-        sanitized[key] = sanitizeData(value);
+        sanitized[key] = sanitizeForLogging(value);
       }
     }
     return sanitized;
@@ -58,7 +58,7 @@ export interface AuditLogEntry {
   ipAddress?: string;
   userAgent?: string;
   success: boolean;
-  details?: any;
+  details?: unknown;
 }
 
 // Store audit log in database (HIPAA requirement)
@@ -73,7 +73,7 @@ async function storeAuditLog(entry: AuditLogEntry): Promise<void> {
       ipAddress: entry.ipAddress ? hashIdentifier(entry.ipAddress) : null,
       userAgent: entry.userAgent ? entry.userAgent.substring(0, 100) : null,
       success: entry.success,
-      details: entry.details ? sanitizeData(entry.details) : null
+      details: entry.details ? sanitizeForLogging(entry.details) : null
     };
 
     await query(
@@ -81,13 +81,13 @@ async function storeAuditLog(entry: AuditLogEntry): Promise<void> {
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
       [
         auditId,
-        sanitizedEntry.userId,
+        sanitizedEntry.userId || '',
         sanitizedEntry.action,
         sanitizedEntry.resource,
-        sanitizedEntry.timestamp,
-        sanitizedEntry.ipAddress,
-        sanitizedEntry.userAgent,
-        sanitizedEntry.success,
+        sanitizedEntry.timestamp.toISOString(),
+        sanitizedEntry.ipAddress || '',
+        sanitizedEntry.userAgent || '',
+        sanitizedEntry.success ? 1 : 0,
         JSON.stringify(sanitizedEntry.details)
       ]
     );
@@ -110,7 +110,7 @@ export async function auditLog(entry: AuditLogEntry): Promise<void> {
       resource: entry.resource,
       timestamp: entry.timestamp,
       success: entry.success,
-      details: entry.details ? sanitizeData(entry.details) : null
+      details: entry.details ? sanitizeForLogging(entry.details) : null
     };
 
     console.log('AUDIT:', JSON.stringify(sanitizedEntry));
@@ -122,22 +122,17 @@ export async function auditLog(entry: AuditLogEntry): Promise<void> {
 }
 
 // Secure logging functions
+export function createSecureLogger(context: string): (message: string, data?: unknown) => void {
+  return (message: string, data?: unknown) => {
+    const sanitizedData = data ? sanitizeForLogging(data) : null;
+    console.log(`INFO: ${context} - ${message}`, sanitizedData ? JSON.stringify(sanitizedData) : '');
+  };
+}
+
 export const logger = {
-  info: (message: string, data?: any) => {
-    const sanitizedData = data ? sanitizeData(data) : null;
-    console.log(`INFO: ${message}`, sanitizedData ? JSON.stringify(sanitizedData) : '');
-  },
-  
-  warn: (message: string, data?: any) => {
-    const sanitizedData = data ? sanitizeData(data) : null;
-    console.warn(`WARN: ${message}`, sanitizedData ? JSON.stringify(sanitizedData) : '');
-  },
-  
-  error: (message: string, data?: any) => {
-    const sanitizedData = data ? sanitizeData(data) : null;
-    console.error(`ERROR: ${message}`, sanitizedData ? JSON.stringify(sanitizedData) : '');
-  },
-  
+  info: createSecureLogger('INFO'),
+  warn: createSecureLogger('WARN'),
+  error: createSecureLogger('ERROR'),
   audit: auditLog
 };
 

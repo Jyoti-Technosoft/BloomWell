@@ -41,7 +41,7 @@ export async function setupMFA(userId: string): Promise<MFASetup> {
     await query(
       `INSERT INTO mfa_setup (id, user_id, secret, backup_codes, created_at)
        VALUES ($1, $2, $3, $4, $5)`,
-      [setupId, userId, secret, JSON.stringify(backupCodes), new Date()]
+      [setupId, userId, secret, JSON.stringify(backupCodes), new Date().toISOString()]
     );
     
     // Generate QR code URL (simplified - in production use proper TOTP library)
@@ -53,7 +53,7 @@ export async function setupMFA(userId: string): Promise<MFASetup> {
       backupCodes,
       qrCode
     };
-  } catch (error) {
+  } catch {
     throw new Error('MFA setup failed');
   }
 }
@@ -72,7 +72,7 @@ export async function verifyMFACode(userId: string, code: string): Promise<boole
     }
     
     const { secret, backup_codes } = result[0];
-    const backupCodes = JSON.parse(backup_codes);
+    const backupCodes = JSON.parse(backup_codes as string);
     
     // Check if it's a backup code
     if (backupCodes.includes(code)) {
@@ -88,10 +88,10 @@ export async function verifyMFACode(userId: string, code: string): Promise<boole
     // Verify TOTP code (simplified - in production use proper TOTP library)
     // This is a basic time-based verification
     const timeStep = Math.floor(Date.now() / 30000); // 30-second steps
-    const expectedCode = generateTOTPCode(secret, timeStep);
+    const expectedCode = generateTOTPCode(secret as string, timeStep);
     
     return code === expectedCode;
-  } catch (error) {
+  } catch {
     return false;
   }
 }
@@ -113,15 +113,17 @@ export async function hasMFAEnabled(userId: string): Promise<boolean> {
       [userId]
     );
     return result.length > 0;
-  } catch (error) {
+  } catch {
     return false;
   }
 }
 
-export default {
+const mfaHandlers = {
   setupMFA,
   verifyMFACode,
   hasMFAEnabled,
   generateMFASecret,
   generateBackupCodes
 };
+
+export default mfaHandlers;
