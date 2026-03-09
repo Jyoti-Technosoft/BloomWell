@@ -23,8 +23,8 @@ interface DoctorRegistrationData {
   professionalBio: string;
   
   // Education & Experience (can be strings from textareas or arrays)
-  education?: any;
-  experience?: any;
+  education?: string | Record<string, unknown>[];
+  experience?: string | Record<string, unknown>[];
   professionalRole?: string;
   workExperience?: string;
   
@@ -228,8 +228,8 @@ export async function POST(request: NextRequest) {
 
       const userId = userResult.rows[0].id;
       // Handle education and experience - convert from string if needed
-      let educationData: any = data.education || [];
-      let experienceData: any = data.experience || [];
+      let educationData: string | Record<string, unknown>[] = data.education || [];
+      let experienceData: string | Record<string, unknown>[] = data.experience || [];
       
       // If education is a string, convert it to the expected format
       if (typeof educationData === 'string' && educationData.trim()) {
@@ -276,7 +276,7 @@ export async function POST(request: NextRequest) {
         false, // is_verified
         'pending', // verification_status
         data.experience ? parseInt(data.experience) : null, // experience_years
-        data.education || null, // education (TEXT)
+        (typeof data.education === 'string' ? data.education : JSON.stringify(data.education)) || null, // education (TEXT)
         data.professionalRole || null, // professional_role
         data.workExperience || null, // work_experience
         JSON.stringify([]), // specialties (TEXT) - empty for now
@@ -351,8 +351,17 @@ export async function POST(request: NextRequest) {
         doctorProfileId: doctorProfileId
       });
 
-    } catch (error) {
+    } catch (error: unknown) {
       await client.query('ROLLBACK');
+      
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      
+      logger.error('Doctor registration error', {
+        error: errorMessage,
+        stack: errorStack
+      });
+
       return NextResponse.json(
         { error: 'Registration failed. Please try again.' },
         { status: 500 }
@@ -360,7 +369,7 @@ export async function POST(request: NextRequest) {
     } finally {
       client.release();
     }
-  } catch (error) {
+  } catch (error: unknown) {
     logger.error('Doctor registration request error', {
       error: error instanceof Error ? error.message : 'Unknown error',
       stack: error instanceof Error ? error.stack : undefined

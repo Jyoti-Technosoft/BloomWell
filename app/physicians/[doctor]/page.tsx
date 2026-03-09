@@ -9,6 +9,18 @@ import StarRating from '../../components/StarRating';
 import { useUser } from '../../context/UserContext';
 import { Physician, DoctorProfileProps } from '../../lib/types';
 
+interface BookingData {
+  consultation: {
+    consultationLink?: string;
+    id?: string;
+    status?: string;
+    scheduledAt?: string;
+    consultation_date?: string;
+    consultation_time?: string;
+    consultation_type?: string;
+  };
+}
+
 export default function DoctorProfile({ params }: DoctorProfileProps) {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
@@ -91,21 +103,9 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
     setShowBookingModal(true);
   };
 
-  interface BookingData {
-  consultation: {
-    consultationLink?: string;
-    id?: string;
-    status?: string;
-    scheduledAt?: string;
-    consultation_date?: string;
-    consultation_time?: string;
-    consultation_type?: string;
-  };
-}
-
-const handleBookingComplete = (bookingData: BookingData) => {
+  const handleBookingComplete = (bookingData: Record<string, unknown>) => {
     // Extract consultation data from nested response structure
-    const consultation = bookingData.consultation;
+    const consultation = bookingData.consultation as BookingData['consultation'];
     const consultationLink = consultation?.consultationLink;
     
     // Store consultation details for proper scheduling logic
@@ -118,7 +118,7 @@ const handleBookingComplete = (bookingData: BookingData) => {
           date: consultation.consultation_date || '',
           time: consultation.consultation_time || '',
           type: consultation.consultation_type || '',
-          link: consultationLink || ''
+          link: consultationLink || null
         }
       } : null);
     }
@@ -343,9 +343,9 @@ const handleBookingComplete = (bookingData: BookingData) => {
                     <div className="w-2 h-2 bg-green-500 rounded-full mr-2 shrink-0"></div>
                     <span className="text-center">
                       {doctorData?.scheduledConsultation?.type === 'phone' 
-                        ? `Phone call available at ${doctorData.scheduledConsultation.time}`
+                        ? `Phone call available at ${doctorData.scheduledConsultation?.time}`
                         : doctorData?.scheduledConsultation 
-                          ? `Video call available at ${doctorData.scheduledConsultation.time}` 
+                          ? `Video call available at ${doctorData.scheduledConsultation?.time}` 
                           : 'Instant consultation available'
                       }
                     </span>
@@ -355,7 +355,7 @@ const handleBookingComplete = (bookingData: BookingData) => {
                   <div className="flex items-center justify-center">
                     <div className="w-2 h-2 bg-blue-500 rounded-full mr-2 shrink-0"></div>
                     <span className="text-center">
-                      Scheduled for {new Date(doctorData.scheduledConsultation.date).toLocaleDateString()} at {doctorData.scheduledConsultation.time}
+                      Scheduled for {new Date(doctorData.scheduledConsultation?.date || '').toLocaleDateString()} at {doctorData.scheduledConsultation?.time}
                     </span>
                   </div>
                 )}

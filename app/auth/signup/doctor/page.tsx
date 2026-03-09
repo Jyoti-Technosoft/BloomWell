@@ -186,10 +186,8 @@ export default function DoctorSignUp() {
     try {
       setError(null);
       
-      // Explicitly remove any experienceYears field that might be included
-      const { experienceYears, ...cleanData } = data as any;
       const payload = {
-        ...cleanData,
+        ...data,
         languages: selectedLanguages,
         hospitalAffiliations,
         // specialties,
