@@ -275,7 +275,7 @@ export async function POST(request: NextRequest) {
         null, // rejection_reason
         false, // is_verified
         'pending', // verification_status
-        data.experience ? parseInt(data.experience) : null, // experience_years
+        (typeof data.experience === 'string' ? parseInt(data.experience) : null), // experience_years
         (typeof data.education === 'string' ? data.education : JSON.stringify(data.education)) || null, // education (TEXT)
         data.professionalRole || null, // professional_role
         data.workExperience || null, // work_experience

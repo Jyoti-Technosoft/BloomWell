@@ -1258,16 +1258,16 @@ async function seedMedicines() {
                 medicine.name,
                 medicine.description,
                 medicine.price || 0,
-                medicine.dosage,
+                medicine.dosage || '',
                 medicine.inStock ? 1 : 0,
-                medicine.image || '',,
-                medicine.category,
-                medicine.overview,
-                medicine.howItWorks,
-                medicine.shipping,
-                medicine.support,
-                medicine.benefits || '',
-                medicine.sideEffects || ''
+                medicine.image || '',
+                medicine.category || '',
+                medicine.overview || '',
+                medicine.howItWorks || '',
+                medicine.shipping || '',
+                medicine.support || '',
+                (medicine.benefits || []).join(', '),
+                (medicine.sideEffects || []).join(', ')
             ]
         );
     }
