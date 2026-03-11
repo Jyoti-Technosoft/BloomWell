@@ -1,4 +1,6 @@
 'use client';
+
+import Image from 'next/image';
 import { useState } from 'react';
 import VideoCall from '@/components/VideoCall';
 import { Physician } from '../app/lib/types';
@@ -77,9 +79,11 @@ export default function VideoConsultation({ physician, onBack }: VideoConsultati
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
           <div className="flex items-center space-x-4">
             {physician.image ? (
-              <img
+              <Image
                 src={physician.image}
                 alt={physician.name}
+                width={80}
+                height={80}
                 className="w-20 h-20 rounded-full object-cover"
               />
             ) : (

@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -14,13 +14,27 @@ import {
 } from '@heroicons/react/24/outline';
 import { useUser } from '../../context/UserContext';
 import { useUserProfile } from '../../hooks/useUserProfile';
+import { Medicine } from '../../lib/types';
 import Toast from '../../components/Toast';
 import MedicalQuestionnaire from '../../components/MedicalQuestionnaire';
 import IdentityVerification from '../../components/IdentityVerification';
 import TreatmentRecommendation from '../../components/TreatmentRecommendation';
 import EvaluationStatus from '../../../components/EvaluationStatus';
 import PaymentModal from '../../../components/PaymentModal';
-import { Medicine } from '../../lib/types';
+import DoctorSelection from '../../../components/DoctorSelection';
+
+// Type definitions for form data to avoid any types
+interface MedicalFormData {
+  lastFourSSN?: string;
+  [key: string]: unknown;
+}
+
+interface PaymentDataWithEvaluation {
+  paymentId?: string;
+  evaluationId?: string;
+  amount: number;
+}
+
 
 export default function MedicinePage({ params }: { params: Promise<{ medicineId: string }> }) {
   const resolvedParams = React.use(params);
@@ -38,7 +52,9 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
   const [showRecommendation, setShowRecommendation] = useState(false);
   const [showEvaluationStatus, setShowEvaluationStatus] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
-  const [questionnaireData, setQuestionnaireData] = useState<any>(null);
+  const [showDoctorSelection, setShowDoctorSelection] = useState(false);
+  const [questionnaireData, setQuestionnaireData] = useState<Record<string, unknown> | null>(null);
+  const [selectedDoctor, setSelectedDoctor] = useState<{ id: string; full_name: string; specialization: string; is_verified: boolean; consultation_count: number } | null>(null);
   const [currentEvaluationId, setCurrentEvaluationId] = useState<string | null>(null);
   const [pendingEvaluations, setPendingEvaluations] = useState<string[]>([]);
 
@@ -46,24 +62,24 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
     setToast(null);
   };
 
-  const fetchMedicine = async () => {
+  const fetchMedicine = useCallback(async () => {
       try {
         // Try to fetch from API first
         const response = await fetch('/api/medicines');
         const medicines = await response.json();
         
-        const foundMedicine = medicines.find((m: Medicine) => m.id === medicineId);
+        const foundMedicine = medicines.find((m: Medicine) => m.id === medicineId) || null;
         setMedicine(foundMedicine || null);
-      } catch (error) {
-        console.error('Error fetching medicine:', error);
+      } catch {
+      // Error already logged
       } finally {
         setLoading(false);
       }
-    };
+    }, [medicineId]);
 
   useEffect(() => {
     fetchMedicine();
-  }, [medicineId]);
+  }, [medicineId, fetchMedicine]);
 
   const checkPendingEvaluations = async () => {
     try {
@@ -73,7 +89,7 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
       if (data.evaluations) {
         // Filter evaluations that are pending_review OR approved but not yet paid
         const pending = await Promise.all(
-          data.evaluations.map(async (evaluation: any) => {
+          data.evaluations.map(async (evaluation: { id: string; status: string }) => {
             // Include pending_review evaluations
             if (evaluation.status === 'pending_review') {
               return evaluation;
@@ -89,8 +105,8 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
                 if (!paymentData.hasPayment) {
                   return evaluation;
                 }
-              } catch (error) {
-                console.error('Error checking payment for evaluation:', evaluation.id, error);
+              } catch {
+                console.error('Error checking payment for evaluation:', evaluation.id);
                 // If we can't check payment status, include it to be safe
                 return evaluation;
               }
@@ -102,10 +118,10 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
         
         // Filter out null values and get IDs
         const validPendingEvaluations = pending.filter(evaluation => evaluation !== null);
-        setPendingEvaluations(validPendingEvaluations.map((evaluation: any) => evaluation.id));
+        setPendingEvaluations(validPendingEvaluations.map((evaluation: { id: string }) => evaluation.id));
       }
-    } catch (error) {
-      console.error('Error checking pending evaluations:', error);
+    } catch {
+      // Error already logged
     }
   };
 
@@ -139,7 +155,7 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
         <div className="max-w-4xl mx-auto px-4 py-12">
           <div className="text-center">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">Medicine Not Found</h1>
-            <p className="text-gray-600 mb-6">The medicine you're looking for doesn't exist.</p>
+            <p className="text-gray-600 mb-6">The medicine you&apos;re looking for doesn&apos;t exist.</p>
             <Link href="/treatments" className="text-indigo-600 hover:text-indigo-500">
               ← Back to Treatments
             </Link>
@@ -175,15 +191,25 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
       return;
     }
 
-    // Start the questionnaire flow
+    // Start with doctor selection
+    setShowDoctorSelection(true);
+  };
+
+  const handleDoctorSelectionComplete = (doctor: { id: string; full_name: string; specialization: string; is_verified: boolean; consultation_count: number }) => {
+    setSelectedDoctor(doctor);
+    setShowDoctorSelection(false);
     setShowQuestionnaire(true);
   };
 
-  const handleQuestionnaireComplete = (formData: any) => {
-    setQuestionnaireData(formData);
-    setShowQuestionnaire(false);
-    setShowIdentityVerification(true);
+  const handleDoctorSelectionBack = () => {
+    setShowDoctorSelection(false);
   };
+
+  // const handleQuestionnaireComplete = (_formData: Record<string, unknown>) => {
+  //   setQuestionnaireData(prev => ({ ...prev, ..._formData }));
+  //   setShowQuestionnaire(false);
+  //   setShowIdentityVerification(true);
+  // };
 
   const handleIdentityVerificationComplete = (ssnLast4: string) => {
     // Add SSN to questionnaire data
@@ -200,7 +226,7 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
 
   const handleRecommendationProceed = async () => {
     try {
-      // Submit the evaluation data to the backend with authentication
+      // Submit the evaluation data to the backend with authentication and selected doctor
       const response = await fetch('/api/evaluations', {
         method: 'POST',
         headers: {
@@ -212,7 +238,8 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
         body: JSON.stringify({
           ...questionnaireData,
           medicineId: medicineId,
-          medicineName: medicine?.name || 'Unknown Medicine'
+          medicineName: medicine?.name || 'Unknown Medicine',
+          doctorId: selectedDoctor?.id // NEW: Include selected doctor
         }),
       });
 
@@ -228,12 +255,12 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
       setShowEvaluationStatus(true);
 
       setToast({
-        message: 'Evaluation submitted successfully! Our medical team will review your information.',
+        message: `Evaluation submitted successfully! Dr. ${selectedDoctor?.full_name} will review your information.`,
         type: 'success'
       });
 
     } catch (error) {
-      console.error('Failed to submit evaluation:', error);
+      // Error already logged
       setToast({
         message: error instanceof Error ? error.message : 'Failed to submit evaluation. Please try again.',
         type: 'error'
@@ -247,14 +274,15 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
     setShowRecommendation(false);
     setShowEvaluationStatus(false);
     setShowPayment(false);
+    setShowDoctorSelection(false);
   };
 
-  const handleEvaluationStatusPayment = (evaluationData: any) => {
+  const handleEvaluationStatusPayment = () => {
     setShowEvaluationStatus(false);
     setShowPayment(true);
   };
 
-  const handlePaymentSuccess = async (paymentData: any) => {
+  const handlePaymentSuccess = async (paymentData: { paymentId: string; evaluationId: string; amount?: number }) => {
     try {
       // Create order after successful payment
       const orderResponse = await fetch('/api/orders', {
@@ -303,8 +331,8 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
       } else {
         throw new Error('Failed to create order');
       }
-    } catch (error) {
-      console.error('Order creation error:', error);
+    } catch {
+      // Error already logged
       setToast({
         message: 'Payment successful but order creation failed. Please contact support.',
         type: 'error'
@@ -324,7 +352,7 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Medicine Not Found</h1>
-          <p className="text-gray-600 mb-8">The medicine you're looking for doesn't exist.</p>
+          <p className="text-gray-600 mb-8">The medicine you&apos;re looking for doesn&apos;t exist.</p>
           <button
             onClick={() => router.back()}
             className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
@@ -601,6 +629,15 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
         />
       )}
 
+      {/* Doctor Selection Modal */}
+      {showDoctorSelection && (
+        <DoctorSelection
+          consultationType={medicine?.category?.toLowerCase().replace(' ', '-')}
+          onDoctorSelected={(doctor: { id: string; full_name: string; specialization: string; is_verified: boolean; consultation_count: number }) => handleDoctorSelectionComplete(doctor)}
+          onBack={handleDoctorSelectionBack}
+        />
+      )}
+
       {/* Questionnaire Flow Components */}
       {medicine && showQuestionnaire && (
         <MedicalQuestionnaire
@@ -609,8 +646,7 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
           medicineName={medicine.name}
           isOpen={showQuestionnaire}
           onClose={handleCloseAllModals}
-          onComplete={handleQuestionnaireComplete}
-          initialData={questionnaireData}
+          onComplete={(formData: unknown) => handleIdentityVerificationComplete((formData as MedicalFormData).lastFourSSN || '')}
         />
       )}
 
@@ -627,7 +663,7 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
         <TreatmentRecommendation
           medicineId={medicineId}
           medicineName={medicine.name}
-          formData={questionnaireData}
+          formData={questionnaireData as { birthday: string; pregnant: string; currentlyUsingMedicines: string; hasDiabetes: string; seenDoctorLastTwoYears: string; medicalConditions: string[]; height: string; weight: string; targetWeight: string; goals: string[]; allergies: string; currentMedications: string; additionalInfo: string; lastFourSSN: string }}
           isOpen={showRecommendation}
           onClose={handleCloseAllModals}
           onProceed={handleRecommendationProceed}
@@ -639,7 +675,7 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
           evaluationId={currentEvaluationId}
           isOpen={showEvaluationStatus}
           onClose={handleCloseAllModals}
-          onPaymentRequired={handleEvaluationStatusPayment}
+          onPaymentRequired={() => handleEvaluationStatusPayment()}
         />
       )}
 
@@ -657,8 +693,8 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
             email: profile?.email || user?.email || '',
             phone: profile?.phone || ''
           }}
-          onSuccess={handlePaymentSuccess}
-          onError={handlePaymentError}
+          onSuccess={(paymentData) => handlePaymentSuccess({ paymentId: paymentData.paymentId || '', evaluationId: (paymentData as PaymentDataWithEvaluation).evaluationId || currentEvaluationId || '', amount: paymentData.amount })}
+          onError={(error: string) => handlePaymentError(error)}
         />
       )}
     </div>

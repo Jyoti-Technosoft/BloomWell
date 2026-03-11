@@ -9,17 +9,37 @@ const pool = new Pool({
 
 export async function POST(request: NextRequest) {
   try {
-    const { 
-      amount, 
-      currency = 'INR', 
-      medicineId, 
-      medicineName,
-      evaluationId,
-      userId,
-      customerName,
-      customerEmail,
-      customerPhone 
-    } = await request.json();
+    const requestData: {
+  amount: number;
+  currency?: string;
+  medicineId: string;
+  medicineName: string;
+  evaluationId: string;
+  userId: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+} = await request.json() as {
+  amount: number;
+  currency?: string;
+  medicineId: string;
+  medicineName: string;
+  evaluationId: string;
+  userId: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+};
+
+    const amount = requestData.amount;
+    const currency = requestData.currency || 'INR';
+    const medicineId = requestData.medicineId;
+    const medicineName = requestData.medicineName;
+    const evaluationId = requestData.evaluationId;
+    const userId = requestData.userId;
+    const customerName = requestData.customerName;
+    const customerEmail = requestData.customerEmail;
+    const customerPhone = requestData.customerPhone;
 
     // Validate input
     if (!amount || !medicineId || !evaluationId || !userId || !customerName || !customerEmail) {
@@ -54,8 +74,8 @@ export async function POST(request: NextRequest) {
         email: customerEmail,
         phone: customerPhone
       });
-    } catch (customerError) {
-      console.error('Customer creation failed:', customerError);
+    } catch (customerError: unknown) {
+      console.error('Customer creation failed:', customerError instanceof Error ? customerError.message : String(customerError));
       return NextResponse.json(
         { error: 'Failed to create customer record' },
         { status: 500 }
@@ -70,9 +90,9 @@ export async function POST(request: NextRequest) {
           name: customerName,
           email: customerEmail,
           contact: customerPhone,
-          fail_existing: '0' as any
+          fail_existing: 0
         });
-        razorpayCustomerId = (razorpayCustomer as any).id;
+        razorpayCustomerId = razorpayCustomer.id;
         
         // Update database with Razorpay customer ID
         const client = await pool.connect();
@@ -91,7 +111,20 @@ export async function POST(request: NextRequest) {
 
     // Create receipt (max 40 characters)
     const receipt = `ord_${medicineId.slice(0, 8)}_${Date.now()}`;
-    const orderData: any = {
+    const orderData: {
+  amount: number;
+  currency: string;
+  receipt: string;
+  payment_capture: number;
+  notes: {
+    customer_id: string;
+    medicine_id: string;
+    medicine_name: string;
+    user_id: string;
+    app_customer_name: string;
+    app_customer_email: string;
+  };
+} = {
       amount: amount * 100,
       currency,
       receipt,
@@ -124,25 +157,23 @@ export async function POST(request: NextRequest) {
       throw new Error(`Database connection failed: ${dbTestError instanceof Error ? dbTestError.message : 'Unknown error'}`);
     }
     
-    let createdOrder;
     try {
-      createdOrder = await createOrder({
+      await createOrder({
         razorpayOrderId: order.id,
-        customerId: customer.id,
+        customerId: Number(customer.id),
         medicineId,
         medicineName,
         amount: amount * 100,
         currency,
         receipt
       });
-    } catch (orderError) {
+    } catch (orderError: unknown) {
       throw new Error(`Order creation failed: ${orderError instanceof Error ? orderError.message : 'Unknown error'}`);
     }
-    let transaction;
     try {
-      transaction = await createPaymentTransaction({
+      await createPaymentTransaction({
         razorpayOrderId: order.id,
-        customerId: customer.id,
+        customerId: Number(customer.id),
         medicineId: evaluationId, // Use evaluationId instead of medicineId for payment tracking
         medicineName,
         amount: amount * 100,

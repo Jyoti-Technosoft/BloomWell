@@ -113,7 +113,7 @@ export interface Evaluation {
   id: string;
   user_id: string | null;
   medicine_id: string;
-  evaluation_data: any;
+  evaluation_data: Record<string, unknown>;
   status: string;
   created_at: string;
   updated_at: string;
@@ -197,7 +197,7 @@ export interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
   physician: Physician;
-  onComplete: (bookingData: any) => void;
+  onComplete: (bookingData: Record<string, unknown>) => void;
 }
 
 export interface MedicalQuestionnaireProps {
@@ -273,7 +273,11 @@ declare module 'next-auth' {
       id?: string;
       name?: string | null;
       email?: string | null;
-      image?: string | null;
+      role?: string;
+      doctorProfileId?: string;
+      isVerified?: boolean;
+      verificationStatus?: string;
+      image?: string;
     };
   }
 }

@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 
@@ -55,11 +56,11 @@ export default function Footer() {
               transition={{ duration: 0.5 }}
             >
               <Link href="/" className="flex items-center">
-                <img
+                <Image
                   src="/bloomwell-logo.png"
                   alt="BloomWell - Women's Health"
-                  width="150px"
-                  height="100px"
+                  width={150}
+                  height={100}
                 />
               </Link>
               <p className="text-gray-300 mb-6 max-w-md">

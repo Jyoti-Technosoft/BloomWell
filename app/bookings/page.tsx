@@ -202,7 +202,7 @@ export default function BookingsPage() {
         className="mb-8"
       >
         <h1 className="text-3xl font-bold text-gray-900">Booking Information</h1>
-        <p className="mt-2 text-gray-600">Manage your women's health appointments and consultations</p>
+        <p className="mt-2 text-gray-600">Manage your women&apos;s health appointments and consultations</p>
       </motion.div>
 
       {/* Booking Summary */}
@@ -309,7 +309,7 @@ export default function BookingsPage() {
                 <CalendarIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No Appointments Yet</h3>
                 <p className="text-gray-600 mb-6">
-                  You haven't booked any appointments yet. Schedule your first consultation to get started with your women's health journey.
+                  You haven&apos;t booked any appointments yet. Schedule your first consultation to get started with your women&apos;s health journey.
                 </p>
               </>
             )}
@@ -318,7 +318,7 @@ export default function BookingsPage() {
                 <CalendarIcon className="h-12 w-12 text-blue-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No Upcoming Appointments</h3>
                 <p className="text-gray-600 mb-6">
-                  You don't have any scheduled appointments. Book a new appointment to continue your care.
+                  You don&apos;t have any scheduled appointments. Book a new appointment to continue your care.
                 </p>
               </>
             )}
@@ -327,7 +327,7 @@ export default function BookingsPage() {
                 <CheckCircleIcon className="h-12 w-12 text-green-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No Completed Appointments</h3>
                 <p className="text-gray-600 mb-6">
-                  You haven't completed any appointments yet. Your scheduled appointments will appear here once completed.
+                  You haven&apos;t completed any appointments yet. Your scheduled appointments will appear here once completed.
                 </p>
               </>
             )}
@@ -336,7 +336,7 @@ export default function BookingsPage() {
                 <XCircleIcon className="h-12 w-12 text-red-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No Cancelled Appointments</h3>
                 <p className="text-gray-600 mb-6">
-                  You don't have any cancelled appointments. That's great! Keep up with your scheduled appointments.
+                  You don&apos;t have any cancelled appointments. That&apos;s great! Keep up with your scheduled appointments.
                 </p>
               </>
             )}

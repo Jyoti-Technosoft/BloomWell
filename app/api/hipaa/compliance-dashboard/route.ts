@@ -54,7 +54,9 @@ export async function GET(request: NextRequest) {
       retentionStats,
       consentStats,
       userStats,
-      securityStats
+      securityStats,
+      accessStats: { totalAccess: 0, unauthorizedAccess: 0 },
+      dataStats: { totalRecords: 0, encryptedRecords: 0 }
     });
 
     return NextResponse.json({
@@ -94,19 +96,19 @@ async function getAuditLogStatistics() {
     `);
 
     return {
-      totalLogs: parseInt(result[0].total_logs),
-      uniqueUsers: parseInt(result[0].unique_users),
-      failedAttempts: parseInt(result[0].failed_attempts),
-      successfulActions: parseInt(result[0].successful_actions),
-      lastActivity: result[0].last_activity
+      totalLogs: Number(result[0].total_logs),
+      uniqueUsers: Number(result[0].unique_users),
+      failedAttempts: Number(result[0].failed_attempts),
+      successfulActions: Number(result[0].successful_actions),
+      lastActivity: result[0].last_activity ? String(result[0].last_activity) : undefined
     };
-  } catch (error) {
+  } catch {
     return {
       totalLogs: 0,
       uniqueUsers: 0,
       failedAttempts: 0,
       successfulActions: 0,
-      lastActivity: null
+      lastActivity: undefined
     };
   }
 }
@@ -122,11 +124,11 @@ async function getUserStatistics() {
     `);
 
     return {
-      totalUsers: parseInt(result[0].total_users),
-      newUsers: parseInt(result[0].new_users),
-      activeUsers: parseInt(result[0].active_users)
+      totalUsers: Number(result[0].total_users),
+      newUsers: Number(result[0].new_users),
+      activeUsers: Number(result[0].active_users)
     };
-  } catch (error) {
+  } catch {
     return {
       totalUsers: 0,
       newUsers: 0,
@@ -147,11 +149,11 @@ async function getSecurityStatistics() {
     `);
 
     return {
-      totalMFAAttempts: parseInt(result[0].total_mfa_attempts),
-      successfulMFA: parseInt(result[0].successful_mfa),
-      recentAttempts: parseInt(result[0].recent_attempts)
+      totalMFAAttempts: Number(result[0].total_mfa_attempts),
+      successfulMFA: Number(result[0].successful_mfa),
+      recentAttempts: Number(result[0].recent_attempts)
     };
-  } catch (error) {
+  } catch {
     return {
       totalMFAAttempts: 0,
       successfulMFA: 0,
@@ -160,7 +162,49 @@ async function getSecurityStatistics() {
   }
 }
 
-function calculateComplianceScore(stats: any): number {
+function calculateComplianceScore(stats: {
+  auditStats: {
+    totalLogs: number;
+    failedAttempts: number;
+    lastActivity?: string;
+  };
+  accessStats: {
+    totalAccess: number;
+    unauthorizedAccess: number;
+  };
+  dataStats: {
+    totalRecords: number;
+    encryptedRecords: number;
+  };
+  breachStats: {
+    totalBreaches: number;
+    openBreaches: number;
+    resolvedBreaches: number;
+    notificationsSent: number;
+    reportedBreaches?: number;
+  };
+  securityStats: {
+    totalMFAAttempts: number;
+    successfulMFA: number;
+    recentAttempts: number;
+  };
+  retentionStats: {
+    totalPolicies: number;
+    activePolicies: number;
+    scheduledDeletions: number;
+    completedDeletions: number;
+  };
+  consentStats: {
+    totalUsers: number;
+    consentRates: Record<string, number>;
+  };
+  userStats: {
+    totalUsers: number;
+    newUsers: number;
+    activeUsers: number;
+    inactiveUsers?: number;
+  };
+}): number {
   let score = 0;
   const maxScore = 100;
 

@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category');
     
     let query = 'SELECT * FROM medicines';
-    let params: any[] = [];
+    const params: (string | number)[] = [];
     
     if (category) {
       query += ' WHERE category = $1';
@@ -90,7 +90,22 @@ export async function GET(request: NextRequest) {
     
     const result = await pool.query(query, params);
     
-    const medicines = result.rows.map((row: any) => ({
+    const medicines = result.rows.map((row: {
+      id: string;
+      name: string;
+      description: string;
+      category: string;
+      image: string;
+      price: number;
+      dosage: string;
+      in_stock: boolean;
+      overview?: string;
+      how_it_works?: string;
+      shipping?: string;
+      support?: string;
+      side_effects?: string;
+      benefits?: string;
+    }) => ({
       id: row.id,
       name: row.name,
       description: row.description,
@@ -159,8 +174,8 @@ export async function POST(request: NextRequest) {
     };
 
     return NextResponse.json(medicine, { status: 201 });
-  } catch (error) {
-    console.error('Error creating medicine:', error);
+  } catch (error: unknown) {
+    console.error('Error creating medicine:', error instanceof Error ? error.message : String(error));
     return NextResponse.json(
       { error: 'Failed to create medicine' },
       { status: 500 }

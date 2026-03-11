@@ -61,7 +61,7 @@ async function checkEnvironmentVariables() {
         const value = execSync(command, { encoding: 'utf8' }).trim();
         envContent += `\n${varName}=${value}`;
         updated = true;
-      } catch (error) {
+      } catch {
         console.log(`   ⚠️  Could not generate ${varName}. Please add it manually.`);
       }
     } else {

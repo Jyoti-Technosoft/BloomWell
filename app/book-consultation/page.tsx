@@ -7,13 +7,13 @@ import { useUser } from '../context/UserContext';
 import Toast from '../components/Toast';
 import BookingModal from '../components/BookingModal';
 import { Physician } from '../lib/types';
+import Image from 'next/image';
 
 export default function BookConsultation() {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [selectedPhysician, setSelectedPhysician] = useState<Physician | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [physicians, setPhysicians] = useState<Physician[]>([]);
-  const [loading, setLoading] = useState(true);
   const { user } = useUser();
   const router = useRouter();
 
@@ -25,8 +25,6 @@ export default function BookConsultation() {
         setPhysicians(data.members || []);
       } catch (error) {
         console.error('Error fetching physicians:', error);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -37,9 +35,10 @@ export default function BookConsultation() {
     setToast(null);
   };
 
-  const handleBookingComplete = (bookingData: any) => {
+  const handleBookingComplete = () => {
     setToast({
-      message: 'Consultation booked successfully! You will receive a confirmation email shortly.',
+      message: 'Consultation booked successfully!',
+      // message: 'Consultation booked successfully! You will receive a confirmation email shortly.',
       type: 'success'
     });
     setShowBookingModal(false);
@@ -97,9 +96,11 @@ export default function BookConsultation() {
                       <div className="flex items-start space-x-4">
                         <div className="shrink-0">
                           <div className="h-12 w-12 rounded-full bg-gray-200 overflow-hidden">
-                            <img
+                            <Image
                               src={physician.image}
                               alt={physician.name}
+                              width={48}
+                              height={48}
                               className="h-full w-full object-cover"
                             />
                           </div>

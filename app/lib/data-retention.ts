@@ -53,7 +53,7 @@ export async function createRetentionPolicy(
     await query(
       `INSERT INTO data_retention (id, user_id, data_type, retention_period_years, deletion_date, status)
        VALUES ($1, $2, $3, $4, $5, $6)`,
-      [policyId, userId, dataType, retentionPeriod, deletionDate, RetentionStatus.ACTIVE]
+      [policyId, userId, dataType, retentionPeriod, deletionDate.toISOString(), RetentionStatus.ACTIVE]
     );
     
     return {
@@ -65,7 +65,7 @@ export async function createRetentionPolicy(
       status: RetentionStatus.ACTIVE,
       createdAt: new Date()
     };
-  } catch (error) {
+  } catch {
     throw new Error('Failed to create retention policy');
   }
 }
@@ -80,15 +80,15 @@ export async function getUserRetentionPolicies(userId: string): Promise<Retentio
     );
     
     return result.map(row => ({
-      id: row.id,
-      userId: row.user_id,
+      id: row.id as string,
+      userId: row.user_id as string,
       dataType: row.data_type as DataType,
-      retentionPeriodYears: row.retention_period_years,
-      deletionDate: row.deletion_date,
+      retentionPeriodYears: row.retention_period_years as number,
+      deletionDate: row.deletion_date ? new Date(row.deletion_date as string) : undefined,
       status: row.status as RetentionStatus,
-      createdAt: row.created_at
+      createdAt: new Date(row.created_at as string)
     }));
-  } catch (error) {
+  } catch {
     return [];
   }
 }
@@ -103,9 +103,9 @@ export async function scheduleDataDeletion(
     await query(
       `UPDATE data_retention SET deletion_date = $1, status = $2 
        WHERE user_id = $3 AND data_type = $4`,
-      [deletionDate, RetentionStatus.SCHEDULED_FOR_DELETION, userId, dataType]
+      [deletionDate.toISOString(), RetentionStatus.SCHEDULED_FOR_DELETION, userId, dataType]
     );
-  } catch (error) {
+  } catch {
     throw new Error('Failed to schedule data deletion');
   }
 }
@@ -141,7 +141,7 @@ export async function deleteUserData(
       `UPDATE data_retention SET status = $1 WHERE user_id = $2 AND data_type = $3`,
       [RetentionStatus.DELETED, userId, dataType]
     );
-  } catch (error) {
+  } catch {
     throw new Error(`Failed to delete ${dataType} data`);
   }
 }
@@ -153,19 +153,19 @@ export async function findScheduledDeletions(): Promise<RetentionPolicy[]> {
       `SELECT id, user_id, data_type, retention_period_years, deletion_date, status, created_at
        FROM data_retention 
        WHERE status = $1 AND deletion_date <= $2`,
-      [RetentionStatus.SCHEDULED_FOR_DELETION, new Date()]
+      [RetentionStatus.SCHEDULED_FOR_DELETION, new Date().toISOString()]
     );
     
     return result.map(row => ({
-      id: row.id,
-      userId: row.user_id,
+      id: row.id as string,
+      userId: row.user_id as string,
       dataType: row.data_type as DataType,
-      retentionPeriodYears: row.retention_period_years,
-      deletionDate: row.deletion_date,
+      retentionPeriodYears: row.retention_period_years as number,
+      deletionDate: row.deletion_date ? new Date(row.deletion_date as string) : undefined,
       status: row.status as RetentionStatus,
-      createdAt: row.created_at
+      createdAt: new Date(row.created_at as string)
     }));
-  } catch (error) {
+  } catch {
     return [];
   }
 }
@@ -183,8 +183,8 @@ export async function processScheduledDeletions(): Promise<{
     try {
       await deleteUserData(deletion.userId, deletion.dataType);
       processed++;
-    } catch (error) {
-      errors.push(`Failed to delete ${deletion.dataType} for user ${deletion.userId}: ${error}`);
+    } catch {
+      errors.push(`Failed to delete ${deletion.dataType} for user ${deletion.userId}`);
     }
   }
   
@@ -205,12 +205,12 @@ export async function getRetentionStatistics(): Promise<{
     const deletedResult = await query("SELECT COUNT(*) as count FROM data_retention WHERE status = 'deleted'");
     
     return {
-      totalPolicies: parseInt(totalResult[0].count),
-      activePolicies: parseInt(activeResult[0].count),
-      scheduledDeletions: parseInt(scheduledResult[0].count),
-      completedDeletions: parseInt(deletedResult[0].count)
+      totalPolicies: Number(totalResult[0].count),
+      activePolicies: Number(activeResult[0].count),
+      scheduledDeletions: Number(scheduledResult[0].count),
+      completedDeletions: Number(deletedResult[0].count)
     };
-  } catch (error) {
+  } catch {
     return {
       totalPolicies: 0,
       activePolicies: 0,
@@ -220,7 +220,7 @@ export async function getRetentionStatistics(): Promise<{
   }
 }
 
-export default {
+const dataRetentionService = {
   createRetentionPolicy,
   getUserRetentionPolicies,
   scheduleDataDeletion,
@@ -231,3 +231,5 @@ export default {
   DataType,
   RetentionStatus
 };
+
+export default dataRetentionService;

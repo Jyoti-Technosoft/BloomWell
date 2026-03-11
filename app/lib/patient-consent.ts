@@ -43,11 +43,11 @@ export async function recordConsent(
         consentId,
         userId,
         consentType,
-        consentGiven,
-        new Date(),
-        expiresAt || null,
-        ipAddress || null,
-        userAgent || null
+        consentGiven ? 1 : 0,
+        new Date().toISOString(),
+        expiresAt ? expiresAt.toISOString() : '',
+        ipAddress || '',
+        userAgent || ''
       ]
     );
     
@@ -61,7 +61,7 @@ export async function recordConsent(
       ipAddress,
       userAgent
     };
-  } catch (error) {
+  } catch {
     throw new Error('Failed to record consent');
   }
 }
@@ -86,12 +86,12 @@ export async function hasConsent(
     const consent = result[0];
     
     // Check if consent has expired
-    if (consent.expires_at && new Date(consent.expires_at) < new Date()) {
+    if (consent.expires_at && new Date(consent.expires_at as string) < new Date()) {
       return false;
     }
     
-    return consent.consent_given;
-  } catch (error) {
+    return Boolean(consent.consent_given);
+  } catch {
     return false;
   }
 }
@@ -106,16 +106,16 @@ export async function getUserConsents(userId: string): Promise<ConsentRecord[]> 
     );
     
     return result.map(row => ({
-      id: row.id,
-      userId: row.user_id,
+      id: row.id as string,
+      userId: row.user_id as string,
       consentType: row.consent_type as ConsentType,
-      consentGiven: row.consent_given,
-      consentDate: row.consent_date,
-      expiresAt: row.expires_at,
-      ipAddress: row.ip_address,
-      userAgent: row.user_agent
+      consentGiven: Boolean(row.consent_given),
+      consentDate: new Date(row.consent_date as string),
+      expiresAt: row.expires_at ? new Date(row.expires_at as string) : undefined,
+      ipAddress: row.ip_address as string,
+      userAgent: row.user_agent as string
     }));
-  } catch (error) {
+  } catch {
     return [];
   }
 }
@@ -129,7 +129,7 @@ export async function revokeConsent(
 ): Promise<void> {
   try {
     await recordConsent(userId, consentType, false, ipAddress, userAgent);
-  } catch (error) {
+  } catch {
     throw new Error('Failed to revoke consent');
   }
 }
@@ -170,11 +170,11 @@ export async function getConsentStatistics(): Promise<{
   try {
     // Get total users
     const userResult = await query('SELECT COUNT(*) as count FROM users');
-    const totalUsers = parseInt(userResult[0].count);
+    const totalUsers = Number(userResult[0].count);
     
     // Get consent rates for each type
     const consentTypes = Object.values(ConsentType);
-    const consentRates: Record<ConsentType, number> = {} as any;
+    const consentRates: Record<ConsentType, number> = {} as Record<ConsentType, number>;
     
     for (const consentType of consentTypes) {
       const consentResult = await query(
@@ -183,7 +183,7 @@ export async function getConsentStatistics(): Promise<{
         [consentType]
       );
       
-      const consentCount = parseInt(consentResult[0].count);
+      const consentCount = Number(consentResult[0].count);
       consentRates[consentType] = totalUsers > 0 ? (consentCount / totalUsers) * 100 : 0;
     }
     
@@ -191,20 +191,21 @@ export async function getConsentStatistics(): Promise<{
       totalUsers,
       consentRates
     };
-  } catch (error) {
+  } catch {
     return {
       totalUsers: 0,
-      consentRates: {} as any
+      consentRates: {} as Record<ConsentType, number>
     };
   }
 }
 
-export default {
+const consentHandlers = {
   recordConsent,
   hasConsent,
   getUserConsents,
   revokeConsent,
   hasRequiredConsents,
-  getConsentStatistics,
-  ConsentType
+  getConsentStatistics
 };
+
+export default consentHandlers; 

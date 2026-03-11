@@ -55,12 +55,12 @@ export async function createOrUpdateCustomer(userData: {
     // console.error('Error in createOrUpdateCustomer:', error);
       console.error('❌ Error in createOrUpdateCustomer:', {
       message: error instanceof Error ? error.message : 'Unknown error',
-      code: (error as any).code,
-      detail: (error as any).detail,
-      constraint: (error as any).constraint,
-      table: (error as any).table,
-      hint: (error as any).hint,
-      where: (error as any).where,
+      code: (error as { code?: string }).code,
+      detail: (error as { detail?: string }).detail,
+      constraint: (error as { constraint?: string }).constraint,
+      table: (error as { table?: string }).table,
+      hint: (error as { hint?: string }).hint,
+      where: (error as { where?: string }).where,
       userData: {
         userId: userData.userId,
         name: userData.name,
@@ -217,13 +217,13 @@ export async function createOrder(orderData: {
   } catch (error) {
     console.error('❌ Error in createOrder:', error);
     console.error('🔧 Error details:', {
-      message: (error as Error).message,
-      code: (error as any).code,
-      detail: (error as any).detail,
-      constraint: (error as any).constraint,
-      table: (error as any).table,
-      column: (error as any).column,
-      severity: (error as any).severity
+      message: error instanceof Error ? error.message : String(error),
+      code: error instanceof Error && 'code' in error ? error.code : undefined,
+      detail: error instanceof Error && 'detail' in error ? error.detail : undefined,
+      constraint: error instanceof Error && 'constraint' in error ? error.constraint : undefined,
+      table: error instanceof Error && 'table' in error ? error.table : undefined,
+      column: error instanceof Error && 'column' in error ? error.column : undefined,
+      severity: error instanceof Error && 'severity' in error ? error.severity : undefined
     });
     throw error;
   } finally {
@@ -252,7 +252,7 @@ export async function createPaymentTransaction(transactionData: {
   email?: string;
   contact?: string;
   description?: string;
-  notes?: any;
+  notes?: Record<string, unknown>;
   fee?: number;
   tax?: number;
 }) {
@@ -310,13 +310,13 @@ export async function createPaymentTransaction(transactionData: {
   } catch (error) {
     console.error('❌ Error in createPaymentTransaction:', error);
     console.error('🔧 Error details:', {
-      message: (error as Error).message,
-      code: (error as any).code,
-      detail: (error as any).detail,
-      constraint: (error as any).constraint,
-      table: (error as any).table,
-      column: (error as any).column,
-      severity: (error as any).severity
+      message: error instanceof Error ? error.message : String(error),
+      code: error instanceof Error && 'code' in error ? error.code : undefined,
+      detail: error instanceof Error && 'detail' in error ? error.detail : undefined,
+      constraint: error instanceof Error && 'constraint' in error ? error.constraint : undefined,
+      table: error instanceof Error && 'table' in error ? error.table : undefined,
+      column: error instanceof Error && 'column' in error ? error.column : undefined,
+      severity: error instanceof Error && 'severity' in error ? error.severity : undefined
     });
     throw error;
   } finally {

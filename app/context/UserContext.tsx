@@ -1,6 +1,5 @@
 'use client';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
 type User = {
@@ -20,21 +19,57 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const [user, setUser] = useState<User | null>(null);
-  const router = useRouter();
 
   useEffect(() => {
     if (status === 'loading') return;
 
     if (session?.user) {
-      setUser({
-        id: session.user.id!,
-        email: session.user.email!,
-        fullName: session.user.name || 'User'
-      });
+      // Use setTimeout to avoid synchronous setState calls
+      setTimeout(() => {
+        setUser({
+          id: session.user.id!,
+          email: session.user.email!,
+          fullName: session.user.name || 'User'
+        });
+      }, 0);
     } else {
-      setUser(null);
+      setTimeout(() => setUser(null), 0);
     }
   }, [session, status]);
+
+  // Global session validation - check if session is still valid
+  useEffect(() => {
+    if (status !== 'authenticated' || !session) return;
+
+    const validateSession = async () => {
+      try {
+        const response = await fetch('/api/auth/session', {
+          credentials: 'include',
+        });
+        
+        if (!response.ok) {
+          console.log(' Session validation failed, clearing session...');
+          // Session is invalid, clear everything and redirect
+          localStorage.clear();
+          sessionStorage.clear();
+          setUser(null);
+          window.location.href = '/auth/signin';
+        }
+      } catch {
+        console.log(' Session validation error, clearing session...');
+        localStorage.clear();
+        sessionStorage.clear();
+        setUser(null);
+        window.location.href = '/auth/signin';
+      }
+    };
+
+    // Validate session immediately and then every 5 minutes
+    validateSession();
+    const interval = setInterval(validateSession, 5 * 60 * 1000); // 5 minutes
+
+    return () => clearInterval(interval);
+  }, [status, session]);
 
   const logout = async () => {
     try {

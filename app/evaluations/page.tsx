@@ -1,4 +1,6 @@
 'use client';
+
+import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -21,7 +23,7 @@ interface Evaluation {
   evaluationType: string;
   status: 'pending_review' | 'approved' | 'rejected';
   createdAt: string;
-  responses?: any;
+  responses?: Record<string, unknown>;
 }
 
 export default function EvaluationsPage() {
@@ -29,7 +31,14 @@ export default function EvaluationsPage() {
   const { profile } = useUserProfile();
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
-  const [medicines, setMedicines] = useState<any[]>([]);
+  const [medicines, setMedicines] = useState<{
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  price: number;
+  image_url: string;
+}[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedEvaluation, setSelectedEvaluation] = useState<Evaluation | null>(null);
   const [showPayment, setShowPayment] = useState(false);
@@ -169,7 +178,7 @@ export default function EvaluationsPage() {
     setSelectedEvaluation(null); // Close details modal
   };
 
-  const handlePaymentSuccess = async (paymentDetails: any) => {
+  const handlePaymentSuccess = async () => {
     setToast({
       message: 'Payment successful! Your order has been created.',
       type: 'success'
@@ -211,12 +220,12 @@ export default function EvaluationsPage() {
           <DocumentTextIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Sign In Required</h1>
           <p className="text-gray-600 mb-6">Please sign in to view your evaluations.</p>
-          <a
+          <Link
             href="/auth/signin"
             className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
           >
             Sign In
-          </a>
+          </Link>
         </div>
       </div>
     );
@@ -261,13 +270,13 @@ export default function EvaluationsPage() {
           <div className="text-center py-12">
             <DocumentTextIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-gray-900 mb-2">No Evaluations Yet</h2>
-            <p className="text-gray-600 mb-6">You haven't submitted any medical evaluations yet.</p>
-            <a
+            <p className="text-gray-600 mb-6">You haven&apos;t submitted any medical evaluations yet.</p>
+            <Link
               href="/treatments"
               className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
             >
               Start Evaluation
-            </a>
+            </Link>
           </div>
         ) : (
           <motion.div

@@ -1,8 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
+import Image from "next/image";
 import { Medicine, Treatment } from '../../lib/types';
 
 export function TreatmentContent({ treatment }: { treatment: string }) {
@@ -83,7 +83,7 @@ export function TreatmentContent({ treatment }: { treatment: string }) {
       <div className="min-h-screen bg-linear-to-br from-gray-50 to-indigo-50">
         <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-3xl font-extrabold text-gray-900">Treatment Not Found</h1>
-          <p className="mt-4 text-gray-600">The treatment you're looking for doesn't exist.</p>
+          <p className="mt-4 text-gray-600">The treatment you&apos;re looking for doesn&apos;t exist.</p>
           <Link href="/treatments" className="mt-6 inline-flex items-center text-indigo-600 hover:text-indigo-500">
             ← Back to Treatments
           </Link>
@@ -203,9 +203,11 @@ export function TreatmentContent({ treatment }: { treatment: string }) {
               <div key={medicine.id} className="flex flex-col rounded-lg border border-gray-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                 <div className="h-48 bg-gray-100 flex items-center justify-center p-4">
                   {medicine.image ? (
-                    <img
+                    <Image
                       src={medicine.image}
                       alt={medicine.name}
+                      width={200}
+                      height={192}
                       className="h-full w-full object-contain"
                     />
                   ) : (

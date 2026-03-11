@@ -48,7 +48,7 @@ async function inspectDatabaseEncryption() {
       console.log(`3️⃣${i + 1}. Analyzing Evaluation ID: ${evaluation.id}`);
       
       try {
-        const responses = JSON.parse(evaluation.responses);
+        const responses = JSON.parse(evaluation.responses as string);
         console.log(`   📄 Created: ${evaluation.created_at}`);
         
         // Check sensitive fields

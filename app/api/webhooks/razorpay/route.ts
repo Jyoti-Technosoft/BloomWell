@@ -70,7 +70,36 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function handlePaymentCaptured(event: any) {
+async function handlePaymentCaptured(event: {
+  payload: {
+    payment: {
+      entity: {
+        id: string;
+        amount: number;
+        currency: string;
+        status: string;
+        order_id: string;
+        invoice_id?: string;
+        international?: boolean;
+        method?: string;
+        amount_refunded?: number;
+        refund_status?: string;
+        captured?: boolean;
+        description?: string;
+        card_id?: string;
+        bank?: string;
+        wallet?: string;
+        vpa?: string;
+        email?: string;
+        contact?: string;
+        notes?: Record<string, unknown>;
+        fee?: number;
+        tax?: number;
+        created_at: number;
+      };
+    };
+  };
+}) {
   const payment = event.payload.payment.entity;
   
   // First update the payment transaction with payment_id
@@ -127,12 +156,29 @@ async function handlePaymentCaptured(event: any) {
         customerClient.release();
       }
     }
-  } catch (error) {
-    console.error('Error in webhook user linking:', error);
+  } catch (error: unknown) {
+    console.error('Error in webhook user linking:', error instanceof Error ? error.message : String(error));
   }
 }
 
-async function handlePaymentFailed(event: any) {
+async function handlePaymentFailed(event: {
+  payload: {
+    payment: {
+      entity: {
+        id: string;
+        amount: number;
+        currency: string;
+        status: string;
+        order_id: string;
+        error_code?: string;
+        error_description?: string;
+        error_source?: string;
+        error_step?: string;
+        error_reason?: string;
+      };
+    };
+  };
+}) {
   const payment = event.payload.payment.entity;
   
   // First update the payment transaction with payment_id
@@ -156,7 +202,21 @@ async function handlePaymentFailed(event: any) {
   console.log('Payment failed:', payment.id);
 }
 
-async function handleOrderPaid(event: any) {
+async function handleOrderPaid(event: {
+  payload: {
+    order: {
+      entity: {
+        id: string;
+        amount: number;
+        currency: string;
+        status: string;
+        receipt: string;
+        notes?: Record<string, unknown>;
+        created_at: number;
+      };
+    };
+  };
+}) {
   const order = event.payload.order.entity;
   console.log('Order paid:', order.id);
 }

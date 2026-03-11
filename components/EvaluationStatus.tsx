@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { 
   CheckCircleIcon, 
@@ -10,11 +10,11 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline';
 
-interface EvaluationStatusProps {
-  evaluationId: string;
-  isOpen: boolean;
-  onClose: () => void;
-  onPaymentRequired?: (evaluationData: any) => void;
+interface EvaluationResponse {
+  questionId: string;
+  question: string;
+  answer: string | number | boolean;
+  category: string;
 }
 
 interface EvaluationData {
@@ -22,7 +22,14 @@ interface EvaluationData {
   status: 'pending_review' | 'approved' | 'rejected';
   medicineName: string;
   createdAt: string;
-  responses?: any;
+  responses?: EvaluationResponse[];
+}
+
+interface EvaluationStatusProps {
+  evaluationId: string;
+  isOpen: boolean;
+  onClose: () => void;
+  onPaymentRequired?: (evaluationData: EvaluationData) => void;
 }
 
 export default function EvaluationStatus({ 
@@ -35,29 +42,23 @@ export default function EvaluationStatus({
   const [loading, setLoading] = useState(true);
   const [paymentStatus, setPaymentStatus] = useState<'none' | 'paid'>('none');
 
-  useEffect(() => {
-    if (isOpen && evaluationId) {
-      fetchEvaluationStatus();
-    }
-  }, [isOpen, evaluationId]);
-
-  // Refresh payment status when modal opens
-  useEffect(() => {
-    if (isOpen && evaluation) {
-      checkPaymentStatus(evaluation.id);
-    }
-  }, [isOpen, evaluation?.id]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      setEvaluation(null);
+  const checkPaymentStatus = useCallback(async (evalId: string) => {
+    try {
+      const response = await fetch(`/api/payments/check-payment?evaluationId=${evalId}`);
+      const data = await response.json();
+      
+      if (data.hasPayment) {
+        setPaymentStatus('paid');
+      } else {
+        setPaymentStatus('none');
+      }
+    } catch (error) {
+      console.error('Error checking payment status:', error);
       setPaymentStatus('none');
-      setLoading(false);
-    };
+    }
   }, []);
 
-  const fetchEvaluationStatus = async () => {
+  const fetchEvaluationStatus = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/evaluations`);
@@ -77,23 +78,29 @@ export default function EvaluationStatus({
     } finally {
       setLoading(false);
     }
-  };
+  }, [evaluationId, checkPaymentStatus]);
 
-  const checkPaymentStatus = async (evalId: string) => {
-    try {
-      const response = await fetch(`/api/payments/check-payment?evaluationId=${evalId}`);
-      const data = await response.json();
-      
-      if (data.hasPayment) {
-        setPaymentStatus('paid');
-      } else {
-        setPaymentStatus('none');
-      }
-    } catch (error) {
-      console.error('Error checking payment status:', error);
-      setPaymentStatus('none');
+  useEffect(() => {
+    if (isOpen && evaluationId) {
+      fetchEvaluationStatus();
     }
-  };
+  }, [isOpen, evaluationId, fetchEvaluationStatus]);
+
+  // Refresh payment status when modal opens
+  useEffect(() => {
+    if (isOpen && evaluation) {
+      checkPaymentStatus(evaluation.id);
+    }
+  }, [isOpen, evaluation, checkPaymentStatus]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      setEvaluation(null);
+      setPaymentStatus('none');
+      setLoading(false);
+    };
+  }, []);
 
   const handleRefreshStatus = async () => {
     if (evaluation) {
@@ -213,7 +220,7 @@ export default function EvaluationStatus({
                       // Show purchased status
                       <div className="rounded-lg bg-green-50 border border-green-200 p-4">
                         <div className="flex items-center">
-                          <div className="flex-shrink-0">
+                          <div className="shrink-0">
                             <CheckCircleIcon className="h-6 w-6 text-green-600" />
                           </div>
                           <div className="ml-3">
@@ -278,13 +285,13 @@ export default function EvaluationStatus({
                     <div className="rounded-lg bg-yellow-50 border border-yellow-200 p-4">
                       <h4 className="font-medium text-yellow-900 mb-2">💳 Payment Information</h4>
                       <div className="text-sm text-yellow-800 space-y-2">
-                        <p>Once your evaluation is approved, you'll need to complete payment to proceed with your treatment.</p>
+                        <p>Once your evaluation is approved, you&apos;ll need to complete payment to proceed with your treatment.</p>
                         <div className="bg-yellow-100 rounded p-2">
                           <p className="font-medium mb-1">📍 <strong>Where to pay:</strong></p>
                           <ul className="text-xs space-y-1">
-                            <li>• Check your status in "My Evaluations" page</li>
+                            <li>• Check your status in &quot;My Evaluations&quot; page</li>
                             <li>• Find your approved evaluation</li>
-                            <li>• Click "Proceed to Payment" when ready</li>
+                            <li>• Click &quot;Proceed to Payment&quot; when ready</li>
                           </ul>
                         </div>
                       </div>

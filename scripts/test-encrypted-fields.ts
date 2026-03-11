@@ -42,7 +42,7 @@ async function testEncryptedFields() {
 
     // 2. Encrypt the data
     console.log('\n2️⃣ Encrypting sensitive fields...');
-    const encryptedData = encryptSensitiveFields(testData);
+    const encryptedData = encryptSensitiveFields(testData as unknown as Record<string, unknown>);
     console.log('   🔐 Encrypted data:', JSON.stringify(encryptedData, null, 2));
 
     // 3. Save to database (simulating evaluation submission)
@@ -53,7 +53,7 @@ async function testEncryptedFields() {
     const existingUsers = await query('SELECT id FROM users LIMIT 1');
     
     if (existingUsers.length > 0) {
-      testUserId = existingUsers[0].id;
+      testUserId = (existingUsers[0].id as string);
       console.log('   👤 Using existing user:', testUserId);
     } else {
       // Create a test user first
@@ -89,7 +89,7 @@ async function testEncryptedFields() {
       'general',
       encryptedJson,
       'test',
-      new Date()
+      new Date().toISOString()
     ]);
 
     console.log('   ✅ Data saved to database');
@@ -114,7 +114,7 @@ async function testEncryptedFields() {
       if (typeof responsesField === 'object') {
         storedData = responsesField;
       } else {
-        storedData = JSON.parse(responsesField);
+        storedData = JSON.parse((responsesField as string) || '{}');
       }
     } catch (error) {
       console.error('   ❌ Failed to parse responses:', error);

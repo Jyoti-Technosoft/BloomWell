@@ -218,16 +218,14 @@ export async function GET(request: NextRequest) {
     }
 
     const userId = userResult.rows[0].id;
-
     // Get user's consultations
     // In a real implementation, fetch from database
-    const consultations: any[] = []; // Placeholder
+    const consultations = await pool.query('SELECT * FROM consultations WHERE user_id = $1', [userId]);
 
     return NextResponse.json({
-      consultations,
-      total: consultations.length
+      consultations: consultations.rows,
+      total: consultations.rows.length
     });
-
   } catch (error) {
     console.error('Fetching consultations error:', error);
     return NextResponse.json(

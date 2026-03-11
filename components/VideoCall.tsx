@@ -3,7 +3,10 @@ import { useEffect, useRef, useState } from 'react';
 import { DailyProvider, useDaily } from '@daily-co/daily-react';
 import { VideoCallProps } from '../app/lib/types';
 
-interface VideoCallComponentProps extends VideoCallProps {}
+interface VideoCallComponentProps extends VideoCallProps {
+  roomUrl: string;
+  onLeave: () => void;
+}
 
 function VideoCallComponent({ roomUrl, onLeave }: VideoCallComponentProps) {
   const daily = useDaily();
@@ -47,7 +50,13 @@ function VideoCallComponent({ roomUrl, onLeave }: VideoCallComponentProps) {
       onLeave?.();
     };
 
-    const handleError = (error: any) => {
+    interface DailyError {
+  errorMsg?: string;
+  type?: string;
+  source?: string;
+}
+
+const handleError = (error: DailyError) => {
       console.error('Daily error:', error);
       setError(error?.errorMsg || 'An error occurred');
     };
@@ -191,7 +200,7 @@ function VideoCallComponent({ roomUrl, onLeave }: VideoCallComponentProps) {
 export default function VideoCall({ roomUrl, onLeave }: VideoCallProps) {
   return (
     <DailyProvider>
-      <VideoCallComponent roomUrl={roomUrl} onLeave={onLeave} />
+      <VideoCallComponent roomUrl={roomUrl} onLeave={onLeave || (() => {})} />
     </DailyProvider>
   );
 }

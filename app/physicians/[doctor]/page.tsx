@@ -9,6 +9,18 @@ import StarRating from '../../components/StarRating';
 import { useUser } from '../../context/UserContext';
 import { Physician, DoctorProfileProps } from '../../lib/types';
 
+interface BookingData {
+  consultation: {
+    consultationLink?: string;
+    id?: string;
+    status?: string;
+    scheduledAt?: string;
+    consultation_date?: string;
+    consultation_time?: string;
+    consultation_type?: string;
+  };
+}
+
 export default function DoctorProfile({ params }: DoctorProfileProps) {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
@@ -91,9 +103,9 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
     setShowBookingModal(true);
   };
 
-  const handleBookingComplete = (bookingData: any) => {
+  const handleBookingComplete = (bookingData: Record<string, unknown>) => {
     // Extract consultation data from nested response structure
-    const consultation = bookingData.consultation;
+    const consultation = bookingData.consultation as BookingData['consultation'];
     const consultationLink = consultation?.consultationLink;
     
     // Store consultation details for proper scheduling logic
@@ -102,19 +114,19 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
         ...prev, 
         consultationLink: consultationLink || null,
         scheduledConsultation: {
-          id: consultation.id,
-          date: consultation.consultation_date,
-          time: consultation.consultation_time,
-          type: consultation.consultation_type,
-          link: consultationLink
+          id: consultation.id || '',
+          date: consultation.consultation_date || '',
+          time: consultation.consultation_time || '',
+          type: consultation.consultation_type || '',
+          link: consultationLink || null
         }
       } : null);
     }
     
     setToast({
-      message: consultationLink && consultation?.consultation_type === 'video' && isConsultationNow(consultation?.consultation_date, consultation?.consultation_time)
+      message: consultationLink && consultation?.consultation_type === 'video' && isConsultationNow(consultation?.consultation_date || '', consultation?.consultation_time || '')
         ? 'Consultation booked successfully! You can now start the video call.'
-        : 'Consultation booked successfully! You will receive a confirmation email with details.',
+        : 'Consultation booked successfully!',
       type: 'success'
     });
     setShowBookingModal(false);
@@ -283,7 +295,7 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
               <div>
                 <h3 className="text-lg font-semibold text-blue-900 mb-2">Healthcare Standards</h3>
                 <p className="text-blue-700 text-sm leading-relaxed">
-                  All consultations follow proper medical protocols. Video consultations are scheduled in advance 
+          All consultations follow proper medical protocols. Video consultations are scheduled in advance 
                   and conducted through secure, HIPAA-compliant platforms. Direct instant video calls are not 
                   available to ensure quality of care and proper medical documentation.
                 </p>
@@ -295,7 +307,7 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
           <div className="p-8">
             <div className="text-center">
               <h3 className="text-2xl font-semibold text-gray-900 mb-4">Consultation Options</h3>
-              <p className="text-gray-600 mb-6">Choose how you'd like to consult with Dr. {doctorData.name.split(' ').slice(1).join(' ')}</p>
+              <p className="text-gray-600 mb-6">Choose how you&apos;d like to consult with Dr. {doctorData.name.split(' ').slice(1).join(' ')}</p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 {shouldShowVideoCallButton() && (
@@ -331,9 +343,9 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
                     <div className="w-2 h-2 bg-green-500 rounded-full mr-2 shrink-0"></div>
                     <span className="text-center">
                       {doctorData?.scheduledConsultation?.type === 'phone' 
-                        ? `Phone call available at ${doctorData.scheduledConsultation.time}`
+                        ? `Phone call available at ${doctorData.scheduledConsultation?.time}`
                         : doctorData?.scheduledConsultation 
-                          ? `Video call available at ${doctorData.scheduledConsultation.time}` 
+                          ? `Video call available at ${doctorData.scheduledConsultation?.time}` 
                           : 'Instant consultation available'
                       }
                     </span>
@@ -343,7 +355,7 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
                   <div className="flex items-center justify-center">
                     <div className="w-2 h-2 bg-blue-500 rounded-full mr-2 shrink-0"></div>
                     <span className="text-center">
-                      Scheduled for {new Date(doctorData.scheduledConsultation.date).toLocaleDateString()} at {doctorData.scheduledConsultation.time}
+                      Scheduled for {new Date(doctorData.scheduledConsultation?.date || '').toLocaleDateString()} at {doctorData.scheduledConsultation?.time}
                     </span>
                   </div>
                 )}

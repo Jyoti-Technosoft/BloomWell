@@ -68,10 +68,10 @@ export default function GlobalError({
                 <strong>Try refreshing the page</strong> - Sometimes a simple reload fixes the issue
               </p>
               <p>
-                <strong>Check your internet connection</strong> - Ensure you're connected to the internet
+                <strong>Check your internet connection</strong> - Ensure you&apos;re connected to the internet
               </p>
               <p>
-                <strong>Clear browser cache</strong> - Clear your browser's cache and cookies
+                <strong>Clear browser cache</strong> - Clear your browser&apos;s cache and cookies
               </p>
               <p>
                 <strong>Contact support</strong> - If the problem persists, reach out to our support team

@@ -16,7 +16,7 @@ export function useAuth(redirectToLogin = false) {
       return;
     }
 
-    setIsLoading(false);
+    setTimeout(() => setIsLoading(false), 0);
   }, [status, redirectToLogin, router]);
 
   return {

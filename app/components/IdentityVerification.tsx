@@ -37,7 +37,7 @@ const IdentityVerification: React.FC<IdentityVerificationProps> = ({
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       onComplete(lastFourSSN);
-    } catch (err) {
+    } catch {
       setError('Verification failed. Please try again.');
     } finally {
       setIsSubmitting(false);

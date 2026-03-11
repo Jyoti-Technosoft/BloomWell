@@ -40,7 +40,7 @@ async function testEncryptionOnly() {
 
     // 2. Encrypt the data
     console.log('\n2️⃣ Encrypting sensitive fields...');
-    const encryptedData = await encryptSensitiveFields(testData);
+    const encryptedData = await encryptSensitiveFields(testData as unknown as Record<string, unknown>);
     console.log('   🔐 Encrypted data:', JSON.stringify(encryptedData, null, 2));
 
     // 3. Verify encryption
@@ -49,49 +49,49 @@ async function testEncryptionOnly() {
       lastFourSSN: {
         original: testData.lastFourSSN,
         stored: encryptedData.lastFourSSN,
-        isEncrypted: typeof encryptedData.lastFourSSN === 'object' && encryptedData.lastFourSSN.encrypted,
+        isEncrypted: typeof encryptedData.lastFourSSN === 'object' && encryptedData.lastFourSSN !== null && 'encrypted' in encryptedData.lastFourSSN && encryptedData.lastFourSSN.encrypted,
         isReadable: typeof encryptedData.lastFourSSN === 'string'
       },
       medicalHistory: {
         original: testData.medicalHistory,
         stored: encryptedData.medicalHistory,
-        isEncrypted: typeof encryptedData.medicalHistory === 'object' && encryptedData.medicalHistory.encrypted,
+        isEncrypted: typeof encryptedData.medicalHistory === 'object' && encryptedData.medicalHistory !== null && 'encrypted' in encryptedData.medicalHistory && encryptedData.medicalHistory.encrypted,
         isReadable: typeof encryptedData.medicalHistory === 'string'
       },
       medications: {
         original: testData.medications,
         stored: encryptedData.medications,
-        isEncrypted: typeof encryptedData.medications === 'object' && encryptedData.medications.encrypted,
+        isEncrypted: typeof encryptedData.medications === 'object' && encryptedData.medications !== null && 'encrypted' in encryptedData.medications && encryptedData.medications.encrypted,
         isReadable: typeof encryptedData.medications === 'string'
       },
       allergies: {
         original: testData.allergies,
         stored: encryptedData.allergies,
-        isEncrypted: typeof encryptedData.allergies === 'object' && encryptedData.allergies.encrypted,
+        isEncrypted: typeof encryptedData.allergies === 'object' && encryptedData.allergies !== null && 'encrypted' in encryptedData.allergies && encryptedData.allergies.encrypted,
         isReadable: typeof encryptedData.allergies === 'string'
       },
       medicalConditions: {
         original: JSON.stringify(testData.medicalConditions),
         stored: encryptedData.medicalConditions,
-        isEncrypted: typeof encryptedData.medicalConditions === 'object' && encryptedData.medicalConditions.encrypted,
+        isEncrypted: typeof encryptedData.medicalConditions === 'object' && encryptedData.medicalConditions !== null && 'encrypted' in encryptedData.medicalConditions && encryptedData.medicalConditions.encrypted,
         isReadable: typeof encryptedData.medicalConditions === 'string'
       },
       healthConcerns: {
         original: JSON.stringify(testData.healthConcerns),
         stored: encryptedData.healthConcerns,
-        isEncrypted: typeof encryptedData.healthConcerns === 'object' && encryptedData.healthConcerns.encrypted,
+        isEncrypted: typeof encryptedData.healthConcerns === 'object' && encryptedData.healthConcerns !== null && 'encrypted' in encryptedData.healthConcerns && encryptedData.healthConcerns.encrypted,
         isReadable: typeof encryptedData.healthConcerns === 'string'
       },
       phoneNumber: {
         original: testData.phoneNumber,
         stored: encryptedData.phoneNumber,
-        isEncrypted: typeof encryptedData.phoneNumber === 'object' && encryptedData.phoneNumber.encrypted,
+        isEncrypted: typeof encryptedData.phoneNumber === 'object' && encryptedData.phoneNumber !== null && 'encrypted' in encryptedData.phoneNumber && encryptedData.phoneNumber.encrypted,
         isReadable: typeof encryptedData.phoneNumber === 'string'
       },
       emergencyPhone: {
         original: testData.emergencyPhone,
         stored: encryptedData.emergencyPhone,
-        isEncrypted: typeof encryptedData.emergencyPhone === 'object' && encryptedData.emergencyPhone.encrypted,
+        isEncrypted: typeof encryptedData.emergencyPhone === 'object' && encryptedData.emergencyPhone !== null && 'encrypted' in encryptedData.emergencyPhone && encryptedData.emergencyPhone.encrypted,
         isReadable: typeof encryptedData.emergencyPhone === 'string'
       }
     };
@@ -152,16 +152,16 @@ async function testEncryptionOnly() {
       console.log('⚠️  Please check encryption implementation.');
     }
 
-  } catch (error: any) {
-    console.error('❌ Test failed:', error);
+  } catch (error: unknown) {
+    console.error('❌ Test failed:', error instanceof Error ? error.message : String(error));
     process.exit(1);
   }
 }
 
 // Run test if this file is executed directly
 if (require.main === module) {
-  testEncryptionOnly().catch((error: any) => {
-    console.error('Encryption test failed:', error);
+  testEncryptionOnly().catch((error: unknown) => {
+    console.error('Encryption test failed:', error instanceof Error ? error.message : String(error));
     process.exit(1);
   });
 }

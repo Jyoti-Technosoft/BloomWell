@@ -64,7 +64,7 @@ export async function reportBreach(
         severity,
         description,
         JSON.stringify(affectedDataTypes),
-        new Date(),
+        new Date().toISOString(),
         BreachStatus.DISCOVERED,
         JSON.stringify(mitigationSteps),
         0,
@@ -84,7 +84,7 @@ export async function reportBreach(
       affectedUsers: 0,
       notifiedUsers: 0
     };
-  } catch (error) {
+  } catch {
     throw new Error('Failed to report breach');
   }
 }
@@ -99,21 +99,21 @@ export async function getBreachIncidents(): Promise<BreachIncident[]> {
     );
     
     return result.map(row => ({
-      id: row.id,
-      userId: row.user_id,
+      id: row.id as string,
+      userId: row.user_id as string,
       breachType: row.breach_type as BreachType,
       severity: row.severity as BreachSeverity,
-      description: row.description,
-      affectedDataTypes: JSON.parse(row.affected_data_types),
-      discoveryDate: row.discovery_date,
-      notificationDate: row.notification_date,
-      resolvedDate: row.resolved_date,
+      description: row.description as string,
+      affectedDataTypes: JSON.parse(row.affected_data_types as string),
+      discoveryDate: new Date(row.discovery_date as string),
+      notificationDate: row.notification_date ? new Date(row.notification_date as string) : undefined,
+      resolvedDate: row.resolved_date ? new Date(row.resolved_date as string) : undefined,
       status: row.status as BreachStatus,
-      mitigationSteps: JSON.parse(row.mitigation_steps),
-      affectedUsers: row.affected_users,
-      notifiedUsers: row.notified_users
+      mitigationSteps: JSON.parse(row.mitigation_steps as string),
+      affectedUsers: row.affected_users as number,
+      notifiedUsers: row.notified_users as number
     }));
-  } catch (error) {
+  } catch {
     return [];
   }
 }
@@ -129,7 +129,7 @@ export async function updateBreachStatus(
       `UPDATE breach_incidents SET status = $1, mitigation_steps = $2 WHERE id = $3`,
       [status, JSON.stringify(mitigationSteps || []), breachId]
     );
-  } catch (error) {
+  } catch {
     throw new Error('Failed to update breach status');
   }
 }
@@ -161,7 +161,7 @@ export async function sendBreachNotifications(
       // Get all users who accessed the system during breach period
       affectedUsers = await query(
         'SELECT DISTINCT user_id FROM audit_logs WHERE timestamp >= $1',
-        [breach.discovery_date]
+        [breach.discovery_date as string]
       );
     } else {
       // Get all users for full breach
@@ -175,9 +175,9 @@ export async function sendBreachNotifications(
     for (const user of affectedUsers) {
       try {
         // In production, implement actual email/SMS sending
-        await sendBreachNotification(user.user_id, breach, notificationMethod);
+        await sendBreachNotification(user.user_id as string, breach, notificationMethod);
         sent++;
-      } catch (error) {
+      } catch {
         failed++;
       }
     }
@@ -186,11 +186,11 @@ export async function sendBreachNotifications(
     await query(
       `UPDATE breach_incidents SET notification_date = $1, status = $2, 
        affected_users = $3, notified_users = $4 WHERE id = $5`,
-      [new Date(), BreachStatus.NOTIFICATION_SENT, affectedUsers.length, sent, breachId]
+      [new Date().toISOString(), BreachStatus.NOTIFICATION_SENT, affectedUsers.length, sent, breachId]
     );
     
     return { sent, failed };
-  } catch (error) {
+  } catch {
     throw new Error('Failed to send breach notifications');
   }
 }
@@ -198,7 +198,7 @@ export async function sendBreachNotifications(
 // Send individual breach notification
 async function sendBreachNotification(
   userId: string,
-  breach: any,
+  breach: Record<string, unknown>,
   method: string
 ): Promise<void> {
   // In production, implement actual notification sending
@@ -209,11 +209,14 @@ async function sendBreachNotification(
     discoveryDate: breach.discovery_date
   });
   
+  // Simulate sending delay
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
   // Log notification attempt
   await query(
     `INSERT INTO breach_notifications (id, user_id, breach_id, method, sent_at, status)
      VALUES ($1, $2, $3, $4, $5, $6)`,
-    [crypto.randomUUID(), userId, breach.id, method, new Date(), 'sent']
+    [crypto.randomUUID(), userId, breach.id as string, method, new Date().toISOString(), 'sent']
   );
 }
 
@@ -230,13 +233,13 @@ export async function isNotificationRequired(breachId: string): Promise<boolean>
     }
     
     const breach = result[0];
-    const discoveryDate = new Date(breach.discovery_date);
+    const discoveryDate = new Date(breach.discovery_date as string);
     const now = new Date();
     const daysSinceDiscovery = Math.floor((now.getTime() - discoveryDate.getTime()) / (1000 * 60 * 60 * 24));
     
     // HIPAA requires notification within 60 days for significant breaches
     return daysSinceDiscovery >= 60 || breach.severity === BreachSeverity.CRITICAL;
-  } catch (error) {
+  } catch {
     return false;
   }
 }
@@ -255,12 +258,12 @@ export async function getBreachStatistics(): Promise<{
     const notificationResult = await query("SELECT COUNT(*) as count FROM breach_incidents WHERE notification_date IS NOT NULL");
     
     return {
-      totalBreaches: parseInt(totalResult[0].count),
-      openBreaches: parseInt(openResult[0].count),
-      resolvedBreaches: parseInt(resolvedResult[0].count),
-      notificationsSent: parseInt(notificationResult[0].count)
+      totalBreaches: Number(totalResult[0].count),
+      openBreaches: Number(openResult[0].count),
+      resolvedBreaches: Number(resolvedResult[0].count),
+      notificationsSent: Number(notificationResult[0].count)
     };
-  } catch (error) {
+  } catch {
     return {
       totalBreaches: 0,
       openBreaches: 0,
@@ -270,7 +273,7 @@ export async function getBreachStatistics(): Promise<{
   }
 }
 
-export default {
+const breachNotificationService = {
   reportBreach,
   getBreachIncidents,
   updateBreachStatus,
@@ -281,3 +284,5 @@ export default {
   BreachSeverity,
   BreachStatus
 };
+
+export default breachNotificationService;

@@ -17,7 +17,6 @@
     "test:encrypted-fields": "tsx scripts/test-encrypted-fields.ts",
     "test:encryption-only": "tsx scripts/test-encryption-only.ts",
     "inspect:encryption": "tsx scripts/inspect-database-encryption.ts",
-    "migrate:encryption": "tsx scripts/migrate-encryption.ts",
     "setup:hipaa": "tsx scripts/setup-hipaa-compliance.ts"
   },
   "dependencies": {
@@ -28,6 +27,7 @@
     "@heroicons/react": "^2.2.0",
     "@types/pg": "^8.16.0",
     "axios": "^1.13.2",
+    "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "cookie": "^1.1.1",
     "dotenv": "^17.2.3",
@@ -46,6 +46,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.18",
+    "@types/bcrypt": "^6.0.0",
     "@types/bcryptjs": "^3.0.0",
     "@types/cookie": "^1.0.0",
     "@types/dotenv": "^8.2.3",

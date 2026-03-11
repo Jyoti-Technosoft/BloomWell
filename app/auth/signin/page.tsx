@@ -35,24 +35,50 @@ function SignInContent() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      const result = await signIn('credentials', {
+      setError(null);
+      
+      // First try to sign in as a doctor
+      let result = await signIn('doctor-credentials', {
         email: data.email,
         password: data.password,
         redirect: false,
       });
 
+      // If doctor sign-in fails, try patient sign-in
       if (result?.error) {
-        throw new Error(result.error === 'CredentialsSignin' 
-          ? 'Invalid email or password' 
-          : 'Sign in failed');
+        result = await signIn('patient-credentials', {
+          email: data.email,
+          password: data.password,
+          redirect: false,
+        });
+      }
+
+      if (result?.error) {
+        throw new Error(result?.error || 'Invalid email or password');
       }
 
       if (result?.ok) {
-        setError(null);
-        setTimeout(() => {
-          router.push(callbackUrl);
+        setSuccess('Sign in successful! Redirecting...');
+        // Get session to determine role and redirect accordingly
+        try {
+          const sessionResponse = await fetch('/api/auth/session');
+          const session = await sessionResponse.json();
+          
+          let redirectUrl = callbackUrl;
+          
+          // Role-based redirect logic
+          if (session?.user?.role === 'doctor') {
+            redirectUrl = '/doctor';
+          } else if (session?.user?.role === 'admin') {
+            redirectUrl = '/admin';
+          } else if (callbackUrl === '/' || callbackUrl.includes('/auth/')) {
+            redirectUrl = '/';
+          }
+          router.push(redirectUrl);
           router.refresh();
-        }, 100);
+        } catch {
+          router.push('/');
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign in failed');

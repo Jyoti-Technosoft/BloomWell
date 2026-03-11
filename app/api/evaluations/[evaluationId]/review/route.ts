@@ -32,8 +32,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       );
     }
 
-    // Get user from database
-    const userResult = await pool.query('SELECT id FROM users WHERE email = $1', [userEmail]);
+    // Get user from database with role
+    const userResult = await pool.query('SELECT id, role FROM users WHERE email = $1', [userEmail]);
     
     if (userResult.rows.length === 0) {
       return NextResponse.json(
@@ -43,11 +43,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
 
     const userId = userResult.rows[0].id;
+    const userRole = userResult.rows[0].role;
 
-    // Check if user is a medical professional (in real app, you'd have roles)
-    const isMedicalProfessional = userEmail.includes('doctor') || userEmail.includes('medical');
-    
-    if (!isMedicalProfessional) {
+    // Check if user is a medical professional (doctor or admin)
+    if (!['doctor', 'admin'].includes(userRole)) {
       return NextResponse.json(
         { error: 'Unauthorized - only medical professionals can review evaluations' },
         { status: 403 }
@@ -55,6 +54,38 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
 
     const { approved, prescription, notes, recommendedMedicine, recommendedDosage } = await request.json();
+
+    // Get evaluation details to verify doctor ownership
+    const evaluationResult = await pool.query(
+      'SELECT user_id, doctor_id, status FROM evaluations WHERE id = $1',
+      [evaluationId]
+    );
+
+    if (evaluationResult.rows.length === 0) {
+      return NextResponse.json(
+        { error: 'Evaluation not found' },
+        { status: 404 }
+      );
+    }
+
+    const evaluation = evaluationResult.rows[0];
+
+    // Check if evaluation is still pending review
+    if (evaluation.status !== 'pending_review') {
+      return NextResponse.json(
+        { error: 'Evaluation has already been reviewed' },
+        { status: 400 }
+      );
+    }
+
+    // For doctors: check if this evaluation is assigned to them
+    // For admins: allow reviewing any evaluation
+    if (userRole === 'doctor' && evaluation.doctor_id && evaluation.doctor_id !== userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized - this evaluation is not assigned to you' },
+        { status: 403 }
+      );
+    }
 
     // Update evaluation status
     const result = await pool.query(

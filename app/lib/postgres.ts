@@ -29,8 +29,8 @@ if (process.env.NODE_ENV !== 'production') {
 //   throw new Error('❌ NEON_DATABASE_URL is not defined in environment variables');
 // }
 const pool = new Pool({
-  connectionString: process.env.NEON_DATABASE_URL, // Neon pooled URL
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false, // SSL only in production
+  connectionString: process.env.NEON_DATABASE_URL, // Neon database URL
+  ssl: process.env.NEON_DATABASE_URL?.includes('localhost') ? false : { rejectUnauthorized: false }, // SSL for non-localhost connections
   max: 20, // Maximum number of connections in the pool
   idleTimeoutMillis: 30000, // How long a client is allowed to remain idle before being closed
   connectionTimeoutMillis: 10000, // How long to wait when connecting a new client (reduced from 2000)
@@ -59,7 +59,7 @@ export async function getConnection(): Promise<PoolClient> {
 }
 
 // Helper function to execute queries with proper error handling
-export async function query<T = any>(text: string, params?: any[]): Promise<T[]> {
+export async function query<T = Record<string, unknown>>(text: string, params?: (string | number)[]): Promise<T[]> {
   const client = await getConnection();
   try {
     const result = await client.query(text, params);
@@ -73,7 +73,7 @@ export async function query<T = any>(text: string, params?: any[]): Promise<T[]>
 }
 
 // Helper function for single query result
-export async function queryOne<T = any>(text: string, params?: any[]): Promise<T | null> {
+export async function queryOne<T = Record<string, unknown>>(text: string, params?: (string | number)[]): Promise<T | null> {
   const rows = await query<T>(text, params);
   return rows.length > 0 ? rows[0] : null;
 }

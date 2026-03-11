@@ -2,33 +2,45 @@ import fs from 'fs';
 import path from 'path';
 import pool from '../app/lib/postgres';
 
+interface EvaluationResponse {
+  questionId: string;
+  question: string;
+  answer: string | number | boolean;
+  category: string;
+}
+
 interface JsonData {
   users: Array<{
+    id: string;
+    name: string;
     email: string;
     password: string;
     fullName: string;
-    id: string;
+    dateOfBirth?: string;
+    phoneNumber?: string;
+    healthcarePurpose?: string;
+    role: string;
     createdAt: string;
-    dateOfBirth: string;
-    healthcarePurpose: string;
-    phoneNumber: string;
   }>;
   contacts: Array<{
+    id: string;
     name: string;
     email: string;
     message: string;
-    id: string;
     createdAt: string;
   }>;
   consultations: Array<{
+    id: string;
     userId: string;
+    doctorId: string;
     doctorName: string;
     doctorSpecialty: string;
+    type: string;
+    status: string;
     date: string;
     time: string;
     reason: string;
-    status: string;
-    id: string;
+    scheduledAt: string;
     createdAt: string;
   }>;
   evaluations: Array<{
@@ -36,7 +48,7 @@ interface JsonData {
     userId: string;
     medicineId: string;
     medicineName: string;
-    responses: any;
+    responses: EvaluationResponse[];
     status: string;
     createdAt: string;
     updatedAt: string;

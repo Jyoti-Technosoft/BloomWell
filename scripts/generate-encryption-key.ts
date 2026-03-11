@@ -30,7 +30,7 @@ function generateEncryptionKey() {
     
     try {
       envContent = readFileSync(envPath, 'utf8');
-    } catch (error) {
+    } catch {
       // File doesn't exist, create new one
       envContent = '';
     }

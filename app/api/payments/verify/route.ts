@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 import { Pool } from 'pg';
 import { updatePaymentTransaction, getTransactionByPaymentId, updateUserCustomerId } from '@/app/lib/database-operations';
+import crypto from 'crypto';
 
 const pool = new Pool({
   connectionString: process.env.NEON_DATABASE_URL,
@@ -32,7 +33,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify payment signature
-    const crypto = require('crypto');
     const signatureBody = orderId + '|' + paymentId;
     const expectedSignature = crypto
       .createHmac('sha256', keySecret)
@@ -117,9 +117,8 @@ export async function POST(request: NextRequest) {
         );
         
         if (transactionResult.rows.length > 0) {
-          const transaction = transactionResult.rows[0];
-          const userId = transaction.user_id;
-          const customerId = transaction.customer_id;
+          const userId = transactionResult.rows[0].user_id;
+          const customerId = transactionResult.rows[0].customer_id;
           
           // Use the proper function to update user's customer_id
           await updateUserCustomerId(userId, customerId);
