@@ -1,5 +1,5 @@
 'use client';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   CalendarIcon,
@@ -124,8 +124,22 @@ export default function DoctorAppointments() {
       setLoading(true);
       setError(null);
       
+      // Check if user is authenticated before fetching
+      if (status === 'unauthenticated') {
+        setLoading(false);
+        return;
+      }
+      
+      // Add timeout to prevent infinite loading
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 6000)
+      );
+      
       // Fetch from doctor appointments API (includes consultation bookings)
-      const response = await authenticatedFetch('/api/doctor/appointments');
+      const response = await Promise.race([
+        authenticatedFetch('/api/doctor/appointments'),
+        timeoutPromise
+      ]) as Response;
       const data = await response.json();
       
       // Transform consultation bookings to match Appointment interface
@@ -218,7 +232,8 @@ export default function DoctorAppointments() {
       
     } catch (error) {
       console.error('Error fetching appointments:', error);
-      if (error instanceof Error && !error.message.includes('redirecting')) {
+      // Only set error if it's not a redirect/auth error
+      if (error instanceof Error && !error.message.includes('redirecting') && !error.message.includes('not authenticated')) {
         setError(error.message);
         setToast({
           message: error.message || 'Failed to fetch appointments',
@@ -228,7 +243,26 @@ export default function DoctorAppointments() {
     } finally {
       setLoading(false);
     }
-  }, [authenticatedFetch]);
+  }, [authenticatedFetch, status]);
+
+  // Fetch appointments when component mounts or session changes
+  useEffect(() => {
+    if (status === 'loading') return;
+    if (status === 'unauthenticated') {
+      setLoading(false);
+      return;
+    }
+    
+    fetchAppointments();
+    
+    // Safety timeout to prevent infinite loading
+    const safetyTimeout = setTimeout(() => {
+      setLoading(false);
+      setError('Loading timed out. Please refresh the page.');
+    }, 8000);
+    
+    return () => clearTimeout(safetyTimeout);
+  }, [status, fetchAppointments]);
 
   const getStatusColor = (status: string) => {
     switch (status) {

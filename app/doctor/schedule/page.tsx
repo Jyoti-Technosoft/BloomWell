@@ -105,8 +105,22 @@ export default function DoctorSchedule() {
     try {
       setLoading(true);
       
+      // Check if user is authenticated before fetching
+      if (status === 'unauthenticated') {
+        setLoading(false);
+        return;
+      }
+      
+      // Add timeout to prevent infinite loading
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 6000)
+      );
+      
       // Fetch real consultation bookings from doctor appointments API
-      const response = await authenticatedFetch('/api/doctor/appointments');
+      const response = await Promise.race([
+        authenticatedFetch('/api/doctor/appointments'),
+        timeoutPromise
+      ]) as Response;
       const data = await response.json();
       
       // Transform consultation bookings to schedule format
@@ -143,20 +157,38 @@ export default function DoctorSchedule() {
       setAppointments(transformedAppointments);
     } catch (error) {
       console.error('Error fetching appointments:', error);
-      // Fallback to empty array if API fails
-      setAppointments([]);
+      // Only fallback to empty array if it's not an auth error
+      if (error instanceof Error && !error.message.includes('redirecting') && !error.message.includes('not authenticated')) {
+        setAppointments([]);
+      }
     } finally {
       setLoading(false);
     }
-  }, [authenticatedFetch]);
+  }, [authenticatedFetch, status]);
+
+  useEffect(() => {
+    if (status === 'loading') return;
+    if (status === 'unauthenticated') {
+      setLoading(false);
+      return;
+    }
+    
+    fetchAppointments();
+    
+    // Safety timeout to prevent infinite loading
+    const safetyTimeout = setTimeout(() => {
+      setLoading(false);
+    }, 8000);
+    
+    return () => clearTimeout(safetyTimeout);
+  }, [status, fetchAppointments]);
 
   useEffect(() => {
     if (status === 'loading') return;
     if (status === 'unauthenticated') return;
     
-    fetchAppointments();
     fetchTimeSlots();
-  }, [selectedDate, status, fetchAppointments, fetchTimeSlots]);
+  }, [selectedDate, status, fetchTimeSlots]);
 
   useEffect(() => {
     // Apply status filter
