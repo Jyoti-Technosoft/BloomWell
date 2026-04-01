@@ -732,7 +732,7 @@ function ConfirmationStep({
             <li>1. Click &quot;Complete Booking&quot; to finalize your appointment</li>
             <li>2. Payment will be processed securely</li>
             {/* <li>3. You'll receive a confirmation email with consultation details</li> */}
-            <li>3. For video consultations, you&apos;ll receive a secure link 30 minutes before your appointment</li>
+            <li>3. For video consultations, you'll receive a secure link 30 minutes before your appointment</li>
             <li>4. The physician will review your information before the consultation</li>
           </ol>
         </div>

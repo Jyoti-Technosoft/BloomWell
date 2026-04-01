@@ -27,18 +27,18 @@ const staggerContainer = {
 
 const features = [
   {
-    name: 'Personalized Women&apos;s Care',
-    description: 'Tailored wellness plans designed specifically for women&apos;s unique health needs and lifestyle.',
+    name: "Personalized Women's Care",
+    description: "Tailored wellness plans designed specifically for women's unique health needs and lifestyle.",
     icon: HeartIcon,
   },
   {
-    name: 'Women&apos;s Health Experts',
-    description: 'Board-certified specialists with years of experience in women&apos;s health and wellness.',
+    name: "Women's Health Experts",
+    description: "Board-certified specialists with years of experience in women's health and wellness.",
     icon: UserIcon,
   },
   {
-    name: 'Proven Women&apos;s Results',
-    description: 'Thousands of successful women&apos;s wellness journeys with measurable health outcomes.',
+    name: "Proven Women's Results",
+    description: "Thousands of successful women's wellness journeys with measurable health outcomes.",
     icon: ArrowPathIcon,
   },
   {
@@ -105,7 +105,7 @@ export default function Home() {
                 variants={fadeInUp}
                 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-6"
               >
-                Transform Your <span className="text-primary-600">Women&apos;s Health</span> Journey
+                Transform Your <span className="text-primary-600">Women's Health</span> Journey
               </motion.h1>
               
               <motion.p 
@@ -213,7 +213,7 @@ export default function Home() {
               transition={{ delay: 0.1 }}
               className="text-xl text-gray-600 max-w-3xl mx-auto"
             >
-              Your women&apos;s health journey to better wellness in three simple steps
+              Your women's health journey to better wellness in three simple steps
             </motion.p>
           </div>
 
@@ -225,7 +225,7 @@ export default function Home() {
               {
                 number: '01',
                 title: 'Complete Your Health Profile',
-                description: 'Answer questions about your women&apos;s health, wellness goals, and lifestyle in our secure portal.',
+                description: "Answer questions about your women's health, wellness goals, and lifestyle in our secure portal.",
                 icon: (
                   <svg className="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -234,8 +234,8 @@ export default function Home() {
               },
               {
                 number: '02',
-                title: 'Get Matched with Women&apos;s Health Experts',
-                description: 'Our specialized physicians will review your case and create a personalized women&apos;s wellness plan.',
+                title: "Get Matched with Women's Health Experts",
+                description: "Our specialized physicians will review your case and create a personalized women's wellness plan.",
                 icon: (
                   <svg className="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -244,8 +244,8 @@ export default function Home() {
               },
               {
                 number: '03',
-                title: 'Start Your Women&apos;s Wellness Journey',
-                description: 'Receive personalized treatments, hormonal support, and ongoing care from our women&apos;s health team.',
+                title: "Start Your Women's Wellness Journey",
+                description: "Receive personalized treatments, hormonal support, and ongoing care from our women's health team.",
                 icon: (
                   <svg className="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -299,7 +299,7 @@ export default function Home() {
               transition={{ delay: 0.1 }}
               className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto"
             >
-              Our comprehensive approach to women&apos;s wellness combines medical expertise with personalized care for your unique health journey.
+              Our comprehensive approach to women's wellness combines medical expertise with personalized care for your unique health journey.
             </motion.p>
           </div>
 
@@ -343,7 +343,7 @@ export default function Home() {
               transition={{ delay: 0.1 }}
               className="text-xl text-gray-600 max-w-3xl mx-auto"
             >
-              Experienced women&apos;s health professionals dedicated to your wellness and vitality journey
+              Experienced women's health professionals dedicated to your wellness and vitality journey
             </motion.p>
           </div>
 
@@ -420,7 +420,7 @@ export default function Home() {
           >
             <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
               <span className="block">Ready to transform your wellness?</span>
-              <span className="block">Start your women&apos;s health journey today.</span>
+              <span className="block">Start your women's health journey today.</span>
             </h2>
             <p className="mt-4 text-xl text-indigo-100 max-w-3xl mx-auto">
               Join thousands of women who have achieved their health and wellness goals with our personalized approach.
