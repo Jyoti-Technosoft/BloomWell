@@ -109,7 +109,8 @@ export default function Header() {
                     alt="BloomWell - Women's Health"
                     width={150}
                     height={100}
-                    // className="h-10 w-auto"
+                    priority
+                    className='h-auto w-auto'
                   />
                 </Link>
               </div>

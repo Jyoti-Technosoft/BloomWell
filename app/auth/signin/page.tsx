@@ -113,6 +113,8 @@ function SignInContent() {
                   alt="BloomWell - Women's Health"
                   width={150}
                   height={100}
+                  priority
+                  className='h-auto w-auto'
                 />
               </div>
               <p className="text-lg text-gray-600">
