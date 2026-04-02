@@ -9,30 +9,32 @@ export async function GET(request: NextRequest) {
       secureCookie: process.env.NODE_ENV === 'production'
     });
 
-    if (token) {
+    if (!token) {
       return NextResponse.json({
-        valid: true,
-        user: {
-          id: token.id,
-          name: token.name,
-          email: token.email,
-          role: token.role,
-          doctorProfileId: token.doctorProfileId,
-          isVerified: token.isVerified,
-          verificationStatus: token.verificationStatus
-        }
+        user: null,
+        expires: null
       });
-    } else {
-      return NextResponse.json({ 
-        valid: false,
-        user: null 
-      }, { status: 401 }); // Return 401 for invalid session
     }
+
+    return NextResponse.json({
+      user: {
+        id: token.id,
+        name: token.name,
+        email: token.email,
+        role: token.role,
+        doctorProfileId: token.doctorProfileId,
+        isVerified: token.isVerified,
+        verificationStatus: token.verificationStatus
+      },
+      expires: new Date(Date.now() + 60 * 60 * 1000).toISOString()
+    });
+
   } catch (error) {
     console.error('Session API error:', error);
-    return NextResponse.json({ 
-      valid: false,
-      user: null 
-    }, { status: 500 }); // Return 500 for errors
+
+    return NextResponse.json({
+      user: null,
+      expires: null
+    });
   }
 }

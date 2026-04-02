@@ -4,6 +4,7 @@ import { Providers } from './providers';
 import { UserProvider } from './context/UserContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import LayoutWrapper from './components/LayoutWrapper';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -29,9 +30,9 @@ export default function RootLayout({
         <Providers>
           <UserProvider>
             <Header />
-            <main className="min-h-[calc(100vh-80px)] pt-30 md:pt-25 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <LayoutWrapper>
               {children}
-            </main>
+            </LayoutWrapper>
             <Footer />
           </UserProvider>
         </Providers>

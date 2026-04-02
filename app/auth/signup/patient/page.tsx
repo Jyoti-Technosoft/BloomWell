@@ -195,7 +195,16 @@ const PatientSignUp = () => {
   const selectClassName = "block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 sm:text-base sm:leading-6 h-9";
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Animated gradient background */}
+      <div className="fixed inset-0 bg-linear-to-br from-purple-50 via-pink-50 to-blue-50">
+        <div className="absolute inset-0 bg-purple-200/20 animate-pulse"></div>
+        <div className="absolute inset-0 bg-blue-200/20 animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute inset-0 bg-pink-200/20 animate-pulse" style={{ animationDelay: '2s' }}></div>
+      </div>
+      
+      {/* Content */}
+      <div className="relative z-10 min-h-screen px-4 sm:px-6 lg:px-8 overflow-y-auto">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-extrabold text-gray-900">Create Your Account</h1>
@@ -711,6 +720,7 @@ const PatientSignUp = () => {
             </div>
           )}
         </div>
+      </div>
       </div>
     </div>
   );

@@ -385,7 +385,7 @@ export default function ReviewsPage() {
                 Frequently Asked Questions
               </h2>
               <p className="mt-4 text-xl text-gray-500">
-                Have questions? We&apos;re here to help.
+                Have questions? We're here to help.
               </p>
             </div>
 
@@ -422,14 +422,14 @@ export default function ReviewsPage() {
                 </Link>
               </div>
               <p className="mt-3 text-base text-gray-500">
-                Can&apos;t find what you&apos;re looking for?{' '}
+                Can't find what you're looking for?{' '}
                 <Link
                   href="mailto:info@yourclinic.com"
                   className="font-medium text-indigo-600 hover:text-indigo-500"
                 >
                   Email us
                 </Link>{' '}
-                and we&apos;ll get back to you as soon as possible.
+                and we'll get back to you as soon as possible.
               </p>
             </div>
           </div>
