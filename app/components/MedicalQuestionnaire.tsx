@@ -379,7 +379,7 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
           >
             <div className="text-center">
               <CalendarIcon className="h-12 w-12 text-indigo-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">What's your birthday?</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">What&apos;s your birthday?</h3>
               <p className="text-gray-600">We need to verify your age for medical eligibility</p>
             </div>
             <div>
@@ -496,12 +496,12 @@ const MedicalQuestionnaire: React.FC<MedicalQuestionnaireProps> = ({
                 <textarea
                   value={formData.currentlyUsingMedicines}
                   onChange={(e) => handleInputChange('currentlyUsingMedicines', e.target.value)}
-                  placeholder="e.g., Semaglutide 1mg, Tirzepatide 5mg, or describe what you're taking..."
+                  placeholder="e.g., Semaglutide 1mg, Tirzepatide 5mg, or describe what you&apos;re taking..."
                   rows={4}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
                 />
                 <p className="text-xs text-gray-500 mt-2">
-                  If you're not currently using any medicines, please write &quot;None&quot; or &quot;Not currently using any medicines&quot;
+                  If you&apos;re not currently using any medicines, please write &quot;None&quot; or &quot;Not currently using any medicines&quot;
                 </p>
               </div>
             </div>

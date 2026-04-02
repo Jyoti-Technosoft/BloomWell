@@ -61,8 +61,6 @@ export default function Footer() {
                   alt="BloomWell - Women's Health"
                   width={150}
                   height={100}
-                  priority
-                  className='h-auto w-auto'
                 />
               </Link>
               <p className="text-gray-300 mb-6 max-w-md">

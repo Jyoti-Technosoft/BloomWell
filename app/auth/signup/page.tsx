@@ -30,16 +30,8 @@ export default function SignUpChoice() {
   };
 
   return (
-    <div className="min-h-screen relative">
-      {/* Animated gradient background */}
-      <div className="fixed inset-0 bg-linear-to-br from-purple-50 via-pink-50 to-blue-50">
-        <div className="absolute inset-0 bg-purple-200/20 animate-pulse"></div>
-        <div className="absolute inset-0 bg-blue-200/20 animate-pulse" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute inset-0 bg-pink-200/20 animate-pulse" style={{ animationDelay: '2s' }}></div>
-      </div>
-      
-      {/* Content */}
-      <div className="relative z-10 min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 overflow-y-auto">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50">
+      <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl w-full space-y-8">
           {/* Header */}
           <div className="text-center">

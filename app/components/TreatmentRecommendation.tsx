@@ -247,7 +247,7 @@ const TreatmentRecommendation: React.FC<TreatmentRecommendationProps> = ({
 
           {/* What's Included */}
           <div className="bg-indigo-50 rounded-lg p-6 mb-8">
-            <h4 className="font-semibold text-gray-900 mb-4">What's Included in Your Treatment</h4>
+            <h4 className="font-semibold text-gray-900 mb-4">What&apos;s Included in Your Treatment</h4>
             <div className="grid md:grid-cols-3 gap-4">
               <div className="flex items-start">
                 <TruckIcon className="h-5 w-5 text-indigo-600 mr-3 mt-0.5 shrink-0" />

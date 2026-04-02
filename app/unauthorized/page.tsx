@@ -18,7 +18,7 @@ export default function Unauthorized() {
           Access Denied
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          You don't have permission to access this page.
+          You don&apos;t have permission to access this page.
         </p>
       </div>
 
@@ -39,10 +39,10 @@ export default function Unauthorized() {
                       This page requires special permissions. You may be seeing this because:
                     </p>
                     <ul className="list-disc list-inside space-y-1">
-                      <li>You're not logged in</li>
-                      <li>Your account doesn't have the required role</li>
+                      <li>You&apos;re not logged in</li>
+                      <li>Your account doesn&apos;t have the required role</li>
                       <li>Your access permissions have been changed</li>
-                      <li>You're trying to access an admin-only area</li>
+                      <li>You&apos;re trying to access an admin-only area</li>
                     </ul>
                   </div>
                 </div>

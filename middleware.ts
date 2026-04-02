@@ -23,7 +23,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Get token from request
+  // Get token from the request
   const token = await getToken({ 
     req: request, 
     secret: process.env.JWT_SECRET,
@@ -70,8 +70,24 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Admin routes protection
+  if (pathname.startsWith('/admin')) {
+    if (userRole !== 'admin') {
+      return NextResponse.redirect(new URL('/auth/signin', request.url));
+    }
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
+  matcher: [
+    '/admin/:path*',
+    '/doctor/:path*',
+    '/dashboard/:path*',
+    '/evaluations/:path*',
+    '/appointments/:path*',
+    '/api/admin/:path*',
+    '/api/doctor/:path*',
+  ],
 };

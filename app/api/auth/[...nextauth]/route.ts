@@ -51,7 +51,7 @@ const handler = NextAuth({
         if (!credentials?.email || !credentials?.password) return null;
 
         try {
-          const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+          const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3001';
           const response = await fetch(`${baseUrl}/api/auth/signin`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -92,7 +92,7 @@ const handler = NextAuth({
         if (!credentials?.email || !credentials?.password) return null;
 
         try {
-          const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+          const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3001';
           const response = await fetch(`${baseUrl}/api/doctor/auth/signin`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

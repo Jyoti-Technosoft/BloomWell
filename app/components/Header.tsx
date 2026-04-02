@@ -1,7 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
-import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -54,10 +53,6 @@ export default function Header() {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const { data: session, status } = useSession();
-  const pathname = usePathname();
-
-  const isSigninPage = pathname?.startsWith('/auth/signin');
-  const isAuthPage = pathname?.startsWith('/auth/');
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -91,11 +86,6 @@ export default function Header() {
   // More robust authentication check
   const isAuthenticated = status === 'authenticated' && session && session.user;
 
-  // Don't render header content on auth pages
-  if (isAuthPage) {
-    return <div style={{ display: 'none' }}></div>;
-  }
-
   return (
     <header className="fixed w-full bg-white z-50 shadow-sm">
       <nav className="border-b border-gray-200">
@@ -109,8 +99,7 @@ export default function Header() {
                     alt="BloomWell - Women's Health"
                     width={150}
                     height={100}
-                    priority
-                    className='h-auto w-auto'
+                    // className="h-10 w-auto"
                   />
                 </Link>
               </div>
@@ -297,16 +286,20 @@ export default function Header() {
                 </AnimatePresence>
               </div>
             ) : (
-              !isSigninPage && (
-                <>
-                <Link
-                  href="/auth/signin"
-                  className="text-gray-700 hover:text-gray-900 text-sm font-medium"
-                >
-                  Log in
-                </Link>
-                </>
-              )
+              <>
+              <Link
+                href="/auth/signin"
+                className="text-gray-700 hover:text-gray-900 text-sm font-medium"
+              >
+                Log in
+              </Link>
+              <Link
+                href="/auth/signup"
+                className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700 transition-colors"
+              >
+                Get Started
+              </Link>
+              </>
             )}
             </div>
 
@@ -490,7 +483,7 @@ export default function Header() {
                 ))}
 
                 {/* Auth links for mobile when not logged in */}
-                {!isAuthenticated && !isSigninPage && (
+                {!isAuthenticated && (
                   <div className="border-t border-gray-200 pt-3 mt-3">
                     <Link
                       href="/auth/signin"
@@ -498,6 +491,13 @@ export default function Header() {
                       className="block px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-50"
                     >
                       Log in
+                    </Link>
+                    <Link
+                      href="/auth/signup"
+                      onClick={closeMobileMenu}
+                      className="block mx-4 mt-3 text-center bg-indigo-600 text-white px-4 py-2 rounded-md text-base font-medium hover:bg-indigo-700 transition-colors"
+                    >
+                      Get Started
                     </Link>
                   </div>
                 )}

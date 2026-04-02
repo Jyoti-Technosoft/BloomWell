@@ -307,7 +307,7 @@ export default function DoctorProfile({ params }: DoctorProfileProps) {
           <div className="p-8">
             <div className="text-center">
               <h3 className="text-2xl font-semibold text-gray-900 mb-4">Consultation Options</h3>
-              <p className="text-gray-600 mb-6">Choose how you'd like to consult with Dr. {doctorData.name.split(' ').slice(1).join(' ')}</p>
+              <p className="text-gray-600 mb-6">Choose how you&apos;d like to consult with Dr. {doctorData.name.split(' ').slice(1).join(' ')}</p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 {shouldShowVideoCallButton() && (

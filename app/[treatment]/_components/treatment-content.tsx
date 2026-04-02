@@ -83,7 +83,7 @@ export function TreatmentContent({ treatment }: { treatment: string }) {
       <div className="min-h-screen bg-linear-to-br from-gray-50 to-indigo-50">
         <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-3xl font-extrabold text-gray-900">Treatment Not Found</h1>
-          <p className="mt-4 text-gray-600">The treatment you're looking for doesn't exist.</p>
+          <p className="mt-4 text-gray-600">The treatment you&apos;re looking for doesn&apos;t exist.</p>
           <Link href="/treatments" className="mt-6 inline-flex items-center text-indigo-600 hover:text-indigo-500">
             ← Back to Treatments
           </Link>
