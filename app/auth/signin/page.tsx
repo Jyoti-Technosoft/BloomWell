@@ -94,18 +94,18 @@ function SignInContent() {
   }, [searchParams]);
 
   return (
-    <div>
+    <div className="h-screen w-screen fixed inset-0 overflow-hidden">
       {/* Animated gradient background */}
-      <div className="fixed inset-0 bg-linear-to-br from-purple-50 via-pink-50 to-blue-50">
+      <div className="absolute inset-0 bg-linear-to-br from-purple-50 via-pink-50 to-blue-50">
         <div className="absolute inset-0 bg-purple-200/20 animate-pulse"></div>
         <div className="absolute inset-0 bg-blue-200/20 animate-pulse" style={{ animationDelay: '1s' }}></div>
         <div className="absolute inset-0 bg-pink-200/20 animate-pulse" style={{ animationDelay: '2s' }}></div>
       </div>
       
       {/* Content */}
-      <div className="z-10 flex items-center justify-center sm:px-6 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-lg">
-          <div className="bg-white/95 backdrop-blur-sm py-12 px-8 shadow-2xl rounded-3xl sm:px-12 border border-white/20">
+      <div className="absolute inset-0 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md">
+          <div className="bg-white/95 backdrop-blur-sm py-6 px-6 shadow-2xl rounded-3xl sm:px-6 border border-white/20">
             <div className="text-center mb-8">
               <div className="flex justify-center">
                 <Image
