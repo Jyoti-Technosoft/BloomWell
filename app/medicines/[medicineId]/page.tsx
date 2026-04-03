@@ -23,10 +23,22 @@ import EvaluationStatus from '../../../components/EvaluationStatus';
 import PaymentModal from '../../../components/PaymentModal';
 import DoctorSelection from '../../../components/DoctorSelection';
 
-// Type definitions for form data to avoid any types
-interface MedicalFormData {
-  lastFourSSN?: string;
-  [key: string]: unknown;
+// Type definitions for form data to match TreatmentRecommendation expectations
+interface FormData {
+  birthday: string;
+  pregnant: string;
+  currentlyUsingMedicines: string;
+  hasDiabetes: string;
+  seenDoctorLastTwoYears: string;
+  medicalConditions: string[];
+  height: string;
+  weight: string;
+  targetWeight: string;
+  goals: string[];
+  allergies: string;
+  currentMedications: string;
+  additionalInfo: string;
+  lastFourSSN: string;
 }
 
 interface PaymentDataWithEvaluation {
@@ -53,7 +65,7 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
   const [showEvaluationStatus, setShowEvaluationStatus] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [showDoctorSelection, setShowDoctorSelection] = useState(false);
-  const [questionnaireData, setQuestionnaireData] = useState<Record<string, unknown> | null>(null);
+  const [questionnaireData, setQuestionnaireData] = useState<FormData | null>(null);
   const [selectedDoctor, setSelectedDoctor] = useState<{ id: string; full_name: string; specialization: string; is_verified: boolean; consultation_count: number } | null>(null);
   const [currentEvaluationId, setCurrentEvaluationId] = useState<string | null>(null);
   const [pendingEvaluations, setPendingEvaluations] = useState<string[]>([]);
@@ -212,9 +224,14 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
   // };
 
   const handleIdentityVerificationComplete = (ssnLast4: string) => {
-    // Add SSN to questionnaire data
-    const updatedData = { ...questionnaireData, lastFourSSN: ssnLast4 };
-    setQuestionnaireData(updatedData);
+    // Add SSN to existing questionnaire data
+    if (questionnaireData) {
+      const updatedData: FormData = {
+        ...questionnaireData,
+        lastFourSSN: ssnLast4
+      };
+      setQuestionnaireData(updatedData);
+    }
     setShowIdentityVerification(false);
     setShowRecommendation(true);
   };
@@ -646,7 +663,12 @@ export default function MedicinePage({ params }: { params: Promise<{ medicineId:
           medicineName={medicine.name}
           isOpen={showQuestionnaire}
           onClose={handleCloseAllModals}
-          onComplete={(formData: unknown) => handleIdentityVerificationComplete((formData as MedicalFormData).lastFourSSN || '')}
+          onComplete={(formData: unknown) => {
+            const medicalFormData = formData as FormData;
+            setQuestionnaireData(medicalFormData);
+            setShowQuestionnaire(false);
+            setShowIdentityVerification(true);
+          }}
         />
       )}
 

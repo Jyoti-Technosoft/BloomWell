@@ -51,15 +51,15 @@ const TreatmentRecommendation: React.FC<TreatmentRecommendationProps> = ({
   const getRecommendationReason = () => {
     const reasons = [];
     
-    if (formData.goals.includes('I want to lose fat without losing muscle')) {
+    if (formData.goals?.includes('I want to lose fat without losing muscle')) {
       reasons.push('Your goal to preserve muscle while losing fat');
     }
     
-    if (formData.goals.includes('I want to decrease fatigue and increase my energy')) {
+    if (formData.goals?.includes('I want to decrease fatigue and increase my energy')) {
       reasons.push('Your desire to increase energy levels');
     }
     
-    if (formData.goals.includes('I\'m interested in supporting my heart health')) {
+    if (formData.goals?.includes('I\'m interested in supporting my heart health')) {
       reasons.push('Your heart health goals');
     }
     
@@ -67,8 +67,8 @@ const TreatmentRecommendation: React.FC<TreatmentRecommendationProps> = ({
       reasons.push('Your diabetes condition requires specialized treatment');
     }
     
-    if (formData.medicalConditions.includes('High Blood Pressure') || 
-        formData.medicalConditions.includes('High Cholesterol')) {
+    if (formData.medicalConditions?.includes('High Blood Pressure') || 
+        formData.medicalConditions?.includes('High Cholesterol')) {
       reasons.push('Your cardiovascular health considerations');
     }
     
@@ -223,7 +223,7 @@ const TreatmentRecommendation: React.FC<TreatmentRecommendationProps> = ({
                 <div className="flex justify-between">
                   <span className="text-gray-600">Medical Conditions:</span>
                   <span className="font-medium">
-                    {formData.medicalConditions.length > 0 ? 
+                    {formData.medicalConditions?.length > 0 ? 
                       formData.medicalConditions.join(', ') : 
                       'None reported'
                     }
