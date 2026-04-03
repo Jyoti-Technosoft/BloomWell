@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import bcrypt from 'bcryptjs';
+import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import pool from '@/app/lib/postgres';
 import { decryptSensitiveFields } from '@/app/lib/encryption';
