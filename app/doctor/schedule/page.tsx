@@ -5,11 +5,11 @@ import { motion } from 'framer-motion';
 import { 
   CalendarIcon,
   ClockIcon,
-  PlusIcon,
   FunnelIcon,
   UserIcon,
   VideoCameraIcon,
-  BuildingOfficeIcon
+  BuildingOfficeIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -45,6 +45,11 @@ export default function DoctorSchedule() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('week');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [rescheduleLoading, setRescheduleLoading] = useState(false);
+  const [newDate, setNewDate] = useState('');
+  const [newTime, setNewTime] = useState('');
 
   // Enhanced fetch with auth handling
   const authenticatedFetch = useCallback(async (url: string, options: RequestInit = {}) => {
@@ -213,6 +218,68 @@ export default function DoctorSchedule() {
     }
   };
 
+  const handleJoinCall = async (appointment: Appointment) => {
+    try {
+      const response = await authenticatedFetch('/api/consultations/' + appointment.id + '/join-call', {
+        method: 'POST',
+        body: JSON.stringify({ consultationId: appointment.id })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        // Navigate to video consultation page with room URL
+        router.push(`/video-consultation?room=${encodeURIComponent(data.roomUrl)}&consultationId=${appointment.id}`);
+      } else {
+        console.error('Failed to join call:', data.error);
+        alert('Failed to join call: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Error joining call:', error);
+      alert('Error joining call. Please try again.');
+    }
+  };
+
+  const handleRescheduleClick = (appointment: Appointment) => {
+    setSelectedAppointment(appointment);
+    setNewDate(appointment.date);
+    setNewTime(appointment.time);
+    setShowRescheduleModal(true);
+  };
+
+  const handleReschedule = async (appointmentId: string, newDate: string, newTime: string) => {
+    try {
+      setRescheduleLoading(true);
+      
+      const response = await authenticatedFetch('/api/consultations/' + appointmentId + '/reschedule', {
+        method: 'PUT',
+        body: JSON.stringify({ newDate, newTime })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        // Update the appointment in the local state
+        setAppointments(prev => prev.map(apt => 
+          apt.id === appointmentId 
+            ? { ...apt, date: newDate, time: newTime }
+            : apt
+        ));
+        
+        setShowRescheduleModal(false);
+        alert('Consultation rescheduled successfully!');
+      } else {
+        console.error('Failed to reschedule:', data.error);
+        alert('Failed to reschedule: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Error rescheduling:', error);
+      alert('Error rescheduling. Please try again.');
+    } finally {
+      setRescheduleLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -223,6 +290,7 @@ export default function DoctorSchedule() {
   }
 
   return (
+    <>
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -234,10 +302,6 @@ export default function DoctorSchedule() {
           <h1 className="text-3xl font-bold text-gray-900">Schedule</h1>
           <p className="mt-2 text-gray-600">Manage your appointments and availability</p>
         </div>
-        <button className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
-          <PlusIcon className="h-4 w-4 mr-2" />
-          Add Time Slot
-        </button>
       </div>
 
       {/* Calendar Controls */}
@@ -346,7 +410,7 @@ export default function DoctorSchedule() {
                 <div key={appointment.id} className="p-6 hover:bg-gray-50">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start space-x-4">
-                      <div className="flex-shrink-0">
+                      <div className="shrink-0">
                         <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
                           <UserIcon className="h-5 w-5 text-indigo-600" />
                         </div>
@@ -381,12 +445,22 @@ export default function DoctorSchedule() {
                       </div>
                     </div>
                     <div className="flex space-x-2">
-                      <button className="text-indigo-600 hover:text-indigo-900 text-sm font-medium">
-                        Join Call
-                      </button>
-                      <button className="text-gray-600 hover:text-gray-900 text-sm font-medium">
-                        Reschedule
-                      </button>
+                      {(appointment.type === 'video') && appointment.status === 'scheduled' && (
+                        <button 
+                          onClick={() => handleJoinCall(appointment)}
+                          className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                        >
+                          Join Call
+                        </button>
+                      )}
+                      {appointment.status === 'scheduled' && (
+                        <button 
+                          onClick={() => handleRescheduleClick(appointment)}
+                          className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+                        >
+                          Reschedule
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -409,5 +483,91 @@ export default function DoctorSchedule() {
         </div>
       </div>
     </motion.div>
+
+    {/* Reschedule Modal */}
+    {showRescheduleModal && (
+      <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-medium text-gray-900">Reschedule Consultation</h3>
+            <button
+              onClick={() => setShowRescheduleModal(false)}
+              className="text-gray-400 hover:text-gray-500"
+            >
+              <XMarkIcon className="h-6 w-6" />
+            </button>
+          </div>
+          
+          {selectedAppointment && (
+            <div className="space-y-4">
+              <div className="bg-gray-50 p-3 rounded-md">
+                <p className="text-sm text-gray-600">
+                  <strong>Patient:</strong> {selectedAppointment.patientName}
+                </p>
+                <p className="text-sm text-gray-600">
+                  <strong>Current:</strong> {selectedAppointment.date} at {selectedAppointment.time}
+                </p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  New Date
+                </label>
+                <input
+                  type="date"
+                  value={newDate}
+                  onChange={(e) => setNewDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                  min={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  New Time
+                </label>
+                <select
+                  value={newTime}
+                  onChange={(e) => setNewTime(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  <option value="">Select a time</option>
+                  <option value="09:00">09:00 AM</option>
+                  <option value="09:30">09:30 AM</option>
+                  <option value="10:00">10:00 AM</option>
+                  <option value="10:30">10:30 AM</option>
+                  <option value="11:00">11:00 AM</option>
+                  <option value="11:30">11:30 AM</option>
+                  <option value="14:00">02:00 PM</option>
+                  <option value="14:30">02:30 PM</option>
+                  <option value="15:00">03:00 PM</option>
+                  <option value="15:30">03:30 PM</option>
+                  <option value="16:00">04:00 PM</option>
+                  <option value="16:30">04:30 PM</option>
+                </select>
+              </div>
+              
+              <div className="flex justify-end space-x-3 pt-4">
+                <button
+                  onClick={() => setShowRescheduleModal(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  disabled={rescheduleLoading}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleReschedule(selectedAppointment.id, newDate, newTime)}
+                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+                  disabled={rescheduleLoading || !newDate || !newTime}
+                >
+                  {rescheduleLoading ? 'Rescheduling...' : 'Reschedule'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    )}
+    </>
   );
 }
