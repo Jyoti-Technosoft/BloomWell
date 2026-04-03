@@ -114,7 +114,7 @@ function SignInContent() {
                   width={150}
                   height={100}
                   priority
-                  className='h-auto w-auto'
+                  // className='h-auto w-auto'
                 />
               </div>
               <p className="text-lg text-gray-600">
