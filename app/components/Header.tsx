@@ -110,7 +110,7 @@ export default function Header() {
                     width={150}
                     height={100}
                     priority
-                    className='h-auto w-auto'
+                    // className='h-auto w-auto'
                   />
                 </Link>
               </div>
