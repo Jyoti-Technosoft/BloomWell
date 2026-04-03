@@ -136,7 +136,7 @@ export default function ProfilePage() {
                     : session.user?.name || 'Your Profile'
                   }
                 </h1>
-                <p className="text-indigo-100">Women&apos;s Health Profile</p>
+                <p className="text-indigo-100">Women's Health Profile</p>
               </div>
             </div>
             {!isEditing && (
