@@ -24,48 +24,48 @@ const fallbackTreatments = [
     ],
     medicines: ['semaglutide-1mg', 'semaglutide-2mg']
   },
-  {
-    id: 'erectile-dysfunction',
-    name: 'Erectile Dysfunction',
-    description: 'Effective treatments for ED to improve sexual health and performance.',
-    category: 'ed-treatments',
-    image: '/default-treatment.jpg',
-    overview: 'Comprehensive solutions for men experiencing erectile dysfunction.',
-    benefits: [
-      'Improved sexual performance',
-      'Increased confidence',
-      'Various treatment options'
-    ],
-    howItWorks: 'Treatments work by increasing blood flow to penis or addressing underlying causes.',
-    faqs: [
-      {
-        question: 'What treatments are available?',
-        answer: 'Oral medications, injections, and lifestyle changes are common approaches.'
-      }
-    ],
-    medicines: ['sildenafil-50mg', 'tadalafil-20mg']
-  },
-  {
-    id: 'testosterone-therapy',
-    name: 'Testosterone Therapy',
-    description: 'Hormone replacement therapy for low testosterone levels.',
-    category: 'hormone-therapy',
-    image: '/default-treatment.jpg',
-    overview: 'Testosterone therapy helps restore normal hormone levels in men with low testosterone.',
-    benefits: [
-      'Increased energy',
-      'Improved muscle mass',
-      'Better mood'
-    ],
-    howItWorks: 'Supplements testosterone to restore normal levels.',
-    faqs: [
-      {
-        question: 'Is testosterone therapy safe?',
-        answer: 'When monitored by medical professionals, testosterone therapy is generally safe.'
-      }
-    ],
-    medicines: ['testo-cypionate', 'testo-gel']
-  }
+  // {
+  //   id: 'erectile-dysfunction',
+  //   name: 'Erectile Dysfunction',
+  //   description: 'Effective treatments for ED to improve sexual health and performance.',
+  //   category: 'ed-treatments',
+  //   image: '/default-treatment.jpg',
+  //   overview: 'Comprehensive solutions for men experiencing erectile dysfunction.',
+  //   benefits: [
+  //     'Improved sexual performance',
+  //     'Increased confidence',
+  //     'Various treatment options'
+  //   ],
+  //   howItWorks: 'Treatments work by increasing blood flow to penis or addressing underlying causes.',
+  //   faqs: [
+  //     {
+  //       question: 'What treatments are available?',
+  //       answer: 'Oral medications, injections, and lifestyle changes are common approaches.'
+  //     }
+  //   ],
+  //   medicines: ['sildenafil-50mg', 'tadalafil-20mg']
+  // },
+  // {
+  //   id: 'testosterone-therapy',
+  //   name: 'Testosterone Therapy',
+  //   description: 'Hormone replacement therapy for low testosterone levels.',
+  //   category: 'hormone-therapy',
+  //   image: '/default-treatment.jpg',
+  //   overview: 'Testosterone therapy helps restore normal hormone levels in men with low testosterone.',
+  //   benefits: [
+  //     'Increased energy',
+  //     'Improved muscle mass',
+  //     'Better mood'
+  //   ],
+  //   howItWorks: 'Supplements testosterone to restore normal levels.',
+  //   faqs: [
+  //     {
+  //       question: 'Is testosterone therapy safe?',
+  //       answer: 'When monitored by medical professionals, testosterone therapy is generally safe.'
+  //     }
+  //   ],
+  //   medicines: ['testo-cypionate', 'testo-gel']
+  // }
 ];
 
 export async function GET() {
