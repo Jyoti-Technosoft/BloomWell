@@ -893,42 +893,42 @@ const treatmentsData = {
         ],
         category: "weight-loss",
     },
-    "testosterone-therapy": {
-        name: "Testosterone Therapy",
-        description: "Hormone replacement therapy for men with low testosterone levels.",
-        overview: "Testosterone therapy can help restore hormone levels in men with clinically low testosterone.",
-        benefits: [
-            "Increased energy levels",
-            "Improved muscle mass",
-            "Enhanced mood and cognitive function",
-        ],
-        howItWorks: "Replenishes testosterone levels through various administration methods.",
-        faqs: [
-            {
-                question: "What are the administration methods?",
-                answer: "Injections, gels, patches, and pellets are common methods.",
-            },
-        ],
-        category: "hormone-therapy",
-    },
-    "erectile-dysfunction": {
-        name: "Erectile Dysfunction",
-        description: "Effective treatments for ED to improve sexual health and performance.",
-        overview: "Comprehensive solutions for men experiencing erectile dysfunction.",
-        benefits: [
-            "Improved sexual performance",
-            "Increased confidence",
-            "Various treatment options",
-        ],
-        howItWorks: "Treatments work by increasing blood flow to the penis or addressing underlying causes.",
-        faqs: [
-            {
-                question: "What treatments are available?",
-                answer: "Oral medications, injections, and lifestyle changes are common approaches.",
-            },
-        ],
-        category: "ed-treatments",
-    },
+    // "testosterone-therapy": {
+    //     name: "Testosterone Therapy",
+    //     description: "Hormone replacement therapy for men with low testosterone levels.",
+    //     overview: "Testosterone therapy can help restore hormone levels in men with clinically low testosterone.",
+    //     benefits: [
+    //         "Increased energy levels",
+    //         "Improved muscle mass",
+    //         "Enhanced mood and cognitive function",
+    //     ],
+    //     howItWorks: "Replenishes testosterone levels through various administration methods.",
+    //     faqs: [
+    //         {
+    //             question: "What are the administration methods?",
+    //             answer: "Injections, gels, patches, and pellets are common methods.",
+    //         },
+    //     ],
+    //     category: "hormone-therapy",
+    // },
+    // "erectile-dysfunction": {
+    //     name: "Erectile Dysfunction",
+    //     description: "Effective treatments for ED to improve sexual health and performance.",
+    //     overview: "Comprehensive solutions for men experiencing erectile dysfunction.",
+    //     benefits: [
+    //         "Improved sexual performance",
+    //         "Increased confidence",
+    //         "Various treatment options",
+    //     ],
+    //     howItWorks: "Treatments work by increasing blood flow to the penis or addressing underlying causes.",
+    //     faqs: [
+    //         {
+    //             question: "What treatments are available?",
+    //             answer: "Oral medications, injections, and lifestyle changes are common approaches.",
+    //         },
+    //     ],
+    //     category: "ed-treatments",
+    // },
     "oral-ed-treatments": {
         name: "Oral ED Treatments",
         description: "Effective oral medications for erectile dysfunction management.",

@@ -8,8 +8,8 @@ const footerLinks = {
   services: [
     { name: 'Semaglutide', href: '/semaglutide' },
     { name: 'Tirzepatide', href: '/tirzepatide' },
-    { name: 'Testosterone Therapy', href: '/testosterone-therapy' },
-    { name: 'Erectile Dysfunction', href: '/erectile-dysfunction' },
+    // { name: 'Testosterone Therapy', href: '/testosterone-therapy' },
+    // { name: 'Erectile Dysfunction', href: '/erectile-dysfunction' },
     { name: 'Oral ED Treatments', href: '/oral-ed-treatments' },
     { name: 'Injectable Treatments', href: '/injectable-treatments' },
   ],
