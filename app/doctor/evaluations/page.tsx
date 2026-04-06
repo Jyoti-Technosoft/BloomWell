@@ -12,7 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import Toast from '../../components/Toast';
+import Toast from '@/components/Toast';
 
 interface Evaluation {
   id: string;

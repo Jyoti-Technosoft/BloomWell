@@ -1,8 +1,8 @@
 'use client';
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
-import { useState, useEffect } from "react";
-import { Treatment } from '../lib/types';
+import { Treatment } from '@/lib/types';
 
 export default function TreatmentsPage() {
   const [treatments, setTreatments] = useState<Treatment[]>([]);

@@ -12,16 +12,16 @@ import {
   ClockIcon,
   UserIcon
 } from '@heroicons/react/24/outline';
-import { useUser } from '../../context/UserContext';
-import { useUserProfile } from '../../hooks/useUserProfile';
-import { Medicine } from '../../lib/types';
-import Toast from '../../components/Toast';
-import MedicalQuestionnaire from '../../components/MedicalQuestionnaire';
-import IdentityVerification from '../../components/IdentityVerification';
-import TreatmentRecommendation from '../../components/TreatmentRecommendation';
-import EvaluationStatus from '../../../components/EvaluationStatus';
-import PaymentModal from '../../../components/PaymentModal';
-import DoctorSelection from '../../../components/DoctorSelection';
+import { useUser } from '@/context/UserContext';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import { Medicine } from '@/lib/types';
+import Toast from '@/components/Toast';
+import MedicalQuestionnaire from '@/components/MedicalQuestionnaire';
+import IdentityVerification from '@/components/IdentityVerification';
+import TreatmentRecommendation from '@/components/TreatmentRecommendation';
+import EvaluationStatus from '@/components/EvaluationStatus';
+import PaymentModal from '@/components/PaymentModal';
+import DoctorSelection from '@/components/DoctorSelection';
 
 // Type definitions for form data to match TreatmentRecommendation expectations
 interface FormData {

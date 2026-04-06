@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { DailyProvider, useDaily } from '@daily-co/daily-react';
-import { VideoCallProps } from '../app/lib/types';
+import { VideoCallProps } from '@/lib/types';
 
 interface VideoCallComponentProps extends VideoCallProps {
   roomUrl: string;

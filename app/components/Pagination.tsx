@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { PaginationProps } from '../lib/types';
+import { PaginationProps } from '@/lib/types';
 
 export default function Pagination({ 
   currentPage, 

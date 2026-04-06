@@ -1,4 +1,4 @@
-import { StarRatingProps } from '../lib/types';
+import { StarRatingProps } from '@/lib/types';
 
 export default function StarRating({ 
   rating, 

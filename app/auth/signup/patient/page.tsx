@@ -1,12 +1,11 @@
 "use client";
-
 import { useState, useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
-import { validatePhoneNumber, getCountryPhoneConfig, getSupportedCountries } from '../../../lib/phoneValidation';
+import { validatePhoneNumber, getCountryPhoneConfig, getSupportedCountries } from '@/lib/phoneValidation';
 
 type FormData = {
   // Personal Information

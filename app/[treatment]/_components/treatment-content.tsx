@@ -1,9 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
-import { Medicine, Treatment } from '../../lib/types';
+import { CheckCircleIcon } from "@heroicons/react/24/outline";
+import { Medicine, Treatment } from '@/lib/types';
 
 export function TreatmentContent({ treatment }: { treatment: string }) {
   const [treatmentData, setTreatmentData] = useState<Treatment | null>(null);

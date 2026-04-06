@@ -3,11 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { notFound, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import Toast from '../../components/Toast';
-import BookingModal from '../../components/BookingModal';
-import StarRating from '../../components/StarRating';
-import { useUser } from '../../context/UserContext';
-import { Physician, DoctorProfileProps } from '../../lib/types';
+import Toast from '@/components/Toast';
+import BookingModal from '@/components/BookingModal';
+import StarRating from '@/components/StarRating';
+import { useUser } from '@/context/UserContext';
+import { Physician, DoctorProfileProps } from '@/lib/types';
 
 interface BookingData {
   consultation: {

@@ -1,9 +1,8 @@
 'use client';
-
-import Image from 'next/image';
 import { useState } from 'react';
+import Image from 'next/image';
 import VideoCall from '@/components/VideoCall';
-import { Physician } from '../app/lib/types';
+import { Physician } from '@/lib/types';
 
 interface VideoConsultationProps {
   physician: Physician;

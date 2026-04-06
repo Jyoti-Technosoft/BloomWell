@@ -2,12 +2,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
-import { useUser } from '../context/UserContext';
-import Toast from '../components/Toast';
-import BookingModal from '../components/BookingModal';
-import { Physician } from '../lib/types';
 import Image from 'next/image';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { useUser } from '@/context/UserContext';
+import Toast from '@/components/Toast';
+import BookingModal from '@/components/BookingModal';
+import { Physician } from '@/lib/types';
 
 export default function BookConsultation() {
   const [showBookingModal, setShowBookingModal] = useState(false);

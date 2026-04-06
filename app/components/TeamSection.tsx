@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { UserIcon } from '@heroicons/react/24/outline';
 import Pagination from './Pagination';
-import { Physician } from '../lib/types';
+import { Physician } from '@/lib/types';
 
 export default function TeamSection() {
   const searchParams = useSearchParams();
