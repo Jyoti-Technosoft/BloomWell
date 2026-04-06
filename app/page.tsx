@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ArrowRightIcon, ArrowPathIcon, HeartIcon, ShieldCheckIcon, UserIcon } from '@heroicons/react/24/outline';
-import { useUser } from './context/UserContext';
+import { useUser } from '@/context/UserContext';
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },

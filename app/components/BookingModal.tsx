@@ -1,8 +1,8 @@
 'use client';
 import { useState } from 'react';
 import { CalendarIcon, UserIcon, CreditCardIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
-import { BookingModalProps } from '../lib/types';
-import { generateNextSevenDays, generateTimeSlotsForDate, formatDateForDisplay, getRelativeDateDescription } from '../lib/dateUtils';
+import { BookingModalProps } from '@/lib/types';
+import { generateNextSevenDays, generateTimeSlotsForDate, formatDateForDisplay, getRelativeDateDescription } from '@/lib/dateUtils';
 
 export default function BookingModal({ isOpen, onClose, physician, onComplete }: BookingModalProps) {
   const [currentStep, setCurrentStep] = useState(0);

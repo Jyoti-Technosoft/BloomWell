@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -11,7 +10,7 @@ import {
   DocumentTextIcon,
   PencilIcon
 } from '@heroicons/react/24/outline';
-import Toast from '../../components/Toast';
+import Toast from '@/components/Toast';
 
 interface DoctorProfile {
   id: string;

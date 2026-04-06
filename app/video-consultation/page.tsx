@@ -3,7 +3,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import VideoConsultation from '@/components/VideoConsultation';
-import { Physician } from '../lib/types';
+import { Physician } from '@/lib/types';
 
 function VideoConsultationContent() {
   const searchParams = useSearchParams();

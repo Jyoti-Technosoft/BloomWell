@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { UserIcon, AcademicCapIcon, ClockIcon } from '@heroicons/react/24/outline';
-import Pagination from '../components/Pagination';
+import Pagination from '@/components/Pagination';
 
 function PhysiciansContent() {
   const searchParams = useSearchParams();

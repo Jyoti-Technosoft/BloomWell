@@ -1,5 +1,4 @@
 'use client';
-
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
@@ -11,10 +10,10 @@ import {
   EyeIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
-import { useUser } from '../context/UserContext';
-import { useUserProfile } from '../hooks/useUserProfile';
-import Toast from '../components/Toast';
-import PaymentModal from '../../components/PaymentModal';
+import { useUser } from '@/context/UserContext';
+import { useUserProfile } from '@/hooks/useUserProfile';
+import Toast from '@/components/Toast';
+import PaymentModal from '@/components/PaymentModal';
 
 interface Evaluation {
   id: string;
