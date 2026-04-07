@@ -386,334 +386,6 @@ const medicineDetailsData = {
         support: 'Intensive medical supervision, bi-weekly check-ins, and comprehensive lab monitoring'
     },
 
-    // Testosterone therapy medicines
-    'testo-cypionate': {
-        id: 'testo-cypionate',
-        name: 'Testosterone Cypionate',
-        description: 'Injectable testosterone for hormone therapy',
-        price: 199,
-        dosage: '10ml vial (200mg/ml)',
-        features: [
-            'For low testosterone levels',
-            'Weekly injections',
-            'Medical supervision required'
-        ],
-        inStock: true,
-        image: '/medicines/testo-cypionate.jpg',
-        category: 'hormone-therapy',
-        overview: 'Testosterone Cypionate is a long-acting testosterone ester used for hormone replacement therapy in men with clinically low testosterone levels.',
-        howItWorks: 'Provides sustained release of testosterone into the bloodstream, restoring normal hormone levels and alleviating symptoms of low testosterone.',
-        benefits: [
-            'Increased energy levels',
-            'Improved muscle mass and strength',
-            'Enhanced mood and cognitive function',
-            'Better bone density',
-            'Improved libido and sexual function',
-            'Reduced body fat'
-        ],
-        sideEffects: [
-            'Injection site pain',
-            'Acne or oily skin',
-            'Increased red blood cell count',
-            'Possible mood changes'
-        ],
-        usageInstructions: [
-            'Administer intramuscular injection weekly',
-            'Rotate injection sites',
-            'Follow prescribed dosage schedule',
-            'Regular blood monitoring required'
-        ],
-        precautions: [
-            'Medical supervision essential',
-            'Monitor prostate health',
-            'Regular blood tests required',
-            'Not for patients with certain cancers'
-        ],
-        shipping: 'Discreet packaging with medical-grade supplies',
-        support: 'Regular hormone level monitoring, quarterly check-ups, and comprehensive medical oversight'
-    },
-    'testo-gel': {
-        id: 'testo-gel',
-        name: 'Testosterone Gel',
-        description: 'Topical testosterone gel',
-        price: 249,
-        dosage: '30-day supply',
-        features: [
-            'Easy application',
-            'Daily use',
-            'Absorbs quickly'
-        ],
-        inStock: true,
-        image: '/medicines/testo-gel.webp',
-        category: 'hormone-therapy',
-        overview: 'Testosterone Gel is a convenient topical application method for testosterone replacement therapy, providing steady hormone levels through daily application.',
-        howItWorks: 'Absorbs through the skin into the bloodstream, providing consistent testosterone levels throughout the day with minimal peaks and valleys.',
-        benefits: [
-            'Steady hormone levels',
-            'No injections required',
-            'Easy daily application',
-            'Quick absorption',
-            'Minimal skin irritation',
-            'Discreet treatment option'
-        ],
-        sideEffects: [
-            'Skin irritation at application site',
-            'Possible transfer to others',
-            'Mild acne',
-            'Increased oil production'
-        ],
-        usageInstructions: [
-            'Apply once daily to clean, dry skin',
-            'Allow to dry completely before dressing',
-            'Wash hands after application',
-            'Avoid skin contact with others'
-        ],
-        precautions: [
-            'Avoid skin-to-skin contact after application',
-            'Keep away from children and women',
-            'Regular hormone level monitoring',
-            'Report any skin reactions'
-        ],
-        shipping: 'Discreet packaging with application supplies',
-        support: 'Monthly hormone monitoring, skin assessments, and comprehensive medical guidance'
-    },
-
-    // Erectile dysfunction medicines
-    'sildenafil-50mg': {
-        id: 'sildenafil-50mg',
-        name: 'Sildenafil 50mg',
-        description: 'Generic Viagra for ED treatment',
-        price: 99,
-        dosage: '10 tablets',
-        features: [
-            '30-60 minutes before activity',
-            'Lasts 4-6 hours',
-            'Proven effectiveness'
-        ],
-        inStock: true,
-        image: '/medicines/sildenafil-50mg.jpg',
-        category: 'ed-treatments',
-        overview: 'Sildenafil 50mg is a well-established ED medication that helps men achieve and maintain erections by increasing blood flow to the penis.',
-        howItWorks: 'Sildenafil works by relaxing the smooth muscles in the blood vessels of the penis, allowing for increased blood flow when sexually aroused.',
-        benefits: [
-            'Proven effectiveness',
-            'Fast-acting formula',
-            'Affordable alternative to brand name',
-            'Reliable results',
-            'Easy to use',
-            'Discreet packaging'
-        ],
-        sideEffects: [
-            'Headache',
-            'Flushing',
-            'Upset stomach',
-            'Nasal congestion',
-            'Dizziness'
-        ],
-        usageInstructions: [
-            'Take 30-60 minutes before sexual activity',
-            'Can be taken with or without food',
-            'Do not take more than once daily',
-            'Sexual stimulation required'
-        ],
-        precautions: [
-            'Not for use with nitrates',
-            'Consult doctor with heart conditions',
-            'Avoid alcohol with medication',
-            'Seek immediate help for prolonged erection'
-        ],
-        shipping: 'Discreet packaging with no indication of contents',
-        support: '24/7 medical consultation and discreet customer service'
-    },
-    'tadalafil-20mg': {
-        id: 'tadalafil-20mg',
-        name: 'Tadalafil 20mg',
-        description: 'Daily or as-needed ED treatment',
-        price: 149,
-        dosage: '10 tablets',
-        features: [
-            'Up to 36-hour effectiveness',
-            'Daily or as-needed use',
-            'Lowest effective dose'
-        ],
-        inStock: true,
-        image: '/medicines/tadalafil-20mg.jpg',
-        category: 'ed-treatments',
-        overview: 'Tadalafil 20mg offers extended duration of action, providing flexibility for spontaneous sexual activity with longer effectiveness window.',
-        howItWorks: 'Relaxes blood vessels and increases blood flow to the penis, with effects lasting up to 36 hours for greater spontaneity.',
-        benefits: [
-            'Extended effectiveness (up to 36 hours)',
-            'Greater spontaneity',
-            'Can be taken daily or as needed',
-            'Lower side effect profile',
-            'Food does not affect absorption',
-            'Improved confidence'
-        ],
-        sideEffects: [
-            'Headache',
-            'Back pain',
-            'Muscle aches',
-            'Flushing',
-            'Indigestion'
-        ],
-        usageInstructions: [
-            'Take 30 minutes before activity',
-            'Can be taken daily at same time',
-            'Effects last up to 36 hours',
-            'Avoid grapefruit juice'
-        ],
-        precautions: [
-            'Not with nitrates or alpha-blockers',
-            'Monitor blood pressure',
-            'Limit alcohol consumption',
-            'Report vision changes immediately'
-        ],
-        shipping: 'Discreet packaging with privacy protection',
-        support: 'Medical consultation available, dosage guidance, and safety monitoring'
-    },
-
-    // Oral ED treatments
-    'sildenafil-100mg': {
-        id: 'sildenafil-100mg',
-        name: 'Sildenafil 100mg',
-        description: 'High-strength ED medication',
-        price: 129,
-        dosage: '10 tablets',
-        features: [
-            'Maximum strength formula',
-            'Works in 30-60 minutes',
-            'Lasts 4-6 hours',
-            'Discreet delivery'
-        ],
-        inStock: true,
-        image: '/medicines/sildenafil-100mg.jpg',
-        category: 'ed-treatments',
-        overview: 'Sildenafil 100mg is the maximum strength formulation for men who require higher doses for optimal effectiveness.',
-        howItWorks: 'Maximum dose provides enhanced blood flow to the penis for stronger, more reliable erections in men with more severe ED.',
-        benefits: [
-            'Maximum effectiveness',
-            'Stronger erections',
-            'Reliable for severe ED',
-            'Proven track record',
-            'Cost-effective high dose',
-            'Fast acting'
-        ],
-        sideEffects: [
-            'Increased likelihood of headache',
-            'Facial flushing',
-            'Nasal congestion',
-            'Visual disturbances (rare)',
-            'Digestive issues'
-        ],
-        usageInstructions: [
-            'Take 30-60 minutes before activity',
-            'Maximum one dose per day',
-            'Take on empty stomach for best results',
-            'Avoid high-fat meals'
-        ],
-        precautions: [
-            'Not for first-time users',
-            'Medical consultation required',
-            'Monitor for severe side effects',
-            'Avoid with certain medications'
-        ],
-        shipping: 'Discreet packaging with enhanced privacy',
-        support: 'Enhanced medical monitoring, side effect management, and dosage optimization'
-    },
-    'tadalafil-daily': {
-        id: 'tadalafil-daily',
-        name: 'Tadalafil Daily 5mg',
-        description: 'Low-dose daily treatment',
-        price: 179,
-        dosage: '30 tablets',
-        features: [
-            'Take one daily',
-            'Always ready for spontaneity',
-            'Steady medication level',
-            '30-day supply'
-        ],
-        inStock: true,
-        image: '/medicines/tadalafil-daily.png',
-        category: 'ed-treatments',
-        overview: 'Tadalafil Daily 5mg provides continuous ED treatment with a low daily dose, eliminating the need to plan for sexual activity.',
-        howItWorks: 'Maintains consistent levels of tadalafil in the bloodstream, allowing for spontaneous erections whenever aroused without timing medication.',
-        benefits: [
-            'Always ready for activity',
-            'No planning required',
-            'Lower side effects than as-needed doses',
-            'Natural sexual experience',
-            'Improved relationship quality',
-            'Consistent effectiveness'
-        ],
-        sideEffects: [
-            'Mild headache initially',
-            'Back pain (usually temporary)',
-            'Indigestion',
-            'Muscle aches'
-        ],
-        usageInstructions: [
-            'Take one tablet daily at same time',
-            'Can be taken with or without food',
-            'Effects develop over several days',
-            'Consistent timing important'
-        ],
-        precautions: [
-            'Requires consistent daily use',
-            'Monitor for persistent side effects',
-            'Regular medical check-ups recommended',
-            'Not for as-needed use'
-        ],
-        shipping: 'Monthly discreet delivery with automatic refill options',
-        support: 'Monthly check-ins, effectiveness monitoring, and ongoing medical guidance'
-    },
-    'vardenafil-20mg': {
-        id: 'vardenafil-20mg',
-        name: 'Vardenafil 20mg',
-        description: 'Fast-acting ED medication',
-        price: 149,
-        dosage: '10 tablets',
-        features: [
-            'Works in 25-60 minutes',
-            'Effective for 4-5 hours',
-            'Can be taken with food',
-            'Discreet packaging'
-        ],
-        inStock: true,
-        image: '/medicines/vardenafil-20mg.webp',
-        category: 'ed-treatments',
-        overview: 'Vardenafil 20mg is a fast-acting ED medication known for its quick onset and effectiveness, even when taken with food.',
-        howItWorks: 'Potently inhibits PDE5 enzyme, allowing for increased blood flow and rapid onset of erectile function.',
-        benefits: [
-            'Rapid onset of action',
-            'Works with moderate food intake',
-            'Strong effectiveness',
-            'Lower incidence of visual side effects',
-            'Reliable performance',
-            'Flexible dosing'
-        ],
-        sideEffects: [
-            'Headache',
-            'Flushing',
-            'Nasal congestion',
-            'Dizziness',
-            'Mild nausea'
-        ],
-        usageInstructions: [
-            'Take 25-60 minutes before activity',
-            'Can be taken with food',
-            'Maximum one dose per day',
-            'Avoid excessive alcohol'
-        ],
-        precautions: [
-            'Not with nitrates or certain heart medications',
-            'Monitor blood pressure',
-            'Report vision changes',
-            'Medical history review required'
-        ],
-        shipping: 'Discreet packaging with rapid delivery options',
-        support: 'Fast response medical team, effectiveness monitoring, and dosage guidance'
-    },
-
     // Injectable treatments
     'b12-injection': {
         id: 'b12-injection',
@@ -852,6 +524,149 @@ const medicineDetailsData = {
         ],
         shipping: 'Complete injection supplies included',
         support: 'Weekly progress tracking, metabolic monitoring, and nutritional counseling'
+    },
+
+    // Women's Health Medications
+    'semaglutide-tablets': {
+        id: 'semaglutide-tablets',
+        name: 'Semaglutide Tablets 3mg',
+        description: 'Oral semaglutide for weight management',
+        price: 329,
+        dosage: '30 tablets (3mg each)',
+        features: [
+            'Oral administration',
+            'Once-daily dosing',
+            'FDA-approved for weight loss',
+            'Convenient tablet form',
+            'No injections required'
+        ],
+        inStock: true,
+        image: '/medicines/semaglutide-tablets.jpg',
+        category: 'womens-health',
+        overview: 'Semaglutide Tablets offer the same powerful weight management benefits as injectable semaglutide in a convenient oral form. Perfect for women who prefer pills over injections.',
+        howItWorks: 'Oral semaglutide works by activating GLP-1 receptors to regulate appetite and blood sugar levels, helping you feel fuller longer and reduce food intake.',
+        benefits: [
+            'Convenient oral administration',
+            'Significant weight loss results',
+            'Improved blood sugar control',
+            'Reduced appetite and cravings',
+            'Once-daily dosing schedule',
+            'No injection discomfort'
+        ],
+        sideEffects: [
+            'Nausea (usually temporary)',
+            'Decreased appetite',
+            'Possible digestive discomfort',
+            'Mild stomach upset'
+        ],
+        usageInstructions: [
+            'Take once daily with water',
+            'Take 30 minutes before first meal',
+            'Start with low dose and gradually increase',
+            'Consistent daily timing recommended'
+        ],
+        precautions: [
+            'Not recommended for pregnant women',
+            'Consult doctor if you have kidney problems',
+            'Monitor for digestive side effects',
+            'Keep out of reach of children'
+        ],
+        shipping: 'Discreet packaging with moisture-protected materials to ensure tablet quality',
+        support: '24/7 medical support, weekly check-ins, and nutritional guidance for optimal results'
+    },
+    'metformin-er': {
+        id: 'metformin-er',
+        name: 'Metformin Extended Release',
+        description: 'Weight management and metabolic support',
+        price: 89,
+        dosage: '60 tablets (500mg)',
+        features: [
+            'Extended release formula',
+            'Supports weight loss',
+            'Improves insulin sensitivity',
+            'Minimal side effects',
+            'Well-established safety profile'
+        ],
+        inStock: true,
+        image: '/medicines/metformin-er.jpg',
+        category: 'womens-health',
+        overview: 'Metformin Extended Release is a trusted medication that supports weight management and metabolic health, particularly beneficial for women with insulin resistance or PCOS.',
+        howItWorks: 'Metformin improves insulin sensitivity and reduces glucose production in the liver, helping to regulate blood sugar levels and support weight management.',
+        benefits: [
+            'Improved insulin sensitivity',
+            'Supports weight management',
+            'Reduces sugar cravings',
+            'Helps regulate menstrual cycles',
+            'Minimal gastrointestinal side effects',
+            'Once-daily dosing'
+        ],
+        sideEffects: [
+            'Mild digestive discomfort (usually temporary)',
+            'Reduced appetite',
+            'Possible vitamin B12 deficiency with long-term use',
+            'Rare lactic acidosis risk'
+        ],
+        usageInstructions: [
+            'Take once daily with evening meal',
+            'Swallow whole, do not crush',
+            'Stay hydrated throughout the day',
+            'Regular monitoring of blood sugar levels'
+        ],
+        precautions: [
+            'Not for patients with kidney disease',
+            'Monitor for lactic acidosis symptoms',
+            'Regular B12 level monitoring recommended',
+            'Avoid excessive alcohol consumption'
+        ],
+        shipping: 'Standard packaging with moisture protection',
+        support: 'Monthly metabolic monitoring, nutritional counseling, and regular health assessments'
+    },
+    'ozempic-injection': {
+        id: 'ozempic-injection',
+        name: 'Ozempic Injection',
+        description: 'Weekly semaglutide injection',
+        price: 379,
+        dosage: '4 x 0.5mg prefilled pens',
+        features: [
+            'Brand name semaglutide',
+            'Weekly injection',
+            'Proven weight loss results',
+            'Includes supplies',
+            'Easy-to-use pen injector'
+        ],
+        inStock: true,
+        image: '/medicines/ozempic-injection.jpg',
+        category: 'womens-health',
+        overview: 'Ozempic is the brand name version of semaglutide, offering proven weight management and blood sugar control in a convenient weekly injection.',
+        howItWorks: 'Ozempic activates GLP-1 receptors to regulate appetite, slow digestion, and improve blood sugar control, leading to sustainable weight loss.',
+        benefits: [
+            'Brand name quality and reliability',
+            'Once-weekly injection convenience',
+            'Significant weight loss results',
+            'Improved glycemic control',
+            'Easy-to-use pen delivery system',
+            'Comprehensive medical supervision'
+        ],
+        sideEffects: [
+            'Initial nausea (usually decreases)',
+            'Decreased appetite',
+            'Possible injection site reactions',
+            'Mild digestive discomfort'
+        ],
+        usageInstructions: [
+            'Administer once weekly on same day',
+            'Inject subcutaneously in abdomen, thigh, or upper arm',
+            'Start with 0.25mg and gradually increase',
+            'Rotate injection sites to prevent irritation'
+        ],
+        precautions: [
+            'Not recommended during pregnancy',
+            'Monitor for thyroid tumor symptoms',
+            'Report severe gastrointestinal issues',
+            'Regular medical check-ups required'
+        ],
+        shipping: 'Temperature-controlled shipping with ice packs and insulated packaging',
+        support: 'Weekly progress monitoring, dose adjustment guidance, and comprehensive medical oversight'
     }
 };
 
@@ -893,68 +708,33 @@ const treatmentsData = {
         ],
         category: "weight-loss",
     },
-    // "testosterone-therapy": {
-    //     name: "Testosterone Therapy",
-    //     description: "Hormone replacement therapy for men with low testosterone levels.",
-    //     overview: "Testosterone therapy can help restore hormone levels in men with clinically low testosterone.",
-    //     benefits: [
-    //         "Increased energy levels",
-    //         "Improved muscle mass",
-    //         "Enhanced mood and cognitive function",
-    //     ],
-    //     howItWorks: "Replenishes testosterone levels through various administration methods.",
-    //     faqs: [
-    //         {
-    //             question: "What are the administration methods?",
-    //             answer: "Injections, gels, patches, and pellets are common methods.",
-    //         },
-    //     ],
-    //     category: "hormone-therapy",
-    // },
-    // "erectile-dysfunction": {
-    //     name: "Erectile Dysfunction",
-    //     description: "Effective treatments for ED to improve sexual health and performance.",
-    //     overview: "Comprehensive solutions for men experiencing erectile dysfunction.",
-    //     benefits: [
-    //         "Improved sexual performance",
-    //         "Increased confidence",
-    //         "Various treatment options",
-    //     ],
-    //     howItWorks: "Treatments work by increasing blood flow to the penis or addressing underlying causes.",
-    //     faqs: [
-    //         {
-    //             question: "What treatments are available?",
-    //             answer: "Oral medications, injections, and lifestyle changes are common approaches.",
-    //         },
-    //     ],
-    //     category: "ed-treatments",
-    // },
-    "oral-ed-treatments": {
-        name: "Oral ED Treatments",
-        description: "Effective oral medications for erectile dysfunction management.",
-        overview: "Our clinic offers FDA-approved oral medications that help men achieve and maintain erections by increasing blood flow to the penis. These treatments are convenient, effective, and have helped thousands of men improve their sexual health.",
+    "womens-health": {
+        name: "Women's Health",
+        description: "Specialized treatments for women's overall health, fitness, and weight management.",
+        overview: "Our women's health program focuses on comprehensive care including weight management, hormonal balance, metabolic health, and overall wellness with treatments specifically designed for women's unique health needs.",
         benefits: [
-            "Quick-acting formula (works in 30-60 minutes)",
-            "Discreet and easy to use",
-            "Proven effectiveness in clinical trials",
-            "Multiple dosage options available"
+            "Specialized for women's health needs",
+            "Hormonal balance support",
+            "Weight management solutions",
+            "Metabolic health improvement",
+            "Personalized treatment plans"
         ],
-        howItWorks: "Oral ED medications work by relaxing the smooth muscles in the blood vessels of the penis, allowing for increased blood flow when sexually aroused. This results in firmer and longer-lasting erections. The effects typically last between 4-36 hours depending on the specific medication and dosage.",
+        howItWorks: "Our women's health treatments work by addressing specific female health concerns including hormonal fluctuations, metabolic differences, and weight management challenges that are unique to women.",
         faqs: [
             {
-                question: "How quickly do oral ED medications work?",
-                answer: "Most oral ED medications take effect within 30-60 minutes after ingestion, though this can vary based on factors like food intake and individual metabolism."
+                question: "Are these treatments safe for women?",
+                answer: "Yes, all our women's health treatments are FDA-approved and prescribed based on your individual health assessment and needs."
             },
             {
-                question: "Are there any side effects?",
-                answer: "Common side effects may include headache, flushing, upset stomach, or nasal congestion. These are usually mild and temporary. Our healthcare providers will review your medical history to ensure the safest option for you."
+                question: "Can I take these during my menstrual cycle?",
+                answer: "Most treatments can be taken throughout your menstrual cycle, but your healthcare provider will give you specific guidance based on your treatment plan."
             },
             {
-                question: "How do I know which oral ED medication is right for me?",
-                answer: "During your consultation, our medical professionals will evaluate your health history and specific needs to recommend the most appropriate treatment option."
+                question: "How quickly will I see results?",
+                answer: "Results vary by treatment and individual, but most women begin to see improvements within 4-8 weeks of starting treatment."
             }
         ],
-        category: "ed-treatments",
+        category: "womens-health"
     },
     "injectable-treatments": {
         name: "Injectable Treatments",

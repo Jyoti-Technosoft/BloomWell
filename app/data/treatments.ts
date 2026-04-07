@@ -57,63 +57,30 @@ export const treatmentsData: Record<string, TreatmentData> = {
       },
     ],
   },
-  // "testosterone-therapy": {
-  //   name: "Testosterone Therapy",
-  //   description: "Hormone replacement therapy for men with low testosterone levels.",
-  //   overview: "Testosterone therapy can help restore hormone levels in men with clinically low testosterone.",
-  //   benefits: [
-  //     "Increased energy levels",
-  //     "Improved muscle mass",
-  //     "Enhanced mood and cognitive function",
-  //   ],
-  //   howItWorks: "Replenishes testosterone levels through various administration methods.",
-  //   faqs: [
-  //     {
-  //       question: "What are the administration methods?",
-  //       answer: "Injections, gels, patches, and pellets are common methods.",
-  //     },
-  //   ],
-  // },
-  // "erectile-dysfunction": {
-  //   name: "Erectile Dysfunction",
-  //   description: "Effective treatments for ED to improve sexual health and performance.",
-  //   overview: "Comprehensive solutions for men experiencing erectile dysfunction.",
-  //   benefits: [
-  //     "Improved sexual performance",
-  //     "Increased confidence",
-  //     "Various treatment options",
-  //   ],
-  //   howItWorks: "Treatments work by increasing blood flow to the penis or addressing underlying causes.",
-  //   faqs: [
-  //     {
-  //       question: "What treatments are available?",
-  //       answer: "Oral medications, injections, and lifestyle changes are common approaches.",
-  //     },
-  //   ],
-  // },
-  "oral-ed-treatments": {
-    name: "Oral ED Treatments",
-    description: "Effective oral medications for erectile dysfunction management.",
-    overview: "Our clinic offers FDA-approved oral medications that help men achieve and maintain erections by increasing blood flow to the penis. These treatments are convenient, effective, and have helped thousands of men improve their sexual health.",
+  "womens-health": {
+    name: "Women's Health",
+    description: "Specialized treatments for women's overall health, fitness, and weight management.",
+    overview: "Our women's health program focuses on comprehensive care including weight management, hormonal balance, metabolic health, and overall wellness with treatments specifically designed for women's unique health needs.",
     benefits: [
-      "Quick-acting formula (works in 30-60 minutes)",
-      "Discreet and easy to use",
-      "Proven effectiveness in clinical trials",
-      "Multiple dosage options available"
+      "Specialized for women's health needs",
+      "Hormonal balance support",
+      "Weight management solutions",
+      "Metabolic health improvement",
+      "Personalized treatment plans"
     ],
-    howItWorks: "Oral ED medications work by relaxing the smooth muscles in the blood vessels of the penis, allowing for increased blood flow when sexually aroused. This results in firmer and longer-lasting erections. The effects typically last between 4-36 hours depending on the specific medication and dosage.",
+    howItWorks: "Our women's health treatments work by addressing specific female health concerns including hormonal fluctuations, metabolic differences, and weight management challenges that are unique to women.",
     faqs: [
       {
-        question: "How quickly do oral ED medications work?",
-        answer: "Most oral ED medications take effect within 30-60 minutes after ingestion, though this can vary based on factors like food intake and individual metabolism."
+        question: "Are these treatments safe for women?",
+        answer: "Yes, all our women's health treatments are FDA-approved and prescribed based on your individual health assessment and needs."
       },
       {
-        question: "Are there any side effects?",
-        answer: "Common side effects may include headache, flushing, upset stomach, or nasal congestion. These are usually mild and temporary. Our healthcare providers will review your medical history to ensure the safest option for you."
+        question: "Can I take these during my menstrual cycle?",
+        answer: "Most treatments can be taken throughout your menstrual cycle, but your healthcare provider will give you specific guidance based on your treatment plan."
       },
       {
-        question: "How do I know which oral ED medication is right for me?",
-        answer: "During your consultation, our medical professionals will evaluate your health history and specific needs to recommend the most appropriate treatment option."
+        question: "How quickly will I see results?",
+        answer: "Results vary by treatment and individual, but most women begin to see improvements within 4-8 weeks of starting treatment."
       }
     ]
   },
@@ -206,111 +173,51 @@ export const medicineOptions: Record<string, MedicineOption[]> = {
       image: '/medicines/tirzepatide-10mg.jpg'
     }
   ],
-  'testosterone-therapy': [
+  'womens-health': [
     {
-      id: 'testo-cypionate',
-      name: 'Testosterone Cypionate',
-      description: 'Injectable testosterone for hormone therapy',
-      price: 199,
-      dosage: '10ml vial (200mg/ml)',
-      features: [
-        'For low testosterone levels',
-        'Weekly injections',
-        'Medical supervision required'
-      ],
-      inStock: true,
-      image: '/medicines/testo-cypionate.jpg'
-    },
-    {
-      id: 'testo-gel',
-      name: 'Testosterone Gel',
-      description: 'Topical testosterone gel',
-      price: 249,
-      dosage: '30-day supply',
-      features: [
-        'Easy application',
-        'Daily use',
-        'Absorbs quickly'
-      ],
-      inStock: true,
-      image: '/medicines/testo-gel.webp'
-    }
-  ],
-  'erectile-dysfunction': [
-    {
-      id: 'sildenafil-50mg',
-      name: 'Sildenafil 50mg',
-      description: 'Generic Viagra for ED treatment',
-      price: 99,
-      dosage: '10 tablets',
-      features: [
-        '30-60 minutes before activity',
-        'Lasts 4-6 hours',
-        'Proven effectiveness'
-      ],
-      inStock: true,
-      image: '/medicines/sildenafil-50mg.jpg'
-    },
-    {
-      id: 'tadalafil-20mg',
-      name: 'Tadalafil 20mg',
-      description: 'Daily or as-needed ED treatment',
-      price: 149,
-      dosage: '10 tablets',
-      features: [
-        'Up to 36-hour effectiveness',
-        'Daily or as-needed use',
-        'Lowest effective dose'
-      ],
-      inStock: true,
-      image: '/medicines/tadalafil-20mg.jpg'
-    }
-  ],
-  'oral-ed-treatments': [
-    {
-      id: 'sildenafil-100mg',
-      name: 'Sildenafil 100mg',
-      description: 'High-strength ED medication',
-      price: 129,
-      dosage: '10 tablets',
-      features: [
-        'Maximum strength formula',
-        'Works in 30-60 minutes',
-        'Lasts 4-6 hours',
-        'Discreet delivery'
-      ],
-      inStock: true,
-      image: '/medicines/sildenafil-100mg.jpg'
-    },
-    {
-      id: 'tadalafil-daily',
-      name: 'Tadalafil Daily 5mg',
-      description: 'Low-dose daily treatment',
-      price: 179,
+      id: 'semaglutide-tablets',
+      name: 'Semaglutide Tablets 3mg',
+      description: 'Oral semaglutide for weight management',
+      price: 329,
       dosage: '30 tablets',
       features: [
-        'Take one daily',
-        'Always ready for spontaneity',
-        'Steady medication level',
-        '30-day supply'
+        'Oral administration',
+        'Once-daily dosing',
+        'FDA-approved for weight loss',
+        'Convenient tablet form'
       ],
       inStock: true,
-      image: '/medicines/tadalafil-daily.png'
+      image: '/medicines/semaglutide-tablets.jpg'
     },
     {
-      id: 'vardenafil-20mg',
-      name: 'Vardenafil 20mg',
-      description: 'Fast-acting ED medication',
-      price: 149,
-      dosage: '10 tablets',
+      id: 'metformin-er',
+      name: 'Metformin Extended Release',
+      description: 'Weight management and metabolic support',
+      price: 89,
+      dosage: '60 tablets (500mg)',
       features: [
-        'Works in 25-60 minutes',
-        'Effective for 4-5 hours',
-        'Can be taken with food',
-        'Discreet packaging'
+        'Extended release formula',
+        'Supports weight loss',
+        'Improves insulin sensitivity',
+        'Minimal side effects'
       ],
       inStock: true,
-      image: '/medicines/vardenafil-20mg.webp'
+      image: '/medicines/metformin-er.jpg'
+    },
+    {
+      id: 'ozempic-injection',
+      name: 'Ozempic Injection',
+      description: 'Weekly semaglutide injection',
+      price: 379,
+      dosage: '4 x 0.5mg prefilled pens',
+      features: [
+        'Brand name semaglutide',
+        'Weekly injection',
+        'Proven weight loss results',
+        'Includes supplies'
+      ],
+      inStock: true,
+      image: '/medicines/ozempic-injection.jpg'
     }
   ],
   'injectable-treatments': [

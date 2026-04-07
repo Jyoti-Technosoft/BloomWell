@@ -24,48 +24,75 @@ const fallbackTreatments = [
     ],
     medicines: ['semaglutide-1mg', 'semaglutide-2mg']
   },
-  // {
-  //   id: 'erectile-dysfunction',
-  //   name: 'Erectile Dysfunction',
-  //   description: 'Effective treatments for ED to improve sexual health and performance.',
-  //   category: 'ed-treatments',
-  //   image: '/default-treatment.jpg',
-  //   overview: 'Comprehensive solutions for men experiencing erectile dysfunction.',
-  //   benefits: [
-  //     'Improved sexual performance',
-  //     'Increased confidence',
-  //     'Various treatment options'
-  //   ],
-  //   howItWorks: 'Treatments work by increasing blood flow to penis or addressing underlying causes.',
-  //   faqs: [
-  //     {
-  //       question: 'What treatments are available?',
-  //       answer: 'Oral medications, injections, and lifestyle changes are common approaches.'
-  //     }
-  //   ],
-  //   medicines: ['sildenafil-50mg', 'tadalafil-20mg']
-  // },
-  // {
-  //   id: 'testosterone-therapy',
-  //   name: 'Testosterone Therapy',
-  //   description: 'Hormone replacement therapy for low testosterone levels.',
-  //   category: 'hormone-therapy',
-  //   image: '/default-treatment.jpg',
-  //   overview: 'Testosterone therapy helps restore normal hormone levels in men with low testosterone.',
-  //   benefits: [
-  //     'Increased energy',
-  //     'Improved muscle mass',
-  //     'Better mood'
-  //   ],
-  //   howItWorks: 'Supplements testosterone to restore normal levels.',
-  //   faqs: [
-  //     {
-  //       question: 'Is testosterone therapy safe?',
-  //       answer: 'When monitored by medical professionals, testosterone therapy is generally safe.'
-  //     }
-  //   ],
-  //   medicines: ['testo-cypionate', 'testo-gel']
-  // }
+  {
+    id: 'womens-health',
+    name: "Women's Health",
+    description: "Specialized treatments for women's overall health, fitness, and weight management.",
+    category: 'womens-health',
+    image: '/default-treatment.jpg',
+    overview: "Our women's health program focuses on comprehensive care including weight management, hormonal balance, and metabolic health.",
+    howItWorks: "Our women's health treatments address specific female health concerns including hormonal fluctuations and metabolic differences.",
+    benefits: [
+      "Specialized for women's health needs",
+      "Hormonal balance support",
+      "Weight management solutions",
+      "Metabolic health improvement",
+      "Personalized treatment plans"
+    ],
+    faqs: [
+      {
+        question: "Are these treatments safe for women?",
+        answer: "Yes, all our women's health treatments are FDA-approved and prescribed based on your individual health assessment."
+      },
+      {
+        question: "How quickly will I see results?",
+        answer: "Results vary by treatment and individual, but most women begin to see improvements within 4-8 weeks."
+      }
+    ],
+    medicines: ['semaglutide-tablets', 'metformin-er', 'ozempic-injection']
+  },
+  {
+    id: 'tirzepatide',
+    name: 'Tirzepatide',
+    description: 'Dual GIP and GLP-1 receptor agonist for significant weight loss.',
+    category: 'weight-loss',
+    image: '/default-treatment.jpg',
+    overview: 'Tirzepatide is a novel medication that combines the benefits of GIP and GLP-1 receptor agonism.',
+    howItWorks: 'Works by activating both GIP and GLP-1 receptors to regulate blood sugar and reduce appetite.',
+    benefits: [
+      'Dual-action formula',
+      'Significant weight loss',
+      'Improved A1C levels'
+    ],
+    faqs: [
+      {
+        question: 'How does Tirzepatide work?',
+        answer: 'It activates both GIP and GLP-1 receptors for enhanced effects.'
+      }
+    ],
+    medicines: ['tirzepatide-5mg', 'tirzepatide-10mg']
+  },
+  {
+    id: 'injectable-treatments',
+    name: 'Injectable Treatments',
+    description: 'Advanced injectable therapies for various health and wellness needs.',
+    category: 'injectable-therapy',
+    image: '/default-treatment.jpg',
+    overview: 'Our clinic offers a range of injectable treatments including vitamin therapy and specialized medications.',
+    howItWorks: 'Injectable treatments deliver vitamins and medications directly into the bloodstream for maximum absorption.',
+    benefits: [
+      'Direct delivery for maximum absorption',
+      'Customizable treatment plans',
+      'Administered by medical professionals'
+    ],
+    faqs: [
+      {
+        question: 'What conditions can injectable treatments help with?',
+        answer: 'Injectable therapies can support energy levels, immune function, weight management, and overall wellness.'
+      }
+    ],
+    medicines: ['b12-injection', 'glutathione-injection', 'lipotropic-injection']
+  }
 ];
 
 export async function GET() {
@@ -78,11 +105,9 @@ export async function GET() {
         const name = String(row.name).toLowerCase();
         if (name.includes('semaglutide') || name.includes('tirzepatide')) {
           category = 'weight-loss';
-        } else if  (name.includes('testosterone')) {
-          category = 'hormone-therapy';
-        } else if (name.includes('erectile') || name.includes('ed')) {
-          category = 'ed-treatments';
-        } else if (name.includes('injectable')) {
+        } else if (name.includes('women') || name.includes('metformin') || name.includes('ozempic')) {
+          category = 'womens-health';
+        } else if (name.includes('injectable') || name.includes('b12') || name.includes('glutathione') || name.includes('lipotropic')) {
           category = 'injectable-therapy';
         } else {
           category = 'other';

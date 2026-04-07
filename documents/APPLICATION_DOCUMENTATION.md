@@ -2,7 +2,7 @@
 
 ## 📋 Overview
 
-**BloomWell** is a comprehensive digital health platform focused on weight management and wellness treatments. The application provides personalized medical treatments, physician consultations, and FDA-approved medications for weight loss, hormone therapy, and sexual health.
+**BloomWell** is a comprehensive digital health platform focused on weight management and wellness treatments. The application provides personalized medical treatments, physician consultations, and FDA-approved medications for weight loss, hormone therapy, and overall health.
 
 ## 🎯 Purpose & Goals
 
@@ -23,12 +23,10 @@
 ### Primary Users
 - **Adults (18-65+)** seeking weight management solutions
 - **Individuals with hormonal imbalances** requiring hormone therapy
-- **Men experiencing erectile dysfunction** seeking treatment
 - **Patients seeking physician consultations** for weight-related health issues
 
 ### User Personas
 1. **Health-Conscious Professionals**: Busy adults seeking convenient, effective weight management
-2. **Hormone Therapy Patients**: Individuals needing testosterone or hormonal balance treatments
 3. **Wellness Enthusiasts**: Users looking for comprehensive health and wellness solutions
 4. **Privacy-Conscious Patients**: Users preferring discreet, digital healthcare access
 
@@ -61,8 +59,7 @@
 
 #### 1. **Medical Treatments**
 - **Weight Loss Medications**: Semaglutide, Tirzepatide with detailed information
-- **Hormone Therapy**: Testosterone treatments (injections, gels)
-- **ED Treatments**: Oral medications (Sildenafil, Tadalafil, Vardenafil)
+- **ED Treatments**: Oral medications (Tadalafil, Vardenafil)
 - **Injectable Therapies**: Vitamin B12, Glutathione, Lipotropic injections
 
 #### 2. **Physician Network**

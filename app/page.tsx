@@ -105,7 +105,7 @@ export default function Home() {
                 variants={fadeInUp}
                 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-6"
               >
-                Transform Your <span className="text-primary-600">Women's Health</span> Journey
+                Transform Your <span className="text-primary-600">Health</span> Journey
               </motion.h1>
               
               <motion.p 

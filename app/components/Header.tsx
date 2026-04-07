@@ -33,9 +33,6 @@ const getNavItems = (isAuthenticated: boolean, userRole?: string): NavItem[] => 
       dropdown: [
         { name: 'Semaglutide', href: '/semaglutide' },
         { name: 'Tirzepatide', href: '/tirzepatide' },
-        { name: 'Oral ED Treatments', href: '/oral-ed-treatments' },
-        // { name: 'Testosterone Therapy', href: '/testosterone-therapy' },
-        // { name: 'Erectile Dysfunction', href: '/erectile-dysfunction' },
         { name: 'Injectable Treatments', href: '/injectable-treatments' }
       ],
     },
